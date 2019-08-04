@@ -36,24 +36,25 @@ int main() {
     for (; inFileName[i] != 0; i++) {
         outFileName[offset + i] = inFileName[i];
     }
+    // remove that annoying newline :|
+    inFileName[--i] = 0;
     outFileName[offset + i] = 0;
 
-    if (DEBUG)
-        write(1, outFileName, 75);  // for debug
-
-    // now to open a large file, create if not exists, and with necessary
-    // permissions
-    int fdIn = open(inFileName, __O_LARGEFILE | O_RDONLY),
-        fdOut = open(outFileName, __O_LARGEFILE | O_CREAT | O_RDWR | O_TRUNC,
-                     PERMS);
+    int fdIn = open(inFileName, __O_LARGEFILE | O_RDONLY);
     if (fdIn < 0) {
-        if (DEBUG)
+        if (DEBUG) {
+            printf("%s", inFileName);
             perror("Opening input file");
+        }
         return 1;
     }
+    int fdOut =
+        open(outFileName, __O_LARGEFILE | O_CREAT | O_WRONLY | O_TRUNC, PERMS);
     if (fdOut < 0) {
-        if (DEBUG)
+        if (DEBUG) {
+            printf("%s\n", outFileName);
             perror("Opening output file");
+        }
         return 2;
     }
     read(fdIn, fileReadBuf, fileSize);
