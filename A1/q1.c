@@ -22,6 +22,8 @@ int main() {
 
     struct stat a;
     if (stat(FOLDER, &a) == -1) {
+        // TODO: ASK DOUBT IN FORUM ON 7th
+        // not possible to open folder without executable permission
         mkdir(FOLDER, S_IRUSR | S_IWUSR | S_IXUSR);
     }
 
@@ -74,6 +76,13 @@ int main() {
 
     close(fdIn);
     close(fdOut);
+
+    /**
+     * For stat, could do something like stat.st_blocks / stat.st_size
+     * For continuous refresh, we use while(stat.st_blocks != stat.st_size)
+     * sleep(5secs) For delete chars, use
+     * https://stackoverflow.com/questions/17006262
+     */
 
     return 0;
 }
