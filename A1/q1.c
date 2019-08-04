@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 #define FOLDER "Assignment"
-#define DEBUG true
+#define DEBUG 1
 #define fileSize 1000000000  // should be INT_MAX but ok
 #define PERMS S_IRUSR | S_IWUSR
 
@@ -43,9 +43,9 @@ int main() {
 
     // now to open a large file, create if not exists, and with necessary
     // permissions
-    int fdIn = open(inFileName, O_LARGEFILE | O_RDONLY),
-        fdOut =
-            open(outFileName, O_LARGEFILE | O_CREAT | O_RDWR | O_TRUNC, PERMS);
+    int fdIn = open(inFileName, __O_LARGEFILE | O_RDONLY),
+        fdOut = open(outFileName, __O_LARGEFILE | O_CREAT | O_RDWR | O_TRUNC,
+                     PERMS);
     if (fdIn < 0) {
         if (DEBUG)
             perror("Opening input file");
