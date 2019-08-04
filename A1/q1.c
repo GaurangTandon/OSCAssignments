@@ -13,6 +13,10 @@
 #define fileSize 1000000000  // should be INT_MAX but ok
 #define PERMS S_IRUSR | S_IWUSR
 
+/**
+ * TODO: implement progress bar
+ * remove non-syscall fns
+ */
 // declare globally since huge size
 char fileReadBuf[fileSize];
 char outputBuf[fileSize];
