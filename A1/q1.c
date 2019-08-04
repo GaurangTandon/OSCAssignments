@@ -22,7 +22,7 @@ int main() {
 
     struct stat a;
     if (stat(FOLDER, &a) == -1) {
-        mkdir(FOLDER, PERMS);
+        mkdir(FOLDER, S_IRUSR | S_IWUSR | S_IXUSR);
     }
 
     // pattern: file descriptor fd, buffer name, upto count bytes
@@ -62,12 +62,14 @@ int main() {
     int len = 0;
     while (len < fileSize && fileReadBuf[len])
         len++;
+    // terminal newline :/
+    len--;
 
-    for (int i = 0, j = len - 1; i < j; i++, j--) {
+    for (int i = 0, j = len - 1; i <= j; i++, j--) {
         outputBuf[i] = fileReadBuf[j];
         outputBuf[j] = fileReadBuf[i];
     }
-
+    outputBuf[len] = 0;
     write(fdOut, outputBuf, len);
 
     close(fdIn);
