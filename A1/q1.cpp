@@ -48,14 +48,12 @@ int main() {
             open(outFileName, O_LARGEFILE | O_CREAT | O_RDWR | O_TRUNC, PERMS);
     if (fdIn < 0) {
         if (DEBUG)
-            printf("While opening input file, error occurred: %s",
-                   strerror(errno));
+            perror("Opening input file");
         return 1;
     }
     if (fdOut < 0) {
         if (DEBUG)
-            printf("While open output file, error occurred: %s",
-                   strerror(errno));
+            perror("Opening output file");
         return 2;
     }
     read(fdIn, fileReadBuf, fileSize);
