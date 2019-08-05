@@ -28,8 +28,9 @@ int main() {
         f3 = readFileName(directoryPath);
 
     struct stat s;
+    int rt = stat(directoryPath, &s);
     write(1, "Directory is created: ", 23);
-    if (stat(directoryPath, &s) == -1) {
+    if (rt == -1) {
         write(1, "No\n", 4);
         perror("Error");
     } else {
