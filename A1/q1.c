@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -10,19 +11,36 @@
 
 #define FOLDER "Assignment"
 #define DEBUG 1
-#define fileSize 1000000000  // should be INT_MAX but ok
 #define PERMS S_IRUSR | S_IWUSR
 
 /**
  * TODO: implement progress bar
  * remove non-syscall fns
+ * use stat syscall to find out file size, and then malloc those many bytes
+ * write byte by byte (by seeking) to give a progress indicator kind of thing
  */
 // declare globally since huge size
-char fileReadBuf[fileSize];
-char outputBuf[fileSize];
+char *fileReadBuf, *outputBuf;
+long long fileSize;
+
+void printnum(int num) {
+    char arr[100];
+    int digs = 0;
+    while (num > 0) {
+        arr[digs++] = (num % 10) + '0';
+        num /= 10;
+    }
+    for (int i = 0, j = digs - 1; i <= j; i++, j--) {
+        char x = arr[i];
+        arr[i] = arr[j];
+        arr[j] = x;
+    }
+    write(1, arr, digs);
+}
 
 int main() {
-    char inFileName[50], outFileName[75] = FOLDER, offset = 0;
+    char inFileName[100], outFileName[100] = FOLDER;
+    long long offset = 0;
 
     struct stat a;
     if (stat(FOLDER, &a) == -1) {
@@ -32,7 +50,7 @@ int main() {
     }
 
     // pattern: file descriptor fd, buffer name, upto count bytes
-    read(0, inFileName, 50);
+    read(0, inFileName, 100);
 
     // append scanned file name to get complete file name
     while (outFileName[offset])
@@ -43,17 +61,26 @@ int main() {
         outFileName[offset + i] = inFileName[i];
     }
     // remove that annoying newline :|
-    inFileName[--i] = 0;
+    // ascii 3 is eot
+    while (i >= 1 && (inFileName[i - 1] == 3 || inFileName[i - 1] == '\n'))
+        i--;
+    inFileName[i] = 0;
     outFileName[offset + i] = 0;
 
+    // this printf shouldn't have a newline
     int fdIn = open(inFileName, __O_LARGEFILE | O_RDONLY);
     if (fdIn < 0) {
         if (DEBUG) {
-            printf("%s", inFileName);
+            printf("%sabs", inFileName);
+            fflush(stdout);
             perror("Opening input file");
         }
         return 1;
     }
+    fstat(fdIn, &a);
+    fileSize = a.st_size;
+    fileReadBuf = (char *)malloc(fileSize * 1);
+    outputBuf = (char *)malloc(fileSize * 1);
     int fdOut =
         open(outFileName, __O_LARGEFILE | O_CREAT | O_WRONLY | O_TRUNC, PERMS);
     if (fdOut < 0) {
@@ -68,25 +95,31 @@ int main() {
     int len = 0;
     while (len < fileSize && fileReadBuf[len])
         len++;
-    // terminal newline :/
-    len--;
-
+    while (len >= 1 &&
+           (fileReadBuf[len - 1] == 3 || fileReadBuf[len - 1] == '\n'))
+        len--;
+    fileReadBuf[len] = 0;
     for (int i = 0, j = len - 1; i <= j; i++, j--) {
         outputBuf[i] = fileReadBuf[j];
         outputBuf[j] = fileReadBuf[i];
     }
     outputBuf[len] = 0;
-    write(fdOut, outputBuf, len);
+
+    int multiplePrintStep = 1;  // 500;
+    for (int i = 0; i <= len; i++) {
+        write(fdOut, outputBuf + i, 1);
+        lseek(fdOut, 1, SEEK_CUR);
+        write(1, "\r", 2);
+
+        if (i % multiplePrintStep == 0) {
+            printnum(i);
+            write(1, " bytes transferred", 19);
+        }
+        fflush(stdout);
+    }
 
     close(fdIn);
     close(fdOut);
-
-    /**
-     * For stat, could do something like stat.st_blocks / stat.st_size
-     * For continuous refresh, we use while(stat.st_blocks != stat.st_size)
-     * sleep(5secs) For delete chars, use
-     * https://stackoverflow.com/questions/17006262
-     */
 
     return 0;
 }
