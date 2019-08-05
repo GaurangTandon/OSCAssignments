@@ -105,18 +105,21 @@ int main() {
     }
     outputBuf[len] = 0;
 
-    int multiplePrintStep = 1;  // 500;
+    int multiplePrintStep = 100;
     for (int i = 0; i <= len; i++) {
         write(fdOut, outputBuf + i, 1);
         lseek(fdOut, 1, SEEK_CUR);
         write(1, "\r", 2);
 
         if (i % multiplePrintStep == 0) {
-            printnum(i);
-            write(1, " bytes transferred", 19);
+            printnum((i * 100) / len);
+            write(1, "% of file written", 18);
         }
         fflush(stdout);
     }
+
+    write(1, "\r100% of file written", 22);
+    fflush(stdout);
 
     close(fdIn);
     close(fdOut);
