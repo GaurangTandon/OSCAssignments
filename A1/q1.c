@@ -39,6 +39,10 @@ void printnum(int num) {
     write(1, arr, digs);
 }
 
+int min(int a, int b) {
+    return a < b ? a : b;
+}
+
 void writeProgress(int percent) {
     const int size = 102;
     char output[size];
@@ -119,7 +123,7 @@ int main() {
         return 2;
     }
 
-    const int multiplePrintStep = 100;
+    const int multiplePrintStep = min(fileSize / 1000, (int)1e6);
     lseek(fdIn, -multiplePrintStep, SEEK_END);
     int steps = fileSize / multiplePrintStep;
     char buf[multiplePrintStep];
@@ -135,7 +139,7 @@ int main() {
     }
     int left = fileSize - steps * multiplePrintStep;
     // seek to beginning of file
-    lseek(fdIn, -fileSize, SEEK_END);
+    lseek(fdIn, 0, SEEK_SET);
     read(fdIn, buf, left);
     reverse(buf, left);
     write(fdOut, buf, left);
