@@ -23,6 +23,10 @@
 char *fileReadBuf, *outputBuf;
 long long fileSize;
 
+#define KNRM "\x1B[0m"
+#define KRED "\x1B[31m"
+#define KGRN "\x1B[32m"
+
 void printnum(int num) {
     char arr[100];
     int digs = 0;
@@ -36,6 +40,26 @@ void printnum(int num) {
         arr[j] = x;
     }
     write(1, arr, digs);
+}
+
+void writeProgress(int percent) {
+    const int size = 102;
+    char output[size];
+
+    output[0] = output[size - 1] = '|';
+    for (int i = 1; i <= percent; i++)
+        output[i] = '#';
+    for (int i = percent + 1; i <= 100; i++)
+        output[i] = '_';
+
+    write(1, "\r", 2);
+
+    write(1, KGRN, 5);
+    write(1, output, size);
+    printnum(percent);
+    write(1, KNRM, 5);
+
+    write(1, "% of file written", 18);
 }
 
 int main() {
@@ -109,17 +133,12 @@ int main() {
     for (int i = 0; i <= len; i++) {
         write(fdOut, outputBuf + i, 1);
         lseek(fdOut, 1, SEEK_CUR);
-        write(1, "\r", 2);
 
         if (i % multiplePrintStep == 0) {
-            printnum((i * 100) / len);
-            write(1, "% of file written", 18);
+            writeProgress((i * 100) / len);
         }
-        fflush(stdout);
     }
-
-    write(1, "\r100% of file written", 22);
-    fflush(stdout);
+    writeProgress(100);
 
     close(fdIn);
     close(fdOut);
