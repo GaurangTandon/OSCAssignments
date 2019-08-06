@@ -60,11 +60,8 @@ void writeProgress(int percent) {
 }
 
 // read file name and return its length
-int readFileName(char path[]) {
-    read(0, path, fileNameSizeLimit);
-    int len = 0;
-    while (path[len])
-        len++;
+int readFileName(char path[fileNameSizeLimit]) {
+    int len = read(0, path, fileNameSizeLimit);
     while (len >= 1 && (path[len - 1] == 3 || path[len - 1] == '\n'))
         len--;
     path[len] = 0;
@@ -80,7 +77,7 @@ void reverse(char* str, int len) {
 }
 
 int main() {
-    char inFileName[100], outFileName[100] = FOLDER;
+    char inFileName[fileNameSizeLimit], outFileName[fileNameSizeLimit] = FOLDER;
     long long offset = 0;
 
     struct stat a;
@@ -105,8 +102,7 @@ int main() {
     int fdIn = open(inFileName, __O_LARGEFILE | O_RDONLY);
     if (fdIn < 0) {
         if (DEBUG) {
-            printf("%s\n", inFileName);
-            fflush(stdout);
+            printf("%s", inFileName);
             perror("Opening input file");
         }
         return 1;
