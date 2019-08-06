@@ -9,18 +9,15 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#define fileNameSizeLimit 400
 #define FOLDER "Assignment"
 #define DEBUG 1
 #define PERMS S_IRUSR | S_IWUSR
 
 /**
- * TODO: implement progress bar
+ * TODO:
  * remove non-syscall fns
- * use stat syscall to find out file size, and then malloc those many bytes
- * write byte by byte (by seeking) to give a progress indicator kind of thing
  */
-// declare globally since huge size
-char *fileReadBuf, *outputBuf;
 long long fileSize;
 
 #define KNRM "\x1B[0m"
@@ -62,6 +59,18 @@ void writeProgress(int percent) {
     write(1, "% of file written", 18);
 }
 
+// read file name and return its length
+int readFileName(char path[]) {
+    read(0, path, fileNameSizeLimit);
+    int len = 0;
+    while (path[len])
+        len++;
+    while (len >= 1 && (path[len - 1] == 3 || path[len - 1] == '\n'))
+        len--;
+    path[len] = 0;
+    return len;
+}
+
 int main() {
     char inFileName[100], outFileName[100] = FOLDER;
     long long offset = 0;
@@ -73,8 +82,7 @@ int main() {
         mkdir(FOLDER, S_IRUSR | S_IWUSR | S_IXUSR);
     }
 
-    // pattern: file descriptor fd, buffer name, upto count bytes
-    read(0, inFileName, 100);
+    readFileName(inFileName);
 
     // append scanned file name to get complete file name
     while (outFileName[offset])
@@ -84,18 +92,12 @@ int main() {
     for (; inFileName[i] != 0; i++) {
         outFileName[offset + i] = inFileName[i];
     }
-    // remove that annoying newline :|
-    // ascii 3 is eot
-    while (i >= 1 && (inFileName[i - 1] == 3 || inFileName[i - 1] == '\n'))
-        i--;
-    inFileName[i] = 0;
     outFileName[offset + i] = 0;
 
-    // this printf shouldn't have a newline
     int fdIn = open(inFileName, __O_LARGEFILE | O_RDONLY);
     if (fdIn < 0) {
         if (DEBUG) {
-            printf("%sabs", inFileName);
+            printf("%s\n", inFileName);
             fflush(stdout);
             perror("Opening input file");
         }
@@ -103,8 +105,6 @@ int main() {
     }
     fstat(fdIn, &a);
     fileSize = a.st_size;
-    fileReadBuf = (char *)malloc(fileSize * 1);
-    outputBuf = (char *)malloc(fileSize * 1);
     int fdOut =
         open(outFileName, __O_LARGEFILE | O_CREAT | O_WRONLY | O_TRUNC, PERMS);
     if (fdOut < 0) {
@@ -114,28 +114,18 @@ int main() {
         }
         return 2;
     }
-    read(fdIn, fileReadBuf, fileSize);
 
-    int len = 0;
-    while (len < fileSize && fileReadBuf[len])
-        len++;
-    while (len >= 1 &&
-           (fileReadBuf[len - 1] == 3 || fileReadBuf[len - 1] == '\n'))
-        len--;
-    fileReadBuf[len] = 0;
-    for (int i = 0, j = len - 1; i <= j; i++, j--) {
-        outputBuf[i] = fileReadBuf[j];
-        outputBuf[j] = fileReadBuf[i];
-    }
-    outputBuf[len] = 0;
+    const int multiplePrintStep = 100;
 
-    int multiplePrintStep = 100;
-    for (int i = 0; i <= len; i++) {
-        write(fdOut, outputBuf + i, 1);
-        lseek(fdOut, 1, SEEK_CUR);
+    lseek(fdIn, -1, SEEK_END);
+    for (int i = 0; i <= fileSize; i++) {
+        char *c;
+        read(fdIn, c, 1);
+        write(fdOut, c, 1);
+        lseek(fdIn, -2, SEEK_CUR);
 
         if (i % multiplePrintStep == 0) {
-            writeProgress((i * 100) / len);
+            writeProgress((i * 100) / fileSize);
         }
     }
     writeProgress(100);
