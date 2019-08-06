@@ -11,30 +11,86 @@
 char newFilePath[fileNameSizeLimit], oldFilePath[fileNameSizeLimit],
     directoryPath[fileNameSizeLimit];
 
+void printnum(int num) {
+    char arr[100];
+    int digs = 0;
+    while (num > 0) {
+        arr[digs++] = (num % 10) + '0';
+        num /= 10;
+    }
+    for (int i = 0, j = digs - 1; i <= j; i++, j--) {
+        char x = arr[i];
+        arr[i] = arr[j];
+        arr[j] = x;
+    }
+    write(1, arr, digs);
+}
+
 // read file name and return its length
-int readFileName(char path[]) {
-    read(0, path, fileNameSizeLimit);
-    int len = 0;
-    while (path[len])
-        len++;
+int readFileName(char path[fileNameSizeLimit]) {
+    int len = read(0, path, fileNameSizeLimit);
     while (len >= 1 && (path[len - 1] == 3 || path[len - 1] == '\n'))
         len--;
     path[len] = 0;
     return len;
 }
 
-int main() {
-    int f1 = readFileName(newFilePath), f2 = readFileName(oldFilePath),
-        f3 = readFileName(directoryPath);
+void print(char str[]) {
+    int len = 0;
+    while (str[len])
+        len++;
+    write(1, str, len);
+}
 
+int printPerms(char path[], int num) {
     struct stat s;
-    int rt = stat(directoryPath, &s);
-    write(1, "Directory is created: ", 23);
-    if (rt == -1) {
-        write(1, "No\n", 4);
-        perror("Error");
-    } else {
-        write(1, "Yes\n", 5);
+    int ret = stat(path, &s);
+    if (ret < 0) {
+        if (num == 3) {
+            print("Directory is created: No");
+            path = "Assignment";
+            mkdir(path, S_IXUSR | S_IWUSR | S_IRUSR);
+            ret = stat(path, &s);
+        } else
+            return 1;
+    } else if (num == 3)
+        print("Directory is created: Yes\n");
+
+    int perms[9] = {S_IRUSR, S_IWUSR, S_IXUSR, S_IRGRP, S_IWGRP,
+                    S_IXGRP, S_IROTH, S_IWOTH, S_IXOTH};
+
+    for (int i = 0; i < 9; i++) {
+        if (i < 3)
+            print("User");
+        else if (i < 6)
+            print("Group");
+        else
+            print("Others");
+        print(" has ");
+        if (i % 3 == 0)
+            print("read");
+        else if (i % 3 == 1)
+            print("write");
+        else
+            print("execute");
+        print(" permission on newfile: ");
+
+        if (s.st_mode & perms[i])
+            print("Yes");
+        else
+            print("No");
+        print("\n");
+    }
+
+    return 0;
+}
+
+int main() {
+    for (int i = 1; i <= 3; i++) {
+        readFileName(newFilePath);
+        if (printPerms(newFilePath, i)) {
+            return i;
+        }
     }
 
     return 0;
