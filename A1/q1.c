@@ -71,6 +71,14 @@ int readFileName(char path[]) {
     return len;
 }
 
+void reverse(char* str, int len) {
+    for (int i = 0, j = len - 1; i <= j; i++, j--) {
+        char t = str[i];
+        str[i] = str[j];
+        str[j] = t;
+    }
+}
+
 int main() {
     char inFileName[100], outFileName[100] = FOLDER;
     long long offset = 0;
@@ -116,18 +124,25 @@ int main() {
     }
 
     const int multiplePrintStep = 100;
+    lseek(fdIn, -multiplePrintStep, SEEK_END);
+    int steps = fileSize / multiplePrintStep;
+    char buf[multiplePrintStep];
 
-    lseek(fdIn, -1, SEEK_END);
-    for (int i = 0; i < fileSize; i++) {
-        char c[1];
-        read(fdIn, c, 1);
-        write(fdOut, c, 1);
-        lseek(fdIn, -2, SEEK_CUR);
+    for (int i = 0; i < steps; i++) {
+        read(fdIn, buf, multiplePrintStep);
+        // now reverse the buf
+        reverse(buf, multiplePrintStep);
+        write(fdOut, buf, multiplePrintStep);
+        lseek(fdIn, -2 * multiplePrintStep, SEEK_CUR);
 
-        if (i % multiplePrintStep == 0) {
-            writeProgress((i * 100) / fileSize);
-        }
+        writeProgress((i * multiplePrintStep * 100) / fileSize);
     }
+    int left = fileSize - steps * multiplePrintStep;
+    // seek to beginning of file
+    lseek(fdIn, -fileSize, SEEK_END);
+    read(fdIn, buf, left);
+    reverse(buf, left);
+    write(fdOut, buf, left);
     writeProgress(100);
 
     close(fdIn);
