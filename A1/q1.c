@@ -118,8 +118,8 @@ int main() {
     const int multiplePrintStep = 100;
 
     lseek(fdIn, -1, SEEK_END);
-    for (int i = 0; i <= fileSize; i++) {
-        char *c;
+    for (int i = 0; i < fileSize; i++) {
+        char c[1];
         read(fdIn, c, 1);
         write(fdOut, c, 1);
         lseek(fdIn, -2, SEEK_CUR);
@@ -135,9 +135,3 @@ int main() {
 
     return 0;
 }
-
-/**
- * 2147483647
- * 1000000000
- * 80000000  (for contrast, we usually have arrays of size this, 10^7 ll ints)
- */
