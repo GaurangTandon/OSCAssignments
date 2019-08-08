@@ -28,8 +28,10 @@ long long fileSize;
 void printnum(int num) {
     char arr[100] = {0};
     int digs = 0;
-    if (num == 0)
+    if (num == 0) {
+        arr[0] = '0';
         digs = 1;
+    }
     while (num > 0) {
         arr[digs++] = (num % 10) + '0';
         num /= 10;
@@ -39,7 +41,7 @@ void printnum(int num) {
         arr[i] = arr[j];
         arr[j] = x;
     }
-    arr[digs] = 0;
+    // arr[digs] = 0;
     write(1, arr, digs + 1);
 }
 
@@ -108,8 +110,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    const int multiplePrintStep = max(min(fileSize / 1000, (int)1e5), 1);
-    int steps = fileSize / multiplePrintStep, updateStep = max(1, steps / 10);
+    const long long int multiplePrintStep =
+                            max(min(fileSize / 1000, (int)1e4), 1),
+                        steps = fileSize / multiplePrintStep,
+                        updateStep = max(1, steps / 10);
 
     char buf[multiplePrintStep];
 
