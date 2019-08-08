@@ -7,32 +7,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define fileNameSizeLimit 400
-char newFilePath[fileNameSizeLimit], oldFilePath[fileNameSizeLimit],
-    directoryPath[fileNameSizeLimit];
-
-void printnum(int num) {
-    char arr[100];
-    int digs = 0;
-    while (num > 0) {
-        arr[digs++] = (num % 10) + '0';
-        num /= 10;
-    }
-    for (int i = 0, j = digs - 1; i <= j; i++, j--) {
-        char x = arr[i];
-        arr[i] = arr[j];
-        arr[j] = x;
-    }
-    write(1, arr, digs);
-}
-
-// read file name and return its length
-int readFileName(char path[fileNameSizeLimit]) {
-    int len = read(0, path, fileNameSizeLimit);
-    while (len >= 1 && (path[len - 1] == 3 || path[len - 1] == '\n'))
-        len--;
-    path[len] = 0;
-    return len;
+int reversed(char* newFilePath, char* oldFilePath) {
 }
 
 void print(char str[]) {
@@ -110,6 +85,12 @@ int main(int argc, char* argv[]) {
             return i;
         }
     }
+
+    print("Whether file contents are reversed in newfile: ");
+    if (reversed(argv[1], argv[2])) {
+        print("Yes");
+    } else
+        print("No");
 
     return 0;
 }
