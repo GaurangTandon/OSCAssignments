@@ -13,6 +13,7 @@
 #define FOLDER "Assignment"
 #define DEBUG 1
 #define PERMS S_IRUSR | S_IWUSR
+#define max(x, y) ((x) > (y) ? (x) : (y))
 
 /**
  * TODO:
@@ -106,7 +107,8 @@ int main(int argc, char* argv[]) {
 
     const int multiplePrintStep = min(fileSize / 1000, (int)1e5);
     lseek(fdIn, -multiplePrintStep, SEEK_END);
-    int steps = fileSize / multiplePrintStep;
+    int steps = fileSize / multiplePrintStep, updateStep = max(1, steps / 100);
+
     char buf[multiplePrintStep];
 
     for (int i = 0; i < steps; i++) {
@@ -115,8 +117,8 @@ int main(int argc, char* argv[]) {
         reverse(buf, multiplePrintStep);
         write(fdOut, buf, multiplePrintStep);
         lseek(fdIn, -2 * multiplePrintStep, SEEK_CUR);
-
-        writeProgress((i * multiplePrintStep * 100) / fileSize);
+        if (i % updateStep == 0)
+            writeProgress((i * multiplePrintStep * 100) / fileSize);
     }
 
     int left = fileSize - steps * multiplePrintStep;
