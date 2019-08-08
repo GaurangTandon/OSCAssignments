@@ -26,8 +26,10 @@ long long fileSize;
 #define KGRN "\x1B[32m"
 
 void printnum(int num) {
-    char arr[100];
+    char arr[100] = {0};
     int digs = 0;
+    if (num == 0)
+        digs = 1;
     while (num > 0) {
         arr[digs++] = (num % 10) + '0';
         num /= 10;
@@ -37,7 +39,8 @@ void printnum(int num) {
         arr[i] = arr[j];
         arr[j] = x;
     }
-    write(1, arr, digs);
+    arr[digs] = 0;
+    write(1, arr, digs + 1);
 }
 
 int min(int a, int b) {
@@ -79,13 +82,12 @@ int main(int argc, char* argv[]) {
               105);
         return 1;
     }
+
     char *inFileName = argv[1], outFileName[fileNameSizeLimit] = FOLDER;
     long long offset = 0;
 
     struct stat a;
     if (stat(FOLDER, &a) == -1) {
-        // TODO: ASK DOUBT IN FORUM ON 7th
-        // not possible to open folder without executable permission
         mkdir(FOLDER, S_IRUSR | S_IWUSR | S_IXUSR);
     }
 
@@ -105,9 +107,9 @@ int main(int argc, char* argv[]) {
     int fdOut =
         open(outFileName, __O_LARGEFILE | O_CREAT | O_WRONLY | O_TRUNC, PERMS);
 
-    const int multiplePrintStep = min(fileSize / 1000, (int)1e5);
+    const int multiplePrintStep = max(fileSize / 1000, (int)1e2);
     lseek(fdIn, -multiplePrintStep, SEEK_END);
-    int steps = fileSize / multiplePrintStep, updateStep = max(1, steps / 100);
+    int steps = fileSize / multiplePrintStep, updateStep = max(1, steps / 10);
 
     char buf[multiplePrintStep];
 
@@ -117,8 +119,9 @@ int main(int argc, char* argv[]) {
         reverse(buf, multiplePrintStep);
         write(fdOut, buf, multiplePrintStep);
         lseek(fdIn, -2 * multiplePrintStep, SEEK_CUR);
-        if (i % updateStep == 0)
+        if (i % updateStep == 0) {
             writeProgress((i * multiplePrintStep * 100) / fileSize);
+        }
     }
 
     int left = fileSize - steps * multiplePrintStep;
