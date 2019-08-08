@@ -44,19 +44,9 @@ int min(int a, int b) {
 }
 
 void writeProgress(int percent) {
-    const int size = 102;
-    char output[size];
-
-    output[0] = output[size - 1] = '|';
-    for (int i = 1; i <= percent; i++)
-        output[i] = '#';
-    for (int i = percent + 1; i <= 100; i++)
-        output[i] = '_';
-
     write(1, "\r", 2);
 
     write(1, KGRN, 5);
-    write(1, output, size);
     printnum(percent);
     write(1, KNRM, 5);
 
@@ -80,8 +70,15 @@ void reverse(char* str, int len) {
     }
 }
 
-int main() {
-    char inFileName[fileNameSizeLimit], outFileName[fileNameSizeLimit] = FOLDER;
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        write(1,
+              "Unexpected number of arguments. Put exactly one string argument "
+              "indicating file name of file to reverse.",
+              105);
+        return 1;
+    }
+    char *inFileName = argv[1], outFileName[fileNameSizeLimit] = FOLDER;
     long long offset = 0;
 
     struct stat a;
@@ -90,8 +87,6 @@ int main() {
         // not possible to open folder without executable permission
         mkdir(FOLDER, S_IRUSR | S_IWUSR | S_IXUSR);
     }
-
-    readFileName(inFileName);
 
     // append scanned file name to get complete file name
     while (outFileName[offset])
@@ -104,26 +99,12 @@ int main() {
     outFileName[offset + i] = 0;
 
     int fdIn = open(inFileName, __O_LARGEFILE | O_RDONLY);
-    if (fdIn < 0) {
-        if (DEBUG) {
-            printf("%s", inFileName);
-            perror("Opening input file");
-        }
-        return 1;
-    }
     fstat(fdIn, &a);
     fileSize = a.st_size;
     int fdOut =
         open(outFileName, __O_LARGEFILE | O_CREAT | O_WRONLY | O_TRUNC, PERMS);
-    if (fdOut < 0) {
-        if (DEBUG) {
-            printf("%s\n", outFileName);
-            perror("Opening output file");
-        }
-        return 2;
-    }
 
-    const int multiplePrintStep = min(fileSize / 1000, (int)1e6);
+    const int multiplePrintStep = min(fileSize / 1000, (int)1e5);
     lseek(fdIn, -multiplePrintStep, SEEK_END);
     int steps = fileSize / multiplePrintStep;
     char buf[multiplePrintStep];
@@ -137,6 +118,7 @@ int main() {
 
         writeProgress((i * multiplePrintStep * 100) / fileSize);
     }
+
     int left = fileSize - steps * multiplePrintStep;
     // seek to beginning of file
     lseek(fdIn, 0, SEEK_SET);
