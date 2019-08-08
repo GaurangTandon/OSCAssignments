@@ -81,14 +81,21 @@ int printPerms(char path[], int num) {
             print("No");
         print("\n");
     }
+    print("--\n");
 
     return 0;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    if (argc != 4) {
+        write(1,
+              "Please pass three path string arguments in this order: newfile, "
+              "oldfile and the directory",
+              90);
+        return 1;
+    }
     for (int i = 1; i <= 3; i++) {
-        readFileName(newFilePath);
-        if (printPerms(newFilePath, i)) {
+        if (printPerms(argv[i], i)) {
             return i;
         }
     }
