@@ -111,9 +111,9 @@ int main(int argc, char* argv[]) {
     }
 
     const long long int multiplePrintStep =
-                            max(min(fileSize / 1000, (int)1e4), 1),
+                            max(min(fileSize / 1000, (long long int)1e6), 1),
                         steps = fileSize / multiplePrintStep,
-                        updateStep = max(1, steps / 10);
+                        updateStep = max(1, steps / 100);
 
     char buf[multiplePrintStep];
 
