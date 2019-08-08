@@ -57,15 +57,6 @@ void writeProgress(int percent) {
     write(1, "% of file written", 18);
 }
 
-// read file name and return its length
-int readFileName(char path[fileNameSizeLimit]) {
-    int len = read(0, path, fileNameSizeLimit);
-    while (len >= 1 && (path[len - 1] == 3 || path[len - 1] == '\n'))
-        len--;
-    path[len] = 0;
-    return len;
-}
-
 void reverse(char* str, int len) {
     for (int i = 0, j = len - 1; i <= j; i++, j--) {
         char t = str[i];
@@ -102,11 +93,19 @@ int main(int argc, char* argv[]) {
     outFileName[offset + i] = 0;
 
     int fdIn = open(inFileName, __O_LARGEFILE | O_RDONLY);
+    if (fdIn < 0) {
+        perror("Error input file");
+        return 1;
+    }
     fstat(fdIn, &a);
     fileSize = a.st_size;
     int fdOut =
         open(outFileName, __O_LARGEFILE | O_CREAT | O_WRONLY | O_TRUNC, PERMS);
 
+    if (fdOut < 0) {
+        perror("Error output file");
+        return 1;
+    }
     const int multiplePrintStep = max(fileSize / 1000, (int)1e2);
     lseek(fdIn, -multiplePrintStep, SEEK_END);
     int steps = fileSize / multiplePrintStep, updateStep = max(1, steps / 10);
