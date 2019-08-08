@@ -42,6 +42,8 @@ void print(char str[]) {
     write(1, str, len);
 }
 
+char* proc;
+
 int printPerms(char path[], int num) {
     struct stat s;
     int ret = stat(path, &s);
@@ -73,7 +75,9 @@ int printPerms(char path[], int num) {
             print("write");
         else
             print("execute");
-        print(" permission on newfile: ");
+        print(" permission on ");
+        print(proc);
+        print(": ");
 
         if (s.st_mode & perms[i])
             print("Yes");
@@ -95,6 +99,13 @@ int main(int argc, char* argv[]) {
         return 1;
     }
     for (int i = 1; i <= 3; i++) {
+        if (i == 1) {
+            proc = "newfile";
+        } else if (i == 2)
+            proc = "oldfile";
+        else
+            proc = "directory";
+
         if (printPerms(argv[i], i)) {
             return i;
         }
