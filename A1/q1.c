@@ -55,6 +55,7 @@ void writeProgress(int percent) {
     write(1, KNRM, 5);
 
     write(1, "% of file written", 18);
+    fflush(stdout);
 }
 
 void reverse(char* str, int len) {
@@ -106,18 +107,19 @@ int main(int argc, char* argv[]) {
         perror("Error output file");
         return 1;
     }
-    const int multiplePrintStep = max(fileSize / 1000, (int)1e2);
-    lseek(fdIn, -multiplePrintStep, SEEK_END);
+
+    const int multiplePrintStep = max(min(fileSize / 1000, (int)1e5), 1);
     int steps = fileSize / multiplePrintStep, updateStep = max(1, steps / 10);
 
     char buf[multiplePrintStep];
 
+    lseek(fdIn, -multiplePrintStep, SEEK_END);
     for (int i = 0; i < steps; i++) {
         read(fdIn, buf, multiplePrintStep);
-        // now reverse the buf
         reverse(buf, multiplePrintStep);
         write(fdOut, buf, multiplePrintStep);
         lseek(fdIn, -2 * multiplePrintStep, SEEK_CUR);
+
         if (i % updateStep == 0) {
             writeProgress((i * multiplePrintStep * 100) / fileSize);
         }
