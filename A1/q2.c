@@ -2,12 +2,71 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#define max(x, y) ((x) > (y) ? (x) : (y))
+#define min(x, y) ((x) < (y) ? (x) : (y))
+
+int isReved(char a[], char b[], int len) {
+    for (int i = 0, j = len - 1; i < len; i++, j--) {
+        if (a[i] != b[j])
+            return 0;
+    }
+    return 1;
+}
 
 int reversed(char* newFilePath, char* oldFilePath) {
+    int fd1 = open(newFilePath, O_RDONLY);
+    if (fd1 < 0) {
+        perror("New file path issue");
+        return 1;
+    }
+    int fd2 = open(oldFilePath, O_RDONLY);
+    if (fd2 < 0) {
+        perror("Old file path issue");
+        return 1;
+    }
+    struct stat s1, s2;
+    stat(newFilePath, &s1);
+    stat(oldFilePath, &s2);
+    if (s1.st_size != s2.st_size) {
+        return 0;
+    }
+
+    int fileSize = s1.st_size;
+
+    // reed 1e6 characters at once, and compare
+    const long long int multiplePrintStep =
+                            max(min(fileSize / 1000, (long long int)1e6), 1),
+                        steps = fileSize / multiplePrintStep;
+
+    char buf[multiplePrintStep], buf2[multiplePrintStep];
+
+    lseek(fd1, -multiplePrintStep, SEEK_END);
+    for (int i = 0; i < steps; i++) {
+        read(fd1, buf, multiplePrintStep);
+        read(fd2, buf2, multiplePrintStep);
+        if (!isReved(buf, buf2, multiplePrintStep)) {
+            return 0;
+        }
+
+        lseek(fd1, -2 * multiplePrintStep, SEEK_CUR);
+    }
+
+    int left = fileSize - steps * multiplePrintStep;
+    // seek to beginning of file
+    lseek(fd1, 0, SEEK_SET);
+    read(fd1, buf, left);
+    read(fd2, buf2, left);
+
+    if (!isReved(buf, buf2, left)) {
+        return 0;
+    }
+
+    return 1;
 }
 
 void print(char str[]) {
