@@ -22,12 +22,12 @@ int reversed(char* newFilePath, char* oldFilePath) {
     int fd1 = open(newFilePath, O_RDONLY);
     if (fd1 < 0) {
         perror("New file path issue");
-        return 1;
+        return -1;
     }
     int fd2 = open(oldFilePath, O_RDONLY);
     if (fd2 < 0) {
         perror("Old file path issue");
-        return 1;
+        return -1;
     }
     struct stat s1, s2;
     stat(newFilePath, &s1);
@@ -84,15 +84,18 @@ int printPerms(char path[], int num) {
     if (ret < 0) {
         if (num == 3) {
             print("Directory is created: No\n");
-            path = "Assignment";
-            mkdir(path, S_IXUSR | S_IWUSR | S_IRUSR);
-            ret = stat(path, &s);
+            return 1;
         } else {
             perror(path);
             return 1;
         }
-    } else if (num == 3)
+    } else if (num == 3) {
         print("Directory is created: Yes\n");
+        if (S_ISDIR(s.st_mode))
+            print("Directory is created: Yes\n");
+        else
+            print("Directory is created: It is not a directory :|\n");
+    }
 
     int perms[9] = {S_IRUSR, S_IWUSR, S_IXUSR, S_IRGRP, S_IWGRP,
                     S_IXGRP, S_IROTH, S_IWOTH, S_IXOTH};
@@ -142,13 +145,13 @@ int main(int argc, char* argv[]) {
         else
             proc = "directory";
 
-        if (printPerms(argv[i], i)) {
-            return i;
-        }
+        printPerms(argv[i], i);
     }
 
     print("Whether file contents are reversed in newfile: ");
-    if (reversed(argv[1], argv[2])) {
+    int res = reversed(argv[1], argv[2]);
+    if (res == -1) {
+    } else if (res == 1) {
         print("Yes");
     } else
         print("No");
