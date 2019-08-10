@@ -32,10 +32,12 @@ void printnum(int num) {
         arr[0] = '0';
         digs = 1;
     }
+
     while (num > 0) {
         arr[digs++] = (num % 10) + '0';
         num /= 10;
     }
+
     for (int i = 0, j = digs - 1; i <= j; i++, j--) {
         char x = arr[i];
         arr[i] = arr[j];
