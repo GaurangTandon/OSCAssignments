@@ -1,5 +1,5 @@
 # Assignment CSE
 
 Roll 2018101091
-
-Need to check if both files are reverse.
+This application was tried and tested on Ubuntu 18.04.2.
+Report any bugs at gaurang.tandon@students.iiit.ac.in. Thanks.

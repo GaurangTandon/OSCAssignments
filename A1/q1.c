@@ -15,10 +15,6 @@
 #define PERMS S_IRUSR | S_IWUSR
 #define max(x, y) ((x) > (y) ? (x) : (y))
 
-/**
- * TODO:
- * remove non-syscall fns
- */
 long long fileSize;
 
 #define KNRM "\x1B[0m"
