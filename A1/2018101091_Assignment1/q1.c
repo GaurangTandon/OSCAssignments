@@ -83,13 +83,24 @@ int main(int argc, char* argv[]) {
         mkdir(FOLDER, S_IRUSR | S_IWUSR | S_IXUSR);
     }
 
+    char fileName[fileNameSizeLimit];
+    int len = strlen(inFileName);
+    while (len >= 0 && inFileName[len] != '/')
+        len--;
+    int i = 0;
+    len++;
+    while (inFileName[len] != 0) {
+        fileName[i++] = inFileName[len++];
+    }
+    fileName[i] = 0;
+
     // append scanned file name to get complete file name
     while (outFileName[offset])
         offset++;
     outFileName[offset++] = '/';
-    int i = 0;
-    for (; inFileName[i] != 0; i++) {
-        outFileName[offset + i] = inFileName[i];
+    i = 0;
+    for (; fileName[i] != 0; i++) {
+        outFileName[offset + i] = fileName[i];
     }
     outFileName[offset + i] = 0;
 
