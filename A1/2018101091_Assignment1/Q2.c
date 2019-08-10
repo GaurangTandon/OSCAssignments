@@ -86,7 +86,8 @@ int printPerms(char path[], int num) {
             print("Directory is created: No\n");
             return 1;
         } else {
-            perror(path);
+            print("Could not stat file");
+            print(path);
             return 1;
         }
     } else if (num == 3) {
