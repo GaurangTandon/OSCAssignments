@@ -40,6 +40,8 @@ void updatePWD() {
 
 // modify currDirString so that the location of the executable is treated
 // as the ~
+// isCommand = true matlab user execs pwd command
+// isCommand = false matlab user is viewing shell prompt
 void printPWD(int isCommand) {
     if (currDirectoryPathLen >= homeDirPathLen) {
         if (!isCommand)
