@@ -4,7 +4,7 @@
 #include "prompt.h"
 
 void initSetup() {
-    initDirSetup();
+    initDirSetup(1);
 }
 
 int main() {

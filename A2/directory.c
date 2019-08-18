@@ -42,12 +42,17 @@ void printPWD() {
     }
 }
 
-void initDirSetup() {
+void initDirSetup(int updateHome) {
     getcwd(expectedHomeDir, 1000);
     char* ptr = strtok(expectedHomeDir, "/");
+    currDirectoryPathLen = 0;
+
+    if (updateHome)
+        homeDirPathLen = 0;
 
     while (ptr != NULL) {
-        homeDirPath[homeDirPathLen++] = ptr;
+        if (updateHome)
+            homeDirPath[homeDirPathLen++] = ptr;
         currDirectories[currDirectoryPathLen++] = ptr;
         ptr = strtok(NULL, "/");
     }
@@ -67,32 +72,12 @@ char** getAllFilesInDir() {
     }
 }
 
-int changeDirectory(char* newDir) {
-    if (strcmp(newDir, ".") == 0) {
-        return 0;
-    }
+void changeDirectory(char* newDir) {
+    int ret = chdir(newDir);
 
-    if (strcmp(newDir, "..") == 0) {
-        currDirectoryPathLen--;
-        updatePWD();
-        return 0;
+    if (ret != 0) {
+        perror("Error changing directory");
+    } else {
+        initDirSetup(0);
     }
-
-    DIR* d;
-    struct dirent* dir;
-    d = opendir(currDirString);
-    if (d) {
-        while ((dir = readdir(d)) != NULL) {
-            struct stat s;
-            stat(dir->d_name, &s);
-            if (S_ISDIR(s.st_mode) && strcmp(dir->d_name, newDir) == 0) {
-                currDirectories[currDirectoryPathLen++] = newDir;
-                updatePWD();
-                return 0;
-            }
-        }
-        closedir(d);
-    }
-
-    return -1;
 }

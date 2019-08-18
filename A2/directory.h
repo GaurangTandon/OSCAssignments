@@ -9,4 +9,4 @@ extern int currDirectoryPathLen;
 
 void initDirSetup();
 // return -1 on error; 0 on success
-int changeDirectory(char* newDir);
+void changeDirectory(char* newDir);
