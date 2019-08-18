@@ -6,6 +6,14 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
+#define KNRM "\x1B[0m"
+#define KRED "\x1B[31m"
+#define KGRN "\x1B[32m"
+
+void printWelcomeScreen() {
+    printf("Welcome to " KGRN "GOSH!" KNRM " aka GOrang's SHell :)\n");
+}
+
 void printUser() {
     struct passwd* p = getpwuid(getuid());
     char* usrName = p->pw_name;
@@ -26,5 +34,6 @@ void printPrompt() {
 }
 
 int main() {
+    printWelcomeScreen();
     printPrompt();
 }
