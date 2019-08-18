@@ -1,6 +1,9 @@
 #include "sysData.h"
 #include <pwd.h>
+#include <stdio.h>
+#include <sys/types.h>
 #include <sys/utsname.h>
+#include <unistd.h>
 
 char* getUser() {
     struct passwd* p = getpwuid(getuid());

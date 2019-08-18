@@ -2,10 +2,8 @@
 
 #include "sysData.h"
 
-char* currDirectories[100] = {
-    "home",
-};
+extern char* currDirectories[100];
 // -1 indicates root
-int currDirectory = 0;
+extern int currDirectory;
 
 void initDirSetup();

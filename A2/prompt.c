@@ -1,4 +1,5 @@
 #include "prompt.h"
+#include <stdio.h>
 #include "colors.h"
 #include "directory.h"
 #include "sysData.h"
