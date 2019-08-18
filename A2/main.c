@@ -10,14 +10,31 @@
 #define KRED "\x1B[31m"
 #define KGRN "\x1B[32m"
 
+char* getUser() {
+    struct passwd* p = getpwuid(getuid());
+    return p->pw_name;
+}
+
+char* USER;
+
+char* currDirectories[100] = {
+    "home",
+};
+// -1 indicates root
+int currDirectory = 0;
+
+void initSetup() {
+    USER = getUser();
+    currDirectories[1] = USER;
+    currDirectory++;
+}
+
 void printWelcomeScreen() {
     printf("Welcome to " KGRN "GOSH!" KNRM " aka GOrang's SHell :)\n");
 }
 
 void printUser() {
-    struct passwd* p = getpwuid(getuid());
-    char* usrName = p->pw_name;
-    printf("%s", usrName);
+    printf("%s", USER);
 }
 
 void printMachine() {
@@ -27,10 +44,30 @@ void printMachine() {
     printf("%s", osName);
 }
 
+// we cannot use getcwd since the directory from which
+// our program is executed is supposed to be the home directory
+void printPWD() {
+    if (currDirectory >= 1) {
+        printf("~");
+        for (int i = 2; i <= currDirectory; i++) {
+            printf("/%s", currDirectories[i]);
+        }
+    } else {
+        printf("/");
+        if (currDirectory == 0) {
+            printf("home");
+        }
+    }
+}
+
 void printPrompt() {
+    initSetup();
     printUser();
     printf("@");
     printMachine();
+    printf(":");
+    printPWD();
+    printf("$ ");
 }
 
 int main() {
