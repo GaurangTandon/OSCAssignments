@@ -167,10 +167,10 @@ void longListPrint(const char* allFiles[], int len, int showHidden) {
     }
 }
 
-void ls(int showHidden, int longListing) {
+void ls(char* directory, int showHidden, int longListing) {
     DIR* d;
     struct dirent* dir;
-    d = opendir(".");
+    d = opendir(directory);
     printf("\n");
     const char* output[1000];
     int len = 0;
@@ -179,6 +179,9 @@ void ls(int showHidden, int longListing) {
             output[len++] = dir->d_name;
         }
         closedir(d);
+    } else {
+        perror("Could not open dir");
+        return;
     }
     sort(output, len);
 

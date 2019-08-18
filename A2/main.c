@@ -11,5 +11,4 @@ int main() {
     initSetup();
     printWelcomeScreen();
     printPrompt();
-    ls(0, 1);
 }
