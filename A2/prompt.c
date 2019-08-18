@@ -12,6 +12,6 @@ void printPrompt() {
     printf("%s@", getUser());
     printMachine();
     printf(":");
-    printf("%s", currDirString);
+    printPWD();
     printf("$ ");
 }
