@@ -1,6 +1,7 @@
 #include "directory.h"
 #include <dirent.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -60,15 +61,32 @@ void initDirSetup(int updateHome) {
     updatePWD();
 }
 
-char** getAllFilesInDir() {
+static int myCompare(const void* a, const void* b) {
+    return strcmp(*(const char**)a, *(const char**)b);
+}
+
+void sort(const char* arr[], int n) {
+    qsort(arr, n, sizeof(const char*), myCompare);
+}
+
+void ls(int showHidden, int longListing) {
     DIR* d;
     struct dirent* dir;
     d = opendir(".");
+    printf("\n");
+    const char* output[1000];
+    int len = 0;
     if (d) {
         while ((dir = readdir(d)) != NULL) {
-            printf("%s\n", dir->d_name);
+            output[len++] = dir->d_name;
         }
         closedir(d);
+    }
+    sort(output, len);
+    for (int i = 0; i < len; i++) {
+        if (!showHidden && output[i][0] == '.')
+            continue;
+        printf("%s\n", output[i]);
     }
 }
 
