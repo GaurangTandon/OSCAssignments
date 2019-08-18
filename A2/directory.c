@@ -113,6 +113,10 @@ void longListPrint(const char* allFiles[], int len, int showHidden) {
     for (int i = 0; i < len; i++) {
         struct stat s;
         const char* file = allFiles[i];
+
+        if (!showHidden && *file == '.')
+            continue;
+
         int ret = stat(file, &s);
         if (ret < 0) {
             perror(file);
