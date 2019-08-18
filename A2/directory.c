@@ -1,11 +1,19 @@
 #include "directory.h"
 #include <dirent.h>
+#include <grp.h>
+#include <math.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
+
+#define amax(x, y) \
+    if (x < y)     \
+        x = y;
 
 // i am trying to maintain two directory paths
 // one path is the path to the file (constant) - so i can resolve home directory
@@ -69,6 +77,82 @@ void sort(const char* arr[], int n) {
     qsort(arr, n, sizeof(const char*), myCompare);
 }
 
+void printnum(int num, int len) {
+    char str[len * sizeof(char) + 1];
+    sprintf(str, "%d", num);
+    printf("%*s", len, str);
+}
+
+void longListPrint(const char* allFiles[], int len, int showHidden) {
+    int maxuname = 0, maxgname = 0, maxsize = 0, maxlink = 0;
+
+    for (int i = 0; i < len; i++) {
+        struct stat s;
+        const char* file = allFiles[i];
+        int ret = stat(file, &s);
+        if (ret < 0) {
+            perror(file);
+            return;
+        }
+        char *usrname = getpwuid(getuid())->pw_name,
+             *groupname = getgrgid(getgid())->gr_name;
+        int sz = s.st_size;
+        amax(maxuname, (int)strlen(usrname));
+        amax(maxgname, (int)strlen(groupname));
+        int digs = log10(sz) + 1;
+        amax(maxsize, digs);
+        int digs2 = log10(s.st_nlink) + 1;
+        amax(maxlink, digs2);
+    }
+    for (int i = 0; i < len; i++) {
+        struct stat s;
+        const char* file = allFiles[i];
+        int ret = stat(file, &s);
+        if (ret < 0) {
+            perror(file);
+            return;
+        }
+
+        if (S_ISDIR(s.st_mode)) {
+            printf("d");
+        } else {
+            printf("-");
+        }
+
+        int perms[9] = {S_IRUSR, S_IWUSR, S_IXUSR, S_IRGRP, S_IWGRP,
+                        S_IXGRP, S_IROTH, S_IWOTH, S_IXOTH};
+
+        for (int i = 0; i < 9; i++) {
+            if (s.st_mode & perms[i]) {
+                if (i % 3 == 0) {
+                    printf("r");
+                } else if (i % 3 == 1) {
+                    printf("w");
+                } else
+                    printf("x");
+            } else {
+                printf("-");
+            }
+        }
+
+        printf(" ");
+        printnum(s.st_nlink, maxlink);
+
+        char *usrname = getpwuid(getuid())->pw_name,
+             *groupname = getgrgid(getgid())->gr_name;
+        printf(" %.*s %.*s ", maxuname, usrname, maxgname, groupname);
+        printnum(s.st_size, maxsize);
+
+        char* tt = ctime(&s.st_mtime);
+        char tt2[15];
+        memcpy(tt2, tt + 4, 12);
+        tt2[13] = 0;
+
+        printf(" %.*s", 15, tt2);
+        printf(" %s\n", file);
+    }
+}
+
 void ls(int showHidden, int longListing) {
     DIR* d;
     struct dirent* dir;
@@ -83,10 +167,15 @@ void ls(int showHidden, int longListing) {
         closedir(d);
     }
     sort(output, len);
-    for (int i = 0; i < len; i++) {
-        if (!showHidden && output[i][0] == '.')
-            continue;
-        printf("%s\n", output[i]);
+
+    if (longListing) {
+        longListPrint(output, len, showHidden);
+    } else {
+        for (int i = 0; i < len; i++) {
+            if (!showHidden && output[i][0] == '.')
+                continue;
+            printf("%s\n", output[i]);
+        }
     }
 }
 
