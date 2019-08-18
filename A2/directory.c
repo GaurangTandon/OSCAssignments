@@ -40,9 +40,12 @@ void updatePWD() {
 
 // modify currDirString so that the location of the executable is treated
 // as the ~
-void printPWD() {
+void printPWD(int isCommand) {
     if (currDirectoryPathLen >= homeDirPathLen) {
-        printf("~");
+        if (!isCommand)
+            printf("~");
+        else
+            printf("/home/%s", getUser());
         for (int i = homeDirPathLen; i < currDirectoryPathLen; i++) {
             printf("/%s", currDirectories[i]);
         }
@@ -76,6 +79,7 @@ static int myCompare(const void* a, const void* b) {
         i++;
     if (*bb == '.')
         j++;
+
     return strcmp(aa + i, bb + j);
 }
 

@@ -12,6 +12,6 @@ void printPrompt() {
     printf("%s@", getUser());
     printMachine();
     printf(":");
-    printPWD();
+    printPWD(0);
     printf("$ ");
 }
