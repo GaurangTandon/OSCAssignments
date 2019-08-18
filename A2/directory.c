@@ -70,7 +70,13 @@ void initDirSetup(int updateHome) {
 }
 
 static int myCompare(const void* a, const void* b) {
-    return strcmp(*(const char**)a, *(const char**)b);
+    const char *aa = *(const char**)a, *bb = *(const char**)b;
+    int i = 0, j = 0;
+    if (*aa == '.')
+        i++;
+    if (*bb == '.')
+        j++;
+    return strcmp(aa + i, bb + j);
 }
 
 void sort(const char* arr[], int n) {
