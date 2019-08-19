@@ -1,9 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void tokenizeCommands(char* allCommandsString, int len, int* commandsCountRef,
-                      char** commands) {
-    char latestCommand[100];
+char** tokenizeCommands(char* allCommandsString, int len,
+                        int* commandsCountRef) {
+    char** commands = (char**)malloc(100);
+    for (int i = 0; i < 100; i++) {
+        commands[i] = (char*)malloc(100);
+    }
+    char* latestCommand = (char*)malloc(100);
 
     // whether single or double quotes are on
     int singleOn = 0, doubleOn = 0, commandsCount = 0, latestCommandLen = 0;
@@ -33,4 +37,5 @@ void tokenizeCommands(char* allCommandsString, int len, int* commandsCountRef,
     }
 
     *commandsCountRef = commandsCount;
+    return commands;
 }

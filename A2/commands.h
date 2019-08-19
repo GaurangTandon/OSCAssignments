@@ -1,1 +1,1 @@
-void tokenizeCommands(char*, int, int*, char**);
+char** tokenizeCommands(char*, int, int*);
