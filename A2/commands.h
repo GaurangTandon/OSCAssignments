@@ -1,1 +1,1 @@
-char** tokenizeCommands(char*);
+char** tokenizeCommands(char*, int, int*);
