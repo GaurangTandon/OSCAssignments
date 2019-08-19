@@ -1,1 +1,1 @@
-void echo(char*, int, int);
+void echo(char*, int);
