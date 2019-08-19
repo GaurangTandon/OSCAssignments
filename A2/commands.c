@@ -1,10 +1,9 @@
-char** tokenizeCommands(char* allCommandsString, int len,
-                        int* commandsCountRef) {
-    // assume 100 commands will input at once
-    char* commands[100];
-    char* latestCommand[100];
+#include <stdio.h>
+#include <stdlib.h>
 
-    // exit parsing as soon as # is seen
+void tokenizeCommands(char* allCommandsString, int len, int* commandsCountRef,
+                      char** commands) {
+    char latestCommand[100];
 
     // whether single or double quotes are on
     int singleOn = 0, doubleOn = 0, commandsCount = 0, latestCommandLen = 0;
@@ -12,20 +11,20 @@ char** tokenizeCommands(char* allCommandsString, int len,
     for (int i = 0; i < len; i++) {
         char c = allCommandsString[i];
 
+        // exit parsing as soon as #, ; is seen
         if ((c == '#' && !singleOn && !doubleOn) ||
             (c == ';' && !singleOn && !doubleOn)) {
             latestCommand[latestCommandLen++] = 0;
             commands[commandsCount++] = latestCommand;
             latestCommand[0] = 0;
             latestCommandLen = 0;
-            break;
+            continue;
         } else if (c == '\'') {
             singleOn = !singleOn;
         } else if (c == '\"') {
             doubleOn = !doubleOn;
-        } else {
-            latestCommand[latestCommandLen++] = c;
         }
+        latestCommand[latestCommandLen++] = c;
     }
 
     if (latestCommandLen > 0) {
@@ -34,5 +33,4 @@ char** tokenizeCommands(char* allCommandsString, int len,
     }
 
     *commandsCountRef = commandsCount;
-    return commands;
 }
