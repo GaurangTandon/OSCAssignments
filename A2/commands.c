@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include "directory.h"
+#include "print.h"
 #include "stringers.h"
 
 char** tokenizeCommands(char* allCommandsString, int len,
@@ -47,19 +51,30 @@ char** tokenizeCommands(char* allCommandsString, int len,
 
 void execCommand(char* command) {
     // first parse main command and all its args
-    char *delim = " ", *cmd = strtok(command, delim);
+    char* delim = " ";
     char** args = (char**)malloc(100);
     char* arg;
     int argCount = 0;
-    while ((arg = strtok(NULL, delim))) {
+    int firstCall = 1;
+    while (1) {
+        if (firstCall) {
+            arg = strtok(command, delim);
+            firstCall = 0;
+        } else {
+            arg = strtok(NULL, delim);
+        }
+        if (!arg)
+            return;
         args[argCount++] = arg;
     }
+    // actual args begin from 1
+    char* cmd = args[0];
 
     if (!strcmp(cmd, "ls")) {
         char* dir = ".";
         int hiddenShow = 0, longlist = 0;
 
-        for (int i = 0; i < argCount; i++) {
+        for (int i = 1; i < argCount; i++) {
             arg = trim(args[i]);
             if (strlen(arg) == 0)
                 continue;
@@ -81,5 +96,42 @@ void execCommand(char* command) {
         ls(dir, hiddenShow, longlist);
     } else if (!strcmp(cmd, "exit")) {
         exit(0);
+    } else if (!strcmp(cmd, "cd")) {
+        char* target = "~";
+        if (argCount > 0)
+            target = args[0];
+        changeDirectory(target);
+    } else if (!strcmp(cmd, "pwd")) {
+        printPWD(1);
+    } else if (!strcmp(cmd, "echo")) {
+        char* finalArg = (char*)malloc(1000);
+        int len = 0;
+        for (int i = 1; i < argCount; i++) {
+            arg = trim(args[i]);
+            for (int j = 0; j < (int)strlen(arg); j++) {
+                finalArg[len++] = arg[j];
+            }
+            finalArg[len++] = ' ';
+        }
+        finalArg[len] = 0;
+        // join all args by spaces and then print :(
+        echo(finalArg, len);
+    } else {
+        pid_t child = fork();
+
+        if (child == -1) {
+            perror("Could not fork child");
+            return;
+        } else if (child == 0) {
+            if (execvp(cmd, args) < 0) {
+                perror("Couldn't execute command: ");
+            }
+            // kill child process
+            exit(0);
+        } else {
+            // wait for child to ccomplete
+            wait(NULL);
+            return;
+        }
     }
 }
