@@ -20,11 +20,11 @@ int main() {
         int commandsCount = 0;
         char** commands = takeInput(&commandsCount);
         for (int i = 0; i < commandsCount; i++) {
-            printf("%s\n", commands[i]);
+            execCommand(commands[i]);
         }
         fflush(stdout);
         if (commandsCount == 0) {
-            printf("No command entered");
+            printf("No command entered\n");
             fflush(stdout);
         }
     }

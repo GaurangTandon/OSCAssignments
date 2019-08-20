@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "stringers.h"
 
 char** tokenizeCommands(char* allCommandsString, int len,
@@ -41,4 +42,16 @@ char** tokenizeCommands(char* allCommandsString, int len,
     *commandsCountRef = commandsCount;
 
     return commands;
+}
+
+void execCommand(char* command) {
+    // first parse main command and all its args
+    char *delim = " ", *cmd = strtok(command, delim);
+    char** args = (char**)malloc(100);
+    char* arg;
+    int argCount = 0;
+    while ((arg = strtok(NULL, delim))) {
+        args[argCount++] = arg;
+    }
+
 }
