@@ -8,5 +8,5 @@ extern char currDirString[1000];
 void initDirSetup();
 // return -1 on error; 0 on success
 void changeDirectory(char*);
-void ls(char*, int, int);
+void ls(char* directory, int showHidden, int longListing);
 void printPWD(int);
