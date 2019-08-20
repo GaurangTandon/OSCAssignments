@@ -67,14 +67,27 @@ void execCommand(char* command) {
             break;
         args[argCount++] = arg;
     }
+
+    for (int i = 0; i < argCount; i++) {
+        arg = trim(args[i]);
+    }
+
     // actual args begin from 1
     char* cmd = args[0];
+
+    int isBackgroundJob = 0;
+    for (int i = 0; i < argCount; i++) {
+        if (strcmp(args[i], "&") == 0) {
+            isBackgroundJob = 1;
+            break;
+        }
+    }
+
     if (!strcmp(cmd, "ls")) {
         char* dir = ".";
         int hiddenShow = 0, longlist = 0;
 
         for (int i = 1; i < argCount; i++) {
-            arg = trim(args[i]);
             if (strlen(arg) == 0)
                 continue;
             if (arg[0] == '-') {
@@ -97,8 +110,8 @@ void execCommand(char* command) {
         exit(0);
     } else if (!strcmp(cmd, "cd")) {
         char* target = "~";
-        if (argCount > 0)
-            target = args[0];
+        if (argCount > 1)
+            target = args[1];
         changeDirectory(target);
     } else if (!strcmp(cmd, "pwd")) {
         printPWD(1);
@@ -128,8 +141,9 @@ void execCommand(char* command) {
             // kill child process
             exit(0);
         } else {
-            // wait for child to ccomplete
-            wait(NULL);
+            // wait for child to complete
+            if (!isBackgroundJob)
+                wait(NULL);
             return;
         }
     }
