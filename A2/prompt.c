@@ -5,15 +5,16 @@
 #include "sysData.h"
 
 void printWelcomeScreen() {
-    printf("Welcome to " KGRN "GOSH!" KNRM " aka GOrang's SHell :)\n");
+    printf("Welcome to " KGRN "GOSH!" KNRM " aka " KGRN "GO" KNRM "rang's " KGRN
+           "SH" KNRM "ell :)\n");
     fflush(stdout);
 }
 
 void printPrompt() {
-    printf("%s@", getUser());
+    printf(KGRN "%s@", getUser());
     printMachine();
     printf(":");
     printPWD(0);
-    printf("$ ");
+    printf("$ " KNRM);
     fflush(stdout);
 }
