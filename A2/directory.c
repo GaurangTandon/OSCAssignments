@@ -1,5 +1,6 @@
 #include "directory.h"
 #include <dirent.h>
+#include <fcntl.h>
 #include <grp.h>
 #include <math.h>
 #include <pwd.h>
@@ -74,8 +75,9 @@ void initDirSetup(int updateHome) {
     updatePWD();
 }
 
-static int myCompare(const void* a, const void* b) {
-    const char *aa = *(const char**)a, *bb = *(const char**)b;
+static int myCompare(const struct dirent** a, const struct dirent** b) {
+    const struct dirent *a2 = *a, *b2 = *b;
+    const char *aa = a2->d_name, *bb = b2->d_name;
     int i = 0, j = 0;
     if (*aa == '.')
         i++;
@@ -85,8 +87,10 @@ static int myCompare(const void* a, const void* b) {
     return strcmp(aa + i, bb + j);
 }
 
-void sort(const char* arr[], int n) {
-    qsort(arr, n, sizeof(const char*), myCompare);
+static int myFilter(const struct dirent* a) {
+    const char* aa = a->d_name;
+
+    return strlen(aa);
 }
 
 void printnum(int num, int len) {
@@ -94,6 +98,8 @@ void printnum(int num, int len) {
     sprintf(str, "%d", num);
     printf("%*s", len, str);
 }
+
+long int totalSize;
 
 void longListPrint(const char* allFiles[], int len, int showHidden) {
     int maxuname = 0, maxgname = 0, maxsize = 0, maxlink = 0;
@@ -118,6 +124,8 @@ void longListPrint(const char* allFiles[], int len, int showHidden) {
         int digs2 = log10(s.st_nlink) + 1;
         amax(maxlink, digs2);
     }
+
+    printf("total %ld\n", totalSize);
 
     for (int i = 0; i < len; i++) {
         struct stat s;
@@ -174,26 +182,26 @@ void longListPrint(const char* allFiles[], int len, int showHidden) {
 }
 
 void ls(char* directory, int showHidden, int longListing) {
-    DIR* d;
-    struct dirent* dir;
-    d = opendir(directory);
-
     const char* output[1000];
     int len = 0;
 
-    if (d) {
-        while ((dir = readdir(d)) != NULL) {
-            if (strlen(dir->d_name) == 0)
-                continue;
-            output[len++] = dir->d_name;
-        }
-        closedir(d);
-    } else {
-        perror("Could not open dir");
-        return;
+    struct dirent** namelist;
+    int n;
+
+    n = scandir(directory, &namelist, myFilter, myCompare);
+    if (n == -1) {
+        perror("scandir");
+        exit(EXIT_FAILURE);
     }
 
-    sort(output, len);
+    for (int i = 0; i < n; i++) {
+        output[i] = namelist[i]->d_name;
+    }
+
+    len = n;
+    struct stat s;
+    stat(directory, &s);
+    totalSize = s.st_size;
 
     // see https://stackoverflow.com/a/23970992
     chdir(directory);
