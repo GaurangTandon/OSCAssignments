@@ -6,6 +6,7 @@
 
 void printWelcomeScreen() {
     printf("Welcome to " KGRN "GOSH!" KNRM " aka GOrang's SHell :)\n");
+    fflush(stdout);
 }
 
 void printPrompt() {
@@ -14,4 +15,5 @@ void printPrompt() {
     printf(":");
     printPWD(0);
     printf("$ ");
+    fflush(stdout);
 }

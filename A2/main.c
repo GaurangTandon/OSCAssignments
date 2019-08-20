@@ -6,21 +6,26 @@
 #include "commands.h"
 #include "directory.h"
 #include "prompt.h"
+#include "takeInput.h"
 
 void initSetup() {
     initDirSetup(1);
 }
 
 int main() {
-    // initSetup();
-    // printWelcomeScreen();
-    // printPrompt();
-    char* commandList = "echo a; echo 'a'; echo \"c\"; echo ';'; echo \";\";";
-    int totalCmds = 0;
+    initSetup();
+    printWelcomeScreen();
 
-    char** commands =
-        tokenizeCommands(commandList, strlen(commandList), &totalCmds);
-    for (int i = 0; i < totalCmds; i++) {
-        printf("%s\n", commands[i]);
+    while (1) {
+        int commandsCount = 0;
+        char** commands = takeInput(&commandsCount);
+        for (int i = 0; i < commandsCount; i++) {
+            printf("%s\n", commands[i]);
+        }
+        fflush(stdout);
+        if (commandsCount == 0) {
+            printf("No command entered");
+            fflush(stdout);
+        }
     }
 }
