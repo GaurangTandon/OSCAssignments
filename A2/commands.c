@@ -64,12 +64,11 @@ void execCommand(char* command) {
             arg = strtok(NULL, delim);
         }
         if (!arg)
-            return;
+            break;
         args[argCount++] = arg;
     }
     // actual args begin from 1
     char* cmd = args[0];
-
     if (!strcmp(cmd, "ls")) {
         char* dir = ".";
         int hiddenShow = 0, longlist = 0;
