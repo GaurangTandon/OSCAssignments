@@ -101,6 +101,8 @@ void longListPrint(const char* allFiles[], int len, int showHidden) {
     for (int i = 0; i < len; i++) {
         struct stat s;
         const char* file = allFiles[i];
+        if (strlen(file) == 0)
+            continue;
         int ret = stat(file, &s);
         if (ret < 0) {
             perror(file);
@@ -116,10 +118,12 @@ void longListPrint(const char* allFiles[], int len, int showHidden) {
         int digs2 = log10(s.st_nlink) + 1;
         amax(maxlink, digs2);
     }
+
     for (int i = 0; i < len; i++) {
         struct stat s;
         const char* file = allFiles[i];
-
+        if (strlen(file) == 0)
+            continue;
         if (!showHidden && *file == '.')
             continue;
 
@@ -173,11 +177,14 @@ void ls(char* directory, int showHidden, int longListing) {
     DIR* d;
     struct dirent* dir;
     d = opendir(directory);
-    printf("\n");
+
     const char* output[1000];
     int len = 0;
+
     if (d) {
         while ((dir = readdir(d)) != NULL) {
+            if (strlen(dir->d_name) == 0)
+                continue;
             output[len++] = dir->d_name;
         }
         closedir(d);
@@ -185,7 +192,11 @@ void ls(char* directory, int showHidden, int longListing) {
         perror("Could not open dir");
         return;
     }
+
     sort(output, len);
+
+    // see https://stackoverflow.com/a/23970992
+    chdir(directory);
 
     if (longListing) {
         longListPrint(output, len, showHidden);
@@ -196,6 +207,8 @@ void ls(char* directory, int showHidden, int longListing) {
             printf("%s\n", output[i]);
         }
     }
+
+    chdir(currDirString);
 }
 
 void changeDirectory(char* newDir) {
