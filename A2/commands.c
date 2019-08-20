@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "stringers.h"
 
 char** tokenizeCommands(char* allCommandsString, int len,
                         int* commandsCountRef) {
@@ -19,7 +20,8 @@ char** tokenizeCommands(char* allCommandsString, int len,
         if ((c == '#' && !singleOn && !doubleOn) ||
             (c == ';' && !singleOn && !doubleOn)) {
             latestCommand[latestCommandLen++] = 0;
-            commands[commandsCount++] = latestCommand;
+            commands[commandsCount++] = trim(latestCommand);
+            latestCommand = (char*)malloc(100);
             latestCommand[0] = 0;
             latestCommandLen = 0;
             continue;
@@ -33,9 +35,10 @@ char** tokenizeCommands(char* allCommandsString, int len,
 
     if (latestCommandLen > 0) {
         latestCommand[latestCommandLen++] = 0;
-        commands[commandsCount++] = latestCommand;
+        commands[commandsCount++] = trim(latestCommand);
     }
 
     *commandsCountRef = commandsCount;
+
     return commands;
 }
