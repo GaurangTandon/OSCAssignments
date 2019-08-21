@@ -9,4 +9,4 @@ void initDirSetup();
 // return -1 on error; 0 on success
 void changeDirectory(char*);
 void ls(char* directory, int showHidden, int longListing);
-void printPWD(int);
+void printPWD();

@@ -14,7 +14,7 @@ void printPrompt() {
     printf(KGRN "%s@", getUser());
     printMachine();
     printf(":");
-    printPWD(0);
+    printPWD();
     printf("$ " KNRM);
     fflush(stdout);
 }

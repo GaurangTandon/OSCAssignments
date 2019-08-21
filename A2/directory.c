@@ -43,23 +43,26 @@ void updatePWD() {
 // as the ~
 // isCommand = true matlab user execs pwd command
 // isCommand = false matlab user is viewing shell prompt
-void printPWD(int isCommand) {
+void printPWD() {
     if (currDirectoryPathLen >= homeDirPathLen) {
-        if (!isCommand)
-            printf("~");
-        else
-            printf("/home/%s", getUser());
+        printf("~");
         for (int i = homeDirPathLen; i < currDirectoryPathLen; i++) {
             printf("/%s", currDirectories[i]);
         }
     } else {
         printf("%s", currDirString);
     }
+    printf("\n");
+    fflush(stdout);
 }
 
 void initDirSetup(int updateHome) {
-    getcwd(expectedHomeDir, 1000);
-    char* ptr = strtok(expectedHomeDir, "/");
+    if (updateHome)
+        getcwd(expectedHomeDir, 1000);
+
+    char temp[1000];
+    getcwd(temp, 1000);
+    char* ptr = strtok(temp, "/");
     currDirectoryPathLen = 0;
 
     if (updateHome)
@@ -221,6 +224,21 @@ void ls(char* directory, int showHidden, int longListing) {
 }
 
 void changeDirectory(char* newDir) {
+    if (newDir == NULL || strlen(newDir) == 0) {
+        newDir = expectedHomeDir;
+        chdir(expectedHomeDir);
+    } else if (newDir[0] == '~') {
+        newDir += 1;
+        if (*newDir == '/')
+            newDir++;
+        chdir(expectedHomeDir);
+    }
+
+    if (*newDir == 0) {
+        initDirSetup(0);
+        return;
+    }
+
     int ret = chdir(newDir);
 
     if (ret != 0) {

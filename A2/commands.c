@@ -114,7 +114,7 @@ void execCommand(char* command) {
             target = args[1];
         changeDirectory(target);
     } else if (!strcmp(cmd, "pwd")) {
-        printPWD(1);
+        printPWD();
     } else if (!strcmp(cmd, "echo")) {
         char* finalArg = (char*)malloc(1000);
         int len = 0;
