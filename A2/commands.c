@@ -53,10 +53,10 @@ void execCommand(char* command) {
     // first parse main command and all its args
     char* delim = " ";
     char** args = (char**)malloc(100);
-    char* arg;
     int argCount = 0;
     int firstCall = 1;
     while (1) {
+        char* arg;
         if (firstCall) {
             arg = strtok(command, delim);
             firstCall = 0;
@@ -69,7 +69,7 @@ void execCommand(char* command) {
     }
 
     for (int i = 0; i < argCount; i++) {
-        arg = trim(args[i]);
+        args[i] = trim(args[i]);
     }
 
     // actual args begin from 1
@@ -88,6 +88,7 @@ void execCommand(char* command) {
         int hiddenShow = 0, longlist = 0;
 
         for (int i = 1; i < argCount; i++) {
+            char* arg = args[i];
             if (strlen(arg) == 0)
                 continue;
             if (arg[0] == '-') {
@@ -119,7 +120,7 @@ void execCommand(char* command) {
         char* finalArg = (char*)malloc(1000);
         int len = 0;
         for (int i = 1; i < argCount; i++) {
-            arg = trim(args[i]);
+            char* arg = args[i];
             for (int j = 0; j < (int)strlen(arg); j++) {
                 finalArg[len++] = arg[j];
             }
