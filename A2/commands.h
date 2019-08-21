@@ -1,2 +1,2 @@
-char** tokenizeCommands(char*, int, int*);
+char** tokenizeCommands(char*, int*);
 void execCommand(char* command);

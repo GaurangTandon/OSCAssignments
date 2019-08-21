@@ -14,7 +14,7 @@ char** takeInput(int* commandsCount) {
     }
 
     if (len != 0) {
-        return tokenizeCommands(s, strlen(s), commandsCount);
+        return tokenizeCommands(s, commandsCount);
     }
 
     return NULL;
