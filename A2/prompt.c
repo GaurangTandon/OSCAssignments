@@ -5,6 +5,7 @@
 #include "sysData.h"
 
 void printWelcomeScreen() {
+    printf("\e[1;1H\e[2J");
     printf("Welcome to " KGRN "GOSH!" KNRM " aka " KGRN "GO" KNRM "rang's " KGRN
            "SH" KNRM "ell :)\n");
     fflush(stdout);
