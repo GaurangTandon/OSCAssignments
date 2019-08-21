@@ -80,7 +80,7 @@ void execCommand(char* command) {
                             break;
                     }
                 }
-            } else {
+            } else if (strcmp("&", arg)) {
                 dir = arg;
             }
         }
@@ -114,6 +114,13 @@ void execCommand(char* command) {
             perror("Could not fork child");
             return;
         } else if (child == 0) {
+            // pid=0,gid=0
+            setpgid(0, 0);
+            // do not show input output error
+            close(STDIN_FILENO);
+            close(STDOUT_FILENO);
+            close(STDERR_FILENO);
+
             if (execvp(cmd, args) < 0) {
                 perror("Couldn't execute command: ");
             }
@@ -123,6 +130,7 @@ void execCommand(char* command) {
             // wait for child to complete
             if (!isBackgroundJob)
                 wait(NULL);
+
             return;
         }
     }

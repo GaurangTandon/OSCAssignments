@@ -3,9 +3,10 @@
 #include "colors.h"
 #include "directory.h"
 #include "sysData.h"
+#define clear() printf("\033[H\033[J")
 
 void printWelcomeScreen() {
-    printf("\e[1;1H\e[2J");
+    clear();
     printf("Welcome to " KGRN "GOSH!" KNRM " aka " KGRN "GO" KNRM "rang's " KGRN
            "SH" KNRM "ell :)\n");
     fflush(stdout);
