@@ -78,13 +78,14 @@ void initDirSetup(int updateHome) {
 static int myCompare(const struct dirent** a, const struct dirent** b) {
     const struct dirent *a2 = *a, *b2 = *b;
     const char *aa = a2->d_name, *bb = b2->d_name;
+
     int i = 0, j = 0;
     if (*aa == '.')
         i++;
     if (*bb == '.')
         j++;
 
-    return strcmp(aa + i, bb + j);
+    return strcasecmp(aa + i, bb + j);
 }
 
 static int myFilter(const struct dirent* a) {
