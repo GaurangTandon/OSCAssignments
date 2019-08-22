@@ -113,33 +113,35 @@ void printnum(int num, int len) {
     printf("%*s", len, str);
 }
 
-long int totalSize;
-
 void longListPrint(const char* allFiles[], int len, int showHidden) {
-    int maxuname = 0, maxgname = 0, maxsize = 0, maxlink = 0;
+    int maxuname = 0, maxgname = 0, maxsize = 0, maxlink = 0, sizesum = 0;
 
     for (int i = 0; i < len; i++) {
         struct stat s;
         const char* file = allFiles[i];
         if (strlen(file) == 0)
             continue;
+        if (!showHidden && *file == '.')
+            continue;
         int ret = stat(file, &s);
         if (ret < 0) {
             perror(file);
             return;
         }
+        sizesum += s.st_blocks / 2;
+
         char *usrname = getpwuid(getuid())->pw_name,
              *groupname = getgrgid(getgid())->gr_name;
-        int sz = s.st_size;
+
         amax(maxuname, (int)strlen(usrname));
         amax(maxgname, (int)strlen(groupname));
-        int digs = log10(sz) + 1;
+        int sz = s.st_size, digs = log10(sz) + 1;
         amax(maxsize, digs);
         int digs2 = log10(s.st_nlink) + 1;
         amax(maxlink, digs2);
     }
-
-    printf("total %ld\n", totalSize);
+    int totalSize = sizesum / 2;
+    printf("total %d\n", totalSize);
 
     for (int i = 0; i < len; i++) {
         struct stat s;
@@ -215,7 +217,6 @@ void ls(char* directory, int showHidden, int longListing) {
     len = n;
     struct stat s;
     stat(directory, &s);
-    totalSize = s.st_size;
 
     // see https://stackoverflow.com/a/23970992
     chdir(directory);
