@@ -3,4 +3,4 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-void execProcess(char*, char**);
+void execProcess(char* cmd, char** args, int isBackgroundJob);

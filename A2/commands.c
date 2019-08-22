@@ -174,31 +174,25 @@ void execCommand(char* command) {
         }
 
         printHistory(displayCount);
-    } else {
-        pid_t child = fork();
-
-        if (child == -1) {
-            perror("Could not fork child");
-            return;
-        } else if (child == 0) {
-            if (isBackgroundJob) {
-                // pid=0,gid=0
-                setpgid(0, 0);
-                // do not show input output error
-                close(STDIN_FILENO);
-                close(STDOUT_FILENO);
-                close(STDERR_FILENO);
+    } else if (!strcmp(cmd, "nightswatch")) {
+        int takeInterval = 0, interval = -1;
+        for (int i = 1; i < args; i++) {
+            if (!strcmp(args[i], "-n")) {
+                takeInterval = 1;
+                continue;
             }
-
-            if (execvp(cmd, args) < 0) {
-                perror("Couldn't execute command: ");
+            if (takeInterval) {
+                interval = atoi(args[i]);
+            } else if (interval == -1) {
+                printf("Did not specify interval");
+            } else {
+                int printValue = 0;
+                if (!strcmp(args[i], "interrupt")) {
+                } else if (!strcmp(args[i], "dirty")) {
+                }
             }
-            // kill child process
-            exit(0);
-        } else {
-            // wait for child to complete
-            if (!isBackgroundJob)
-                wait(NULL);
         }
+    } else {
+        execProcess(cmd, args, isBackgroundJob);
     }
 }

@@ -1,21 +1,54 @@
 #include "process.h"
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
-void execProcess(char* command, char** args) {
-    pid_t pid = fork();
+void execProcess(char* cmd, char** args, int isBackgroundJob) {
+    pid_t child = fork();
 
-    if (pid == -1) {
-        perror("Failed fork");
-    } else if (pid == 0) {
-        if (execvp(command, args) < 0) {
-            perror("execvp failed");
+    if (child == -1) {
+        perror("Could not fork child");
+        return;
+    } else if (child == 0) {
+        if (isBackgroundJob) {
+            // pid=0,gid=0
+            setpgid(0, 0);
+            // do not show input output error
+            close(STDIN_FILENO);
+            close(STDOUT_FILENO);
+            close(STDERR_FILENO);
         }
+
+        if (execvp(cmd, args) < 0) {
+            perror("Couldn't execute command: ");
+        }
+        // kill child process
         exit(0);
     } else {
-        wait(NULL);
-        return;
+        // wait for child to complete
+        if (!isBackgroundJob)
+            wait(NULL);
     }
+}
+
+void interruptPrint() {
+    int fd = open("/proc/interrupts", O_RDONLY);
+    char* value = (char*)malloc(10000);
+    read(fd, value, 10000);
+
+    char* line = strtok(value, "\n");
+    printf("%s\n", line);
+
+    line = strtok(NULL, "\n");
+    line = strtok(NULL, "\n");
+
+    printf("%s\n", line);
+
+    close(fd);
 }
