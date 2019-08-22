@@ -8,6 +8,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include "directory.h"
+#include "history.h"
 #include "print.h"
 #include "stringers.h"
 
@@ -31,11 +32,16 @@ char** tokenizeCommands(char* allCommandsString, int* commandsCountRef) {
 }
 
 void execCommand(char* command) {
+    char* cmd2 = (char*)malloc(strlen(command));
+    memcpy(cmd2, command, strlen(command) + 1);
+    addNewCommand(cmd2);
+
     // first parse main command and all its args
     char* delim = " ";
     char** args = (char**)malloc(100);
     int argCount = 0;
     int firstCall = 1;
+
     while (1) {
         char* arg;
         if (firstCall) {
@@ -160,6 +166,14 @@ void execCommand(char* command) {
             printf("Executable path: \t%s", buf);
         printf("\n");
         fflush(stdout);
+    } else if (!strcmp(cmd, "history")) {
+        int displayCount = 3;
+
+        if (argCount == 2) {
+            displayCount = atoi(args[1]);
+        }
+
+        printHistory(displayCount);
     } else {
         pid_t child = fork();
 
@@ -185,8 +199,6 @@ void execCommand(char* command) {
             // wait for child to complete
             if (!isBackgroundJob)
                 wait(NULL);
-
-            return;
         }
     }
 }

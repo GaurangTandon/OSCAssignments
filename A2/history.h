@@ -1,3 +1,4 @@
 char* commandHistory[20];
 int storedCount;
-void addNewCommand(char*);
+void printHistory(int n);
+void addNewCommand(char* command);

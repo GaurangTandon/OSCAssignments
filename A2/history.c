@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define max(x, y) (x) >= (y) ? (x) : (y)
+#define max(x, y) (((x) >= (y)) ? (x) : (y))
 #define maxStored 20
 
 char* commandHistory[maxStored];
@@ -26,16 +26,4 @@ void printHistory(int n) {
     for (int i = storedCount - 1; i >= max(storedCount - n, 0); i--) {
         printf("%s\n", commandHistory[i]);
     }
-}
-
-void historyDisplay(int n) {
-    char buf[100] = "history ";
-    sprintf(buf + 8, "%d", n);
-    addNewCommand(buf);
-    printHistory(n);
-}
-
-void historyDisplay() {
-    addNewCommand("history");
-    printHistory(10);
 }
