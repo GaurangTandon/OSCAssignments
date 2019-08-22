@@ -10,6 +10,7 @@
 #include "directory.h"
 #include "history.h"
 #include "print.h"
+#include "process.h"
 #include "stringers.h"
 
 char** tokenizeCommands(char* allCommandsString, int* commandsCountRef) {
@@ -176,19 +177,29 @@ void execCommand(char* command) {
         printHistory(displayCount);
     } else if (!strcmp(cmd, "nightswatch")) {
         int takeInterval = 0, interval = -1;
-        for (int i = 1; i < args; i++) {
+
+        for (int i = 1; i < argCount; i++) {
             if (!strcmp(args[i], "-n")) {
                 takeInterval = 1;
                 continue;
             }
             if (takeInterval) {
                 interval = atoi(args[i]);
+                takeInterval = 0;
             } else if (interval == -1) {
                 printf("Did not specify interval");
             } else {
                 int printValue = 0;
-                if (!strcmp(args[i], "interrupt")) {
-                } else if (!strcmp(args[i], "dirty")) {
+                if (!strcmp(args[i], "dirty")) {
+                    printValue = 1;
+                }
+                int c = 0;
+                while (1) {
+                    if (printValue)
+                        dirtyMemPrint();
+                    else
+                        interruptPrint(c++);
+                    sleep(interval);
                 }
             }
         }

@@ -37,18 +37,34 @@ void execProcess(char* cmd, char** args, int isBackgroundJob) {
     }
 }
 
-void interruptPrint() {
+void interruptPrint(int doNotPrintFirstLine) {
     int fd = open("/proc/interrupts", O_RDONLY);
     char* value = (char*)malloc(10000);
     read(fd, value, 10000);
 
     char* line = strtok(value, "\n");
-    printf("%s\n", line);
+    if (!doNotPrintFirstLine)
+        printf("%s\n", line);
 
     line = strtok(NULL, "\n");
     line = strtok(NULL, "\n");
 
     printf("%s\n", line);
+    fflush(stdout);
+
+    close(fd);
+}
+
+void dirtyMemPrint() {
+    int fd = open("/proc/meminfo", O_RDONLY);
+    char* value = (char*)malloc(10000);
+    read(fd, value, 10000);
+    char* ptr = strtok(value, "\n");
+    for (int i = 0; i < 16; i++) {
+        ptr = strtok(NULL, "\n");
+    }
+    printf("%s\n", ptr);
+    fflush(stdout);
 
     close(fd);
 }

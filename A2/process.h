@@ -4,3 +4,5 @@
 #include <unistd.h>
 
 void execProcess(char* cmd, char** args, int isBackgroundJob);
+void interruptPrint();
+void dirtyMemPrint();
