@@ -39,12 +39,20 @@ void updatePWD() {
     }
 }
 
+int currDirIsHome() {
+    for (int i = 0; i < homeDirPathLen; i++) {
+        if (i == currDirectoryPathLen)
+            return 0;
+        if (strcmp(currDirectories[i], homeDirPath[i]))
+            return 0;
+    }
+    return 1;
+}
+
 // modify currDirString so that the location of the executable is treated
 // as the ~
-// isCommand = true matlab user execs pwd command
-// isCommand = false matlab user is viewing shell prompt
 void printPWD() {
-    if (currDirectoryPathLen >= homeDirPathLen) {
+    if (currDirIsHome()) {
         printf("~");
         for (int i = homeDirPathLen; i < currDirectoryPathLen; i++) {
             printf("/%s", currDirectories[i]);
@@ -60,7 +68,7 @@ void initDirSetup(int updateHome) {
     if (updateHome)
         getcwd(expectedHomeDir, 1000);
 
-    char temp[1000];
+    char* temp = (char*)malloc(1000);
     getcwd(temp, 1000);
     char* ptr = strtok(temp, "/");
     currDirectoryPathLen = 0;
