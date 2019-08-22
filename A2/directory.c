@@ -51,7 +51,7 @@ int currDirIsHome() {
 
 // modify currDirString so that the location of the executable is treated
 // as the ~
-void printPWD() {
+void printPWD(int printNewline) {
     if (currDirIsHome()) {
         printf("~");
         for (int i = homeDirPathLen; i < currDirectoryPathLen; i++) {
@@ -60,8 +60,10 @@ void printPWD() {
     } else {
         printf("%s", currDirString);
     }
-    printf("\n");
-    fflush(stdout);
+    if (printNewline) {
+        printf("\n");
+        fflush(stdout);
+    }
 }
 
 void initDirSetup(int updateHome) {
