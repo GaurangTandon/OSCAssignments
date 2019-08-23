@@ -35,7 +35,7 @@ int execProcess(char* cmd, char** args, int isBackgroundJob) {
         if (!isBackgroundJob)
             wait(NULL);
     }
-    return child;
+    return (isBackgroundJob ? child : -1);
 }
 
 void interruptPrint(int doNotPrintFirstLine) {

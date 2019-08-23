@@ -26,16 +26,29 @@ void checkPending() {
         int st;
         int ret = waitpid(pendingIDs[i], &st, WNOHANG);
         if (ret == -1) {
-            perror("Error checking status. :/");
+            char buf[100];
+            sprintf(buf, "Error checking status %d", pendingIDs[i]);
+            perror(buf);
+            statusThings[i] = 1;
             continue;
         } else if (ret == 0) {
             continue;
-        } else {
-            printf("Process %s exited with id %d exited with status %d",
-                   pendingNames[i], pendingIDs[i], st);
+        } else if (WIFEXITED(st)) {
+            int ec = WEXITSTATUS(st);
+            printf("Process %s with id %d exited ", pendingNames[i],
+                   pendingIDs[i]);
+            if (ec == 0) {
+                printf("normally");
+            } else {
+                printf("with status %d", st);
+            }
+
+            printf("\n");
+
             statusThings[i] = 1;
         }
     }
+    fflush(stdout);
     int o = pendingCount;
     pendingCount = 0;
 
