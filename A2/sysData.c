@@ -1,4 +1,5 @@
 #include "sysData.h"
+#include <fcntl.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,11 +13,12 @@ char* getUser() {
 }
 
 void printMachine() {
-    FILE* fp;
-    char buffer[50] = " ";
-    fp = popen("lsb_release -ds", "r");
-    fgets(buffer, 50, fp);
-    char* osName = strtok(buffer, " ");
-    pclose(fp);
-    printf("%s", osName);
+    int fd = open("/proc/sys/kernel/hostname", O_RDONLY);
+    if (fd < 0)
+        return;
+    char name[100];
+    int len = read(fd, name, 100);
+    name[len - 1] = 0;
+    printf("%s", name);
+    close(fd);
 }
