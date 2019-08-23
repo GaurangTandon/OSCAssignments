@@ -14,6 +14,41 @@
 #include "process.h"
 #include "stringers.h"
 
+char* pendingNames[100];
+int pendingIDs[100];
+int pendingCount = 0;
+
+void checkPending() {
+    int statusThings[pendingCount];
+
+    for (int i = 0; i < pendingCount; i++) {
+        statusThings[i] = 0;
+        int st;
+        int ret = waitpid(pendingIDs[i], &st, WNOHANG);
+        if (ret == -1) {
+            perror("Error checking status. :/");
+            continue;
+        } else if (ret == 0) {
+            continue;
+        } else {
+            printf("Process %s exited with id %d exited with status %d",
+                   pendingNames[i], pendingIDs[i], st);
+            statusThings[i] = 1;
+        }
+    }
+    int o = pendingCount;
+    pendingCount = 0;
+
+    for (int i = 0, j = 0; i < o; i++) {
+        if (!statusThings[i]) {
+            pendingIDs[j] = pendingIDs[i];
+            pendingNames[j] = pendingNames[i];
+            j++;
+            pendingCount++;
+        }
+    }
+}
+
 char** tokenizeCommands(char* allCommandsString, int* commandsCountRef) {
     char** commands = (char**)malloc(100);
     for (int i = 0; i < 100; i++) {
@@ -161,6 +196,11 @@ void execCommand(char* command) {
             }
         }
     } else {
-        execProcess(cmd, args, isBackgroundJob);
+        int idOfChild = execProcess(cmd, args, isBackgroundJob);
+        if (idOfChild != -1) {
+            pendingNames[pendingCount] = cmd;
+            pendingIDs[pendingCount] = idOfChild;
+            pendingCount++;
+        }
     }
 }

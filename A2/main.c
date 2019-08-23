@@ -19,6 +19,7 @@ int main() {
     while (1) {
         int commandsCount = 0;
         char** commands = takeInput(&commandsCount);
+        checkPending();
         for (int i = 0; i < commandsCount; i++) {
             execCommand(commands[i]);
         }

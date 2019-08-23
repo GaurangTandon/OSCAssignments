@@ -9,12 +9,12 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-void execProcess(char* cmd, char** args, int isBackgroundJob) {
-    pid_t child = fork();
+int execProcess(char* cmd, char** args, int isBackgroundJob) {
+    int child = fork();
 
     if (child == -1) {
         perror("Could not fork child");
-        return;
+        return -1;
     } else if (child == 0) {
         if (isBackgroundJob) {
             // pid=0,gid=0
@@ -28,13 +28,14 @@ void execProcess(char* cmd, char** args, int isBackgroundJob) {
         if (execvp(cmd, args) < 0) {
             perror("Couldn't execute command: ");
         }
-        // kill child process
+
         exit(0);
     } else {
         // wait for child to complete
         if (!isBackgroundJob)
             wait(NULL);
     }
+    return child;
 }
 
 void interruptPrint(int doNotPrintFirstLine) {
