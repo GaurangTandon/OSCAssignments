@@ -3,9 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <termios.h>
+#include <time.h>
 #include <unistd.h>
 #include "directory.h"
 #include "history.h"
@@ -82,6 +86,29 @@ char** tokenizeCommands(char* allCommandsString, int* commandsCountRef) {
     *commandsCountRef = commandsCount;
 
     return commands;
+}
+
+void enable_raw_mode() {
+    struct termios term;
+    tcgetattr(0, &term);
+    term.c_lflag &= ~(ICANON | ECHO);  // Disable echo as well
+    tcsetattr(0, TCSANOW, &term);
+}
+
+void disable_raw_mode() {
+    struct termios term;
+    tcgetattr(0, &term);
+    term.c_lflag |= ICANON | ECHO;
+    tcsetattr(0, TCSANOW, &term);
+}
+
+int _kbhit() {
+    int byteswaiting;
+    enable_raw_mode();
+    ioctl(0, FIONREAD, &byteswaiting);
+    int ans = byteswaiting > 0;
+    disable_raw_mode();
+    return ans;
 }
 
 void execCommand(char* command) {
@@ -198,18 +225,36 @@ void execCommand(char* command) {
                     printValue = 1;
                 }
                 int c = 0;
+                int msec = 0, iterations = 0, interval = 1000;
+                clock_t before = clock();
+
                 while (1) {
-                    if (printValue)
-                        dirtyMemPrint();
-                    else
-                        interruptPrint(c++);
-                    printf("%c", getchar());
-                    sleep(interval);
+                    clock_t difference = clock() - before;
+                    msec = difference * 1000 / CLOCKS_PER_SEC;
+                    iterations++;
+
+                    if (msec >= interval) {
+                        before = clock();
+
+                        if (_kbhit()) {
+                            char c = getchar();
+                            if (c == 'q') {
+                                printf("\n");
+                                fflush(stdout);
+                                break;
+                            }
+                        }
+                        if (printValue)
+                            dirtyMemPrint();
+                        else
+                            interruptPrint(c++);
+                    }
                 }
             }
         }
     } else {
         int idOfChild = execProcess(cmd, args, isBackgroundJob);
+
         if (idOfChild != -1) {
             pendingNames[pendingCount] = cmd;
             pendingIDs[pendingCount] = idOfChild;
