@@ -38,7 +38,7 @@ void execCommand(char* command) {
     addNewCommand(cmd2);
 
     // first parse main command and all its args
-    char* delim = " ";
+    char* delim = "\t ";
     char** args = (char**)malloc(100);
     int argCount = 0;
     int firstCall = 1;
