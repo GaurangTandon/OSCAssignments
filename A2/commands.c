@@ -199,6 +199,7 @@ void execCommand(char* command) {
                         dirtyMemPrint();
                     else
                         interruptPrint(c++);
+                    printf("%c", getchar());
                     sleep(interval);
                 }
             }

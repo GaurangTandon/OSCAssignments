@@ -123,7 +123,7 @@ void longListPrint(const char* allFiles[], int len, int showHidden) {
             continue;
         if (!showHidden && *file == '.')
             continue;
-        int ret = stat(file, &s);
+        int ret = lstat(file, &s);
         if (ret < 0) {
             perror(file);
             return;
@@ -140,8 +140,7 @@ void longListPrint(const char* allFiles[], int len, int showHidden) {
         int digs2 = log10(s.st_nlink) + 1;
         amax(maxlink, digs2);
     }
-    int totalSize = sizesum / 2;
-    printf("total %d\n", totalSize);
+    printf("total %d\n", sizesum);
 
     for (int i = 0; i < len; i++) {
         struct stat s;
@@ -151,7 +150,7 @@ void longListPrint(const char* allFiles[], int len, int showHidden) {
         if (!showHidden && *file == '.')
             continue;
 
-        int ret = stat(file, &s);
+        int ret = lstat(file, &s);
         if (ret < 0) {
             perror(file);
             return;
@@ -216,7 +215,7 @@ void ls(char* directory, int showHidden, int longListing) {
 
     len = n;
     struct stat s;
-    stat(directory, &s);
+    lstat(directory, &s);
 
     // see https://stackoverflow.com/a/23970992
     chdir(directory);
