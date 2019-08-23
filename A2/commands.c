@@ -23,7 +23,10 @@ char** tokenizeCommands(char* allCommandsString, int* commandsCountRef) {
     int commandsCount = 0;
     char* ptr = strtok(allCommandsString, delim);
     while (ptr) {
-        commands[commandsCount++] = ptr;
+        char* actual = trim(ptr);
+        if (strlen(actual) != 0) {
+            commands[commandsCount++] = actual;
+        }
         ptr = strtok(NULL, delim);
     }
 
