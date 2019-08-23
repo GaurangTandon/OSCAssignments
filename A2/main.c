@@ -5,10 +5,12 @@
 #include <string.h>
 #include "commands.h"
 #include "directory.h"
+#include "history.h"
 #include "prompt.h"
 #include "takeInput.h"
 
 void initSetup() {
+    retrieveStored();
     initDirSetup(1);
 }
 
