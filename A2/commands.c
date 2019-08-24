@@ -231,22 +231,26 @@ void execCommand(char* command) {
                 interval *= 1000;
                 clock_t before = clock();
 
+                if (printValue)
+                    dirtyMemPrint();
+                else
+                    interruptPrint(c++);
+
                 while (1) {
                     clock_t difference = clock() - before;
                     msec = difference * 1000 / CLOCKS_PER_SEC;
                     iterations++;
 
+                    if (keyboardWasPressed()) {
+                        char c = getchar();
+                        if (c == 'q') {
+                            printf("\n");
+                            fflush(stdout);
+                            break;
+                        }
+                    }
                     if (msec >= interval) {
                         before = clock();
-
-                        if (keyboardWasPressed()) {
-                            char c = getchar();
-                            if (c == 'q') {
-                                printf("\n");
-                                fflush(stdout);
-                                break;
-                            }
-                        }
                         if (printValue)
                             dirtyMemPrint();
                         else
