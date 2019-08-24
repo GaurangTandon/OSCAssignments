@@ -227,7 +227,8 @@ void execCommand(char* command) {
                     printValue = 1;
                 }
                 int c = 0;
-                int msec = 0, iterations = 0, interval = 1000;
+                int msec = 0, iterations = 0;
+                interval *= 1000;
                 clock_t before = clock();
 
                 while (1) {

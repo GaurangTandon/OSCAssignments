@@ -1,5 +1,3 @@
-exit
-ls -la
 nightswatch -n 1 dirty
 nightswatch -n 1 interrupts
 echo aa    b b
@@ -18,3 +16,5 @@ cd X
 echo a adf sdfasdrwe
 nightswatch -n 1 dirt
 nightswatch -n 1 dirty
+nightswatch -n 2 dirty
+nightswatch -n 5 dirty
