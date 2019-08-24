@@ -1,9 +1,9 @@
-
-
-
-
-
+history 10
 cd
-pwd
+history 10
 ls
-history
+history 10
+history 2
+cd
+history 5
+history 10

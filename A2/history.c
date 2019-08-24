@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "directory.h"
+#include "stringers.h"
 
 #define max(x, y) (((x) >= (y)) ? (x) : (y))
 #define maxStored 20
@@ -16,8 +17,9 @@ int storedCount = 0;
 char* fileName;
 
 void retrieveStored() {
-    int fd = open(fileName, O_CREAT | O_RDWR, S_IRWXU);
-    char buf[1000];
+    int fd = open(fileName, O_CREAT | O_RDONLY, S_IRWXU);
+    // nevar use square brackets
+    char* buf = (char*)malloc(1000);
     read(fd, buf, 1000);
 
     if (fd < 0) {
@@ -29,14 +31,18 @@ void retrieveStored() {
 
     char* ptr = strtok(buf, "\n");
     while (ptr) {
-        commandHistory[storedCount++] = ptr;
+        ptr = trim(ptr);
+        if (strlen(ptr) != 0) {
+            commandHistory[storedCount++] = ptr;
+        }
         ptr = strtok(NULL, "\n");
     }
 
     close(fd);
 }
+
 void writeStored() {
-    int fd = open(fileName, O_CREAT | O_TRUNC | O_RDWR, S_IRWXU);
+    int fd = open(fileName, O_TRUNC | O_WRONLY, S_IRWXU);
 
     if (fd < 0) {
         perror("Couldn't open history file while writing");
@@ -50,6 +56,7 @@ void writeStored() {
 
     close(fd);
 }
+
 void addNewCommand(char* cmd) {
     if (storedCount > 0 && strcmp(commandHistory[storedCount - 1], cmd) == 0) {
         return;
@@ -61,14 +68,17 @@ void addNewCommand(char* cmd) {
         for (int i = 0; i < maxStored - 1; i++) {
             commandHistory[i] = commandHistory[i + 1];
         }
+
         commandHistory[maxStored - 1] = cmd;
     }
     writeStored();
 }
 
 void printHistory(int n) {
-    for (int i = storedCount - 1; i >= max(storedCount - n, 0); i--) {
-        printf("%s\n", commandHistory[i]);
+    int lim = max(storedCount - n, 0);
+    for (int i = lim; i <= storedCount - 1; i++) {
+        printf("%s", commandHistory[i]);
+        printf("\n");
     }
 }
 
