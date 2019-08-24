@@ -1,14 +1,3 @@
-history
-vim file &
-ps
-touch a &
-nightswatch -n 1 dirty
-nightscall -n 1 dirty
-nightswatch -n 1 dirty
-pinfo
-cd ..
-mkdir A22
-cd A22
 ..
 cd ..
 rm A22
@@ -18,3 +7,14 @@ nightswatch -n 1 interrupts
 nightswatch -n 5 interrupts
 a
 b
+type echo
+ps
+type eco
+touch a &
+vim file &
+ps
+kill -9 944
+touch a &
+gcc test.c
+./a.out
+./a.out &

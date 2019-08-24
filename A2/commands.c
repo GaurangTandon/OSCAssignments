@@ -44,7 +44,7 @@ void checkPending() {
             if (ec == 0) {
                 printf("normally");
             } else {
-                printf("with status %d", st);
+                printf("with status %d", ec);
             }
 
             printf("\n");
