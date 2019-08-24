@@ -53,7 +53,7 @@ void printPinfo(int argCount, char** args) {
 
     if (isSelf) {
         printf("Executable path: \t");
-        printPWD(0);
+        printPWD(0, 0);
         printf("/a.out");
     } else
         printf("Executable path: \t%s", buf);

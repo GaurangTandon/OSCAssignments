@@ -7,3 +7,4 @@ history 2
 cd
 history 5
 history 10
+pwd
