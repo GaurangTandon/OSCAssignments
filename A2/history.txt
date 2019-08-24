@@ -1,13 +1,3 @@
-..
-cd ..
-rm A22
-rm -rf A22
-nightswatch -n 1 dirty
-nightswatch -n 1 interrupts
-nightswatch -n 5 interrupts
-a
-b
-type echo
 ps
 type eco
 touch a &
@@ -18,3 +8,13 @@ touch a &
 gcc test.c
 ./a.out
 ./a.out &
+cd ../A23
+cd ..
+ls
+mkdir A23
+ls
+cd A23
+exit
+ls -la
+nightswatch -n 1 dirty
+nightswatch -n 1 interrupts
