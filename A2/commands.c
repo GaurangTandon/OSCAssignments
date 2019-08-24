@@ -199,7 +199,7 @@ void execCommand(char* command) {
     } else if (!strcmp(cmd, "pinfo")) {
         printPinfo(argCount, args);
     } else if (!strcmp(cmd, "history")) {
-        int displayCount = 3;
+        int displayCount = 10;
 
         if (argCount == 2) {
             displayCount = atoi(args[1]);

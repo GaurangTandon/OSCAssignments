@@ -8,3 +8,9 @@ cd
 history 5
 history 10
 pwd
+history
+cd
+history
+vim file &
+ps
+touch a &
