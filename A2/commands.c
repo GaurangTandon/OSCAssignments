@@ -18,6 +18,8 @@
 #include "process.h"
 #include "stringers.h"
 
+#define stater struct termios
+
 char* pendingNames[100];
 int pendingIDs[100];
 int pendingCount = 0;
@@ -88,26 +90,26 @@ char** tokenizeCommands(char* allCommandsString, int* commandsCountRef) {
     return commands;
 }
 
-void enable_raw_mode() {
-    struct termios term;
-    tcgetattr(0, &term);
-    term.c_lflag &= ~(ICANON | ECHO);  // Disable echo as well
-    tcsetattr(0, TCSANOW, &term);
+void rawModeOn() {
+    stater termas;
+    tcgetattr(0, &termas);
+    termas.c_lflag &= ~(ICANON | ECHO);  // Disable echo as well
+    tcsetattr(0, TCSANOW, &termas);
 }
 
-void disable_raw_mode() {
-    struct termios term;
-    tcgetattr(0, &term);
-    term.c_lflag |= ICANON | ECHO;
-    tcsetattr(0, TCSANOW, &term);
+void rawModeGone() {
+    stater termas;
+    tcgetattr(0, &termas);
+    termas.c_lflag |= ICANON | ECHO;
+    tcsetattr(0, TCSANOW, &termas);
 }
 
-int _kbhit() {
-    int byteswaiting;
-    enable_raw_mode();
-    ioctl(0, FIONREAD, &byteswaiting);
-    int ans = byteswaiting > 0;
-    disable_raw_mode();
+int keyboardWasPressed() {
+    int bytesarewaitingforme;
+    rawModeOn();
+    ioctl(0, FIONREAD, &bytesarewaitingforme);
+    int ans = bytesarewaitingforme > 0;
+    rawModeGone();
     return ans;
 }
 
@@ -236,7 +238,7 @@ void execCommand(char* command) {
                     if (msec >= interval) {
                         before = clock();
 
-                        if (_kbhit()) {
+                        if (keyboardWasPressed()) {
                             char c = getchar();
                             if (c == 'q') {
                                 printf("\n");

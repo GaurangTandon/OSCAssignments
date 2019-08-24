@@ -1,20 +1,20 @@
-ps
-type eco
-touch a &
-vim file &
-ps
-kill -9 944
-touch a &
-gcc test.c
-./a.out
-./a.out &
-cd ../A23
-cd ..
-ls
-mkdir A23
-ls
-cd A23
 exit
 ls -la
 nightswatch -n 1 dirty
 nightswatch -n 1 interrupts
+echo aa    b b
+history 5
+nightswatch -n 1 interrupt
+nightswatch -n 1 dirty
+pwd
+ls -al
+ls -al X
+lss
+pinfo
+cd ..
+ls
+cd A2
+cd X
+echo a adf sdfasdrwe
+nightswatch -n 1 dirt
+nightswatch -n 1 dirty
