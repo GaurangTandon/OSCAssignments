@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "stringers.h"
 
 int execProcess(char* cmd, char** args, int isBackgroundJob) {
     int child = fork();
@@ -45,12 +46,21 @@ void interruptPrint(int doNotPrintFirstLine) {
 
     char* line = strtok(value, "\n");
     if (!doNotPrintFirstLine)
-        printf("%s\n", line);
+        printf("%s\n", trim(line));
 
     line = strtok(NULL, "\n");
     line = strtok(NULL, "\n");
 
-    printf("%s\n", line);
+    int i = 0;
+    while (line[i]) {
+        if (line[i] == 'I') {
+            line[i] = 0;
+            break;
+        }
+        i++;
+    }
+
+    printf("%s\n", trim(line + 5));
     fflush(stdout);
 
     close(fd);
@@ -64,7 +74,7 @@ void dirtyMemPrint() {
     for (int i = 0; i < 16; i++) {
         ptr = strtok(NULL, "\n");
     }
-    printf("%s\n", ptr);
+    printf("%s\n", trim(ptr + 6));
     fflush(stdout);
 
     close(fd);
