@@ -1,0 +1,9 @@
+
+
+
+
+
+cd
+pwd
+ls
+history

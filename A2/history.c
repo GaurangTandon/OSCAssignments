@@ -1,22 +1,30 @@
 #include "history.h"
 #include <fcntl.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "directory.h"
 
 #define max(x, y) (((x) >= (y)) ? (x) : (y))
 #define maxStored 20
 
 char* commandHistory[maxStored];
 int storedCount = 0;
-char fileName[] = "history.txt";
+char* fileName;
 
 void retrieveStored() {
-    int fd = open(fileName, O_CREAT);
+    int fd = open(fileName, O_CREAT | O_RDWR, S_IRWXU);
     char buf[1000];
     read(fd, buf, 1000);
+
+    if (fd < 0) {
+        perror("Couldn't open history file while reading");
+        return;
+    }
+
     storedCount = 0;
 
     char* ptr = strtok(buf, "\n");
@@ -28,7 +36,12 @@ void retrieveStored() {
     close(fd);
 }
 void writeStored() {
-    int fd = open(fileName, O_CREAT | O_TRUNC);
+    int fd = open(fileName, O_CREAT | O_TRUNC | O_RDWR, S_IRWXU);
+
+    if (fd < 0) {
+        perror("Couldn't open history file while writing");
+        return;
+    }
 
     for (int i = 0; i < storedCount; i++) {
         write(fd, commandHistory[i], strlen(commandHistory[i]));
@@ -57,4 +70,11 @@ void printHistory(int n) {
     for (int i = storedCount - 1; i >= max(storedCount - n, 0); i--) {
         printf("%s\n", commandHistory[i]);
     }
+}
+
+void historySetup() {
+    fileName = (char*)malloc(1000);
+    strcat(fileName, expectedHomeDir);
+    strcat(fileName, "/history.txt");
+    retrieveStored();
 }

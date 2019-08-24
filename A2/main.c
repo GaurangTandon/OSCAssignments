@@ -10,8 +10,8 @@
 #include "takeInput.h"
 
 void initSetup() {
-    retrieveStored();
     initDirSetup(1);
+    historySetup();
 }
 
 int main() {

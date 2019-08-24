@@ -2,6 +2,7 @@
 
 #include "sysData.h"
 
+char expectedHomeDir[1000];
 extern char currDirString[1000];
 // 0 indicates root
 
