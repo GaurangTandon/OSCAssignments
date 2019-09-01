@@ -1,5 +1,6 @@
 // this file is the core for interacting with the user
 
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,9 +10,18 @@
 #include "prompt.h"
 #include "takeInput.h"
 
+void sigintHandler(int sig_num) {
+    // catching for next time as well
+    signal(SIGINT, sigintHandler);
+    // terminate an ongoing foreground job
+    // or do nothing
+}
+
 void initSetup() {
     initDirSetup(1);
     historySetup();
+
+    signal(SIGINT, sigintHandler);
 }
 
 int main() {

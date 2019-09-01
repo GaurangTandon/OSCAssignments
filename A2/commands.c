@@ -176,7 +176,7 @@ void execCommand(char* command) {
             }
         }
         ls(dir, hiddenShow, longlist);
-    } else if (!strcmp(cmd, "exit")) {
+    } else if (!strcmp(cmd, "quit")) {
         exit(0);
     } else if (!strcmp(cmd, "cd")) {
         char* target = "~";
