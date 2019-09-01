@@ -10,7 +10,7 @@
 #include "prompt.h"
 #include "takeInput.h"
 
-void sigintHandler(int sig_num) {
+void sigintHandler() {
     // catching for next time as well
     signal(SIGINT, sigintHandler);
     // terminate an ongoing foreground job

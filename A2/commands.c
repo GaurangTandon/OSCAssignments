@@ -16,6 +16,7 @@
 #include "pinfo.h"
 #include "print.h"
 #include "process.h"
+#include "prompt.h"
 #include "stringers.h"
 
 #define stater struct termios
@@ -116,6 +117,27 @@ int keyboardWasPressed() {
 void execCommand(char* command) {
     char* cmd2 = (char*)malloc(strlen(command));
     memcpy(cmd2, command, strlen(command) + 1);
+
+    // if command is just a combo of up arrows and down arrows
+    if (command[0] == 27) {
+        int offset = 0;
+        for (int i = 2; i < (int)strlen(command); i += 3) {
+            offset += (command[i] == 'A' ? 1 : -1);
+        }
+
+        // offset > 0 denotes how many history items we have to go up into
+        if (storedCount < offset) {
+            printf("Command doesn't exist");
+        } else {
+            command = commandHistory[storedCount - offset];
+            memcpy(cmd2, command, strlen(command) + 1);
+            printPrompt();
+            printf("%s\n", cmd2);
+            execCommand(cmd2);
+        }
+        return;
+    }
+
     addNewCommand(cmd2);
 
     // first parse main command and all its args

@@ -1,15 +1,3 @@
-nightswatch -n 1 dirty
-nightswatch -n 1 interrupts
-echo aa    b b
-history 5
-nightswatch -n 1 interrupt
-nightswatch -n 1 dirty
-pwd
-ls -al
-ls -al X
-lss
-pinfo
-cd ..
 ls
 cd A2
 cd X
@@ -18,3 +6,15 @@ nightswatch -n 1 dirt
 nightswatch -n 1 dirty
 nightswatch -n 2 dirty
 nightswatch -n 5 dirty
+ls
+cd
+ls
+cd
+cd X
+ls
+mkdir X
+cd X
+cd
+cd X
+cd
+cd X
