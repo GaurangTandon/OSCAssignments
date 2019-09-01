@@ -60,3 +60,13 @@ void printPinfo(int argCount, char** args) {
     printf("\n");
     fflush(stdout);
 }
+
+char* getProcPath(char* pid) {
+    char path2[100] = "/proc/";
+    strcat(path2, pid);
+    strcat(path2, "/exe");
+    char* buf = (char*)malloc(1000);
+    readlink(path2, buf, 1000);
+
+    return buf;
+}

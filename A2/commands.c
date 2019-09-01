@@ -127,7 +127,7 @@ void execCommand(char* command) {
         }
 
         // offset > 0 denotes how many history items we have to go up into
-        if (storedCount < offset) {
+        if (offset < 0 || storedCount < offset) {
             printf("Command doesn't exist");
         } else {
             command = commandHistory[storedCount - offset];
@@ -302,6 +302,42 @@ void execCommand(char* command) {
         int pid = atoi(args[1]), signalNumber = atoi(args[2]);
 
         kill(pid, signalNumber);
+    } else if (!strcmp(cmd, "setenv")) {
+        if (argCount < 2 || argCount > 3) {
+            printf("Invalid syntax! Should be: setenv ​ var [value]\n");
+            return;
+        }
+
+        char* var = args[1];
+        char* value = "";
+
+        if (argCount > 2) {
+            value = (char*)malloc(1000);
+            strcat(value, args[2]);
+        }
+
+        strcat(var, "=");
+        strcat(var, value);
+        putenv(var);
+    } else if (!strcmp(cmd, "unsetenv")) {
+        if (argCount != 2) {
+            printf("Invalid syntax! Should be: unsetenv​ var\n");
+            return;
+        }
+
+        char* var = args[1];
+        unsetenv(var);
+    } else if (!strcmp(cmd, "getenv")) {
+        if (argCount != 2) {
+            printf("Invalid syntax! Should be: getenv ​var\n");
+            return;
+        }
+
+        char *var = args[1], *ans = getenv(var);
+        if (ans)
+            printf("%s\n", ans);
+        else
+            printf("var %s not found\n", var);
     } else {
         int idOfChild = execProcess(cmd, args, isBackgroundJob);
 

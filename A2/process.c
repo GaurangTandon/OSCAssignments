@@ -9,6 +9,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include "stringers.h"
+#define _GNU_SOURCE
 
 int execProcess(char* cmd, char** args, int isBackgroundJob) {
     int child = fork();
@@ -26,8 +27,14 @@ int execProcess(char* cmd, char** args, int isBackgroundJob) {
             close(STDERR_FILENO);
         }
 
-        if (execvp(cmd, args) < 0) {
-            perror("Couldn't execute command: ");
+        /**
+         * echo and probably a lot of other shell builtins are really messed up
+         * here because i am sending each space separated part as an argument
+         * whereas they expect it as one single argument
+         * Using execvpe since processes must inherit environment variables now
+         */
+        if (execvpe(cmd, args, __environ) < 0) {
+            perror("Couldn't execute command");
         }
 
         exit(0);
