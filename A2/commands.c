@@ -285,12 +285,13 @@ void execCommand(char* command) {
 
     } else if (!strcmp(cmd, "jobs")) {
         for (int i = 0; i < pendingCount; i++) {
-            char* status = "Running";
-            int pid = 0;
+            char* pid = (char*)malloc(100);
+            snprintf(pid, 100, "%d", pendingIDs[i]);
 
             // check status of process here
+            char* status = getProcStatusString(pid);
 
-            printf("[%d] %s %s [%d]\n", i + 1, status, cmd, pid);
+            printf("[%d] %s %s [%s]\n", i + 1, status, pendingNames[i], pid);
         }
     } else if (!strcmp(cmd, "kjob")) {
         if (argCount < 3) {
