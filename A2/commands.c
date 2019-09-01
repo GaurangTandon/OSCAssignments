@@ -1,5 +1,6 @@
 #include <fcntl.h>
 #include <math.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -281,11 +282,31 @@ void execCommand(char* command) {
                 }
             }
         }
+
+    } else if (!strcmp(cmd, "jobs")) {
+        for (int i = 0; i < pendingCount; i++) {
+            char* status = "Running";
+            int pid = 0;
+
+            // check status of process here
+
+            printf("[%d] %s %s [%d]\n", i + 1, status, cmd, pid);
+        }
+    } else if (!strcmp(cmd, "kjob")) {
+        if (argCount < 3) {
+            printf("Error: usage kjob <jobNumber> <signalNumber>\n");
+            return;
+        }
+        union sigval;
+
+        int pid = atoi(args[1]), signalNumber = atoi(args[2]);
+
+        kill(pid, signalNumber);
     } else {
         int idOfChild = execProcess(cmd, args, isBackgroundJob);
 
         if (idOfChild != -1) {
-            pendingNames[pendingCount] = cmd;
+            pendingNames[pendingCount] = cmd2;
             pendingIDs[pendingCount] = idOfChild;
             pendingCount++;
         }
