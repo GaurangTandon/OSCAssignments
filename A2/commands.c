@@ -26,6 +26,8 @@ char* pendingNames[100];
 int pendingIDs[100];
 int pendingCount = 0;
 
+void execCommand(char* command);
+
 void checkPending() {
     int statusThings[pendingCount];
 
@@ -67,6 +69,67 @@ void checkPending() {
             j++;
             pendingCount++;
         }
+    }
+}
+
+int countPipes(const char* commands) {
+    char* cmd = (char*)malloc(1000);
+    memcpy(cmd, commands, strlen(commands) + 1);
+
+    int i = 0, c = 0;
+    while (cmd[i]) {
+        c += (cmd[i] == '|');
+        i++;
+    }
+
+    return c;
+}
+
+void handlePipelining(char* commands, int noOfCommands) {
+    char *PIPE = "|", *cmd = strtok(commands, PIPE);
+    int cmdIndex = 0, *oddPipe = (int*)malloc(sizeof(int) * 2),
+        *evenPipe = (int*)malloc(sizeof(int) * 2),
+        **pipes = (int**)malloc(sizeof(int*) * 2);
+    pipes[0] = oddPipe;
+    pipes[1] = evenPipe;
+
+    while (cmd) {
+        int parity = cmdIndex & 1;
+        pipe(pipes[parity]);
+
+        pid_t pid = fork();
+
+        if (pid < 0) {
+            perror("Couldn't fork in handlePipelining");
+            return;
+        } else if (pid == 0) {
+            // configure IO
+            if (cmdIndex == 0) {
+                dup2(evenPipe[1], STDOUT_FILENO);
+            } else if (cmdIndex == noOfCommands - 1) {
+                dup2(pipes[parity][0], STDIN_FILENO);
+            } else {
+                dup2(pipes[parity][1], STDOUT_FILENO);
+                dup2(pipes[!parity][0], STDIN_FILENO);
+            }
+
+            execCommand(cmd);
+        } else {
+            // configure IO
+            if (cmdIndex == 0) {
+                close(evenPipe[1]);
+            } else if (cmdIndex == noOfCommands - 1) {
+                close(pipes[parity][0]);
+            } else {
+                close(pipes[parity][1]);
+                close(pipes[!parity][0]);
+            }
+
+            waitpid(pid, NULL, 0);
+        }
+
+        cmd = strtok(NULL, PIPE);
+        cmdIndex++;
     }
 }
 
@@ -115,31 +178,42 @@ int keyboardWasPressed() {
     return ans;
 }
 
-void execCommand(char* command) {
+void handleArrows(char* command) {
     char* cmd2 = (char*)malloc(strlen(command));
     memcpy(cmd2, command, strlen(command) + 1);
+    int offset = 0;
+    for (int i = 2; i < (int)strlen(command); i += 3) {
+        offset += (command[i] == 'A' ? 1 : -1);
+    }
 
+    // offset > 0 denotes how many history items we have to go up into
+    if (offset < 0 || storedCount < offset) {
+        printf("Command doesn't exist");
+    } else {
+        command = commandHistory[storedCount - offset];
+        memcpy(cmd2, command, strlen(command) + 1);
+        printPrompt();
+        printf("%s\n", cmd2);
+        execCommand(cmd2);
+    }
+}
+
+void execCommand(char* command) {
     // if command is just a combo of up arrows and down arrows
     if (command[0] == 27) {
-        int offset = 0;
-        for (int i = 2; i < (int)strlen(command); i += 3) {
-            offset += (command[i] == 'A' ? 1 : -1);
-        }
-
-        // offset > 0 denotes how many history items we have to go up into
-        if (offset < 0 || storedCount < offset) {
-            printf("Command doesn't exist");
-        } else {
-            command = commandHistory[storedCount - offset];
-            memcpy(cmd2, command, strlen(command) + 1);
-            printPrompt();
-            printf("%s\n", cmd2);
-            execCommand(cmd2);
-        }
+        handleArrows(command);
         return;
     }
 
+    char* cmd2 = (char*)malloc(strlen(command));
+    memcpy(cmd2, command, strlen(command) + 1);
     addNewCommand(cmd2);
+
+    int c = countPipes(cmd2);
+    if (c) {
+        handlePipelining(cmd2, c);
+        return;
+    }
 
     // first parse main command and all its args
     char* delim = "\t ";
