@@ -90,8 +90,8 @@ void handlePipelining(char* commands, int noOfCommands) {
     int cmdIndex = 0, *oddPipe = (int*)malloc(sizeof(int) * 2),
         *evenPipe = (int*)malloc(sizeof(int) * 2),
         **pipes = (int**)malloc(sizeof(int*) * 2);
-    pipes[0] = oddPipe;
-    pipes[1] = evenPipe;
+    pipes[0] = evenPipe;
+    pipes[1] = oddPipe;
 
     while (cmd) {
         int parity = cmdIndex & 1;
@@ -113,7 +113,15 @@ void handlePipelining(char* commands, int noOfCommands) {
                 dup2(pipes[!parity][0], STDIN_FILENO);
             }
 
-            execCommand(cmd);
+            // execCommand(cmd); this doesn't work??
+            char* cmd2 = (char*)malloc(1000);
+            memcpy(cmd2, cmd, 1000);
+            cmd2 = strtok(cmd2, "\t ");
+
+            if (execvpe(cmd2, cmd, __environ) < 0) {
+                kill(getpid(), SIGTERM);
+            } else
+                exit(0);
         } else {
             // configure IO
             if (cmdIndex == 0) {
@@ -124,7 +132,6 @@ void handlePipelining(char* commands, int noOfCommands) {
                 close(pipes[parity][1]);
                 close(pipes[!parity][0]);
             }
-
             waitpid(pid, NULL, 0);
         }
 
@@ -211,7 +218,7 @@ void execCommand(char* command) {
 
     int c = countPipes(cmd2);
     if (c) {
-        handlePipelining(cmd2, c);
+        handlePipelining(cmd2, c + 1);
         return;
     }
 
