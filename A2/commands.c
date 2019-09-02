@@ -120,20 +120,18 @@ void handlePipelining(char* commands, int noOfCommands) {
 
             if (execvpe(cmd2, cmd, __environ) < 0) {
                 kill(getpid(), SIGTERM);
-            } else
-                exit(0);
-        } else {
-            // configure IO
-            if (cmdIndex == 0) {
-                close(evenPipe[1]);
-            } else if (cmdIndex == noOfCommands - 1) {
-                close(pipes[parity][0]);
-            } else {
-                close(pipes[parity][1]);
-                close(pipes[!parity][0]);
             }
-            waitpid(pid, NULL, 0);
         }
+
+        if (cmdIndex == 0) {
+            close(evenPipe[1]);
+        } else if (cmdIndex == noOfCommands - 1) {
+            close(pipes[parity][0]);
+        } else {
+            close(pipes[parity][1]);
+            close(pipes[!parity][0]);
+        }
+        waitpid(pid, NULL, 0);
 
         cmd = strtok(NULL, PIPE);
         cmdIndex++;
