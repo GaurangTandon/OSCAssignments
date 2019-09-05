@@ -92,9 +92,10 @@ void handlePipelining(char* commands, int noOfCommands) {
         **pipes = (int**)malloc(sizeof(int*) * 2);
     pipes[0] = evenPipe;
     pipes[1] = oddPipe;
+    int parity;
 
     while (cmd) {
-        int parity = cmdIndex & 1;
+        parity = cmdIndex & 1;
         pipe(pipes[parity]);
 
         pid_t pid = fork();
@@ -118,9 +119,18 @@ void handlePipelining(char* commands, int noOfCommands) {
             memcpy(cmd2, cmd, 1000);
             cmd2 = strtok(cmd2, "\t ");
 
-            if (execvpe(cmd2, cmd, __environ) < 0) {
-                kill(getpid(), SIGTERM);
+            int cnt = 1;
+            char **cmm = (char**)malloc(1000), *ptr;
+            ptr = cmm[0] = strtok(cmd, "\t ");
+
+            while ((ptr = strtok(NULL, "\t "))) {
+                cmm[cnt++] = ptr;
             }
+            cmm[cnt++] = '\0';
+
+            execvpe(cmd2, cmm, __environ);
+            printf("Couldn't execvp");
+            exit(0);
         }
 
         if (cmdIndex == 0) {
@@ -131,7 +141,9 @@ void handlePipelining(char* commands, int noOfCommands) {
             close(pipes[parity][1]);
             close(pipes[!parity][0]);
         }
-        waitpid(pid, NULL, 0);
+        // exit(0);
+        wait(NULL);
+        // waitpid(pid, NULL, 0);
 
         cmd = strtok(NULL, PIPE);
         cmdIndex++;
@@ -278,7 +290,7 @@ void execCommand(char* command) {
             }
         }
         ls(dir, hiddenShow, longlist);
-    } else if (!strcmp(cmd, "quit")) {
+    } else if (!strcmp(cmd, "quit") || !strcmp(cmd, "exit")) {
         exit(0);
     } else if (!strcmp(cmd, "cd")) {
         char* target = "~";
