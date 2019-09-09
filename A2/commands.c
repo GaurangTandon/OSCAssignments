@@ -125,20 +125,10 @@ void handlePipelining(char* commands, int noOfCommands) {
                 dup2(pipes[!parity][0], STDIN_FILENO);
             }
 
-            // execCommand(cmd); this doesn't work??
             char* cmd2 = (char*)malloc(1000);
             memcpy(cmd2, cmd, 1000);
 
-            int cnt = 1;
-            char **cmm = (char**)malloc(1000), *ptr;
-            ptr = cmm[0] = strtok(cmd2, "\t ");
-
-            while ((ptr = strtok(NULL, "\t "))) {
-                cmm[cnt++] = ptr;
-            }
-            cmm[cnt++] = '\0';
-            execvp(cmm[0], cmm);
-            printf("Couldn't execvp");
+            execCommand(cmd2);
             exit(0);
         } else {
             wait(NULL);
@@ -295,7 +285,8 @@ void execCommand(char* command) {
             }
         }
         ls(dir, hiddenShow, longlist);
-    } else if (!strcmp(cmd, "quit") || !strcmp(cmd, "exit")) {
+    } else if (!strcmp(cmd, "quit") || !strcmp(cmd, "exit") ||
+               !strcmp(cmd, "q")) {
         exit(0);
     } else if (!strcmp(cmd, "cd")) {
         char* target = "~";
