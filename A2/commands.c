@@ -93,10 +93,21 @@ void handlePipelining(char* commands, int noOfCommands) {
     pipes[0] = evenPipe;
     pipes[1] = oddPipe;
     int parity;
+    char** allCmds = (char**)malloc(sizeof(char*) * 400);
 
-    while (cmd) {
+    allCmds[0] = cmd;
+    while ((cmd = strtok(NULL, PIPE))) {
+        allCmds[++cmdIndex] = cmd;
+    }
+    cmdIndex = 0;
+
+    while (cmdIndex < noOfCommands) {
+        char* cmd = allCmds[cmdIndex];
         parity = cmdIndex & 1;
-        pipe(pipes[parity]);
+        if (pipe(pipes[parity]) < 0) {
+            perror("Pipe couldn't init");
+            return;
+        }
 
         pid_t pid = fork();
 
@@ -108,7 +119,7 @@ void handlePipelining(char* commands, int noOfCommands) {
             if (cmdIndex == 0) {
                 dup2(evenPipe[1], STDOUT_FILENO);
             } else if (cmdIndex == noOfCommands - 1) {
-                dup2(pipes[parity][0], STDIN_FILENO);
+                dup2(pipes[!parity][0], STDIN_FILENO);
             } else {
                 dup2(pipes[parity][1], STDOUT_FILENO);
                 dup2(pipes[!parity][0], STDIN_FILENO);
@@ -117,36 +128,30 @@ void handlePipelining(char* commands, int noOfCommands) {
             // execCommand(cmd); this doesn't work??
             char* cmd2 = (char*)malloc(1000);
             memcpy(cmd2, cmd, 1000);
-            cmd2 = strtok(cmd2, "\t ");
 
             int cnt = 1;
             char **cmm = (char**)malloc(1000), *ptr;
-            ptr = cmm[0] = strtok(cmd, "\t ");
+            ptr = cmm[0] = strtok(cmd2, "\t ");
 
             while ((ptr = strtok(NULL, "\t "))) {
                 cmm[cnt++] = ptr;
             }
             cmm[cnt++] = '\0';
-
-            execvpe(cmd2, cmm, __environ);
+            execvp(cmm[0], cmm);
             printf("Couldn't execvp");
             exit(0);
-        }
-
-        if (cmdIndex == 0) {
-            close(evenPipe[1]);
-        } else if (cmdIndex == noOfCommands - 1) {
-            close(pipes[parity][0]);
         } else {
-            close(pipes[parity][1]);
-            close(pipes[!parity][0]);
+            wait(NULL);
+            if (cmdIndex == 0) {
+                close(evenPipe[1]);
+            } else if (cmdIndex == noOfCommands - 1) {
+                close(pipes[!parity][0]);
+            } else {
+                close(pipes[parity][1]);
+                close(pipes[!parity][0]);
+            }
+            cmdIndex++;
         }
-        // exit(0);
-        wait(NULL);
-        // waitpid(pid, NULL, 0);
-
-        cmd = strtok(NULL, PIPE);
-        cmdIndex++;
     }
 }
 
