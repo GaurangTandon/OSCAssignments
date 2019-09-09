@@ -73,12 +73,9 @@ void checkPending() {
 }
 
 int countPipes(const char* commands) {
-    char* cmd = (char*)malloc(1000);
-    memcpy(cmd, commands, strlen(commands) + 1);
-
     int i = 0, c = 0;
-    while (cmd[i]) {
-        c += (cmd[i] == '|');
+    while (commands[i]) {
+        c += (commands[i] == '|');
         i++;
     }
 
@@ -217,8 +214,11 @@ void execCommand(char* command) {
         return;
     }
 
-    char* cmd2 = (char*)malloc(strlen(command));
+    int cmdLength = strlen(command);
+    char* cmd2 = (char*)malloc(cmdLength);
+    char* cmd3 = (char*)malloc(cmdLength);
     memcpy(cmd2, command, strlen(command) + 1);
+    memcpy(cmd3, command, strlen(command) + 1);
     addNewCommand(cmd2);
 
     int c = countPipes(cmd2);
@@ -226,6 +226,10 @@ void execCommand(char* command) {
         handlePipelining(cmd2, c + 1);
         return;
     }
+
+    int hasInput = 0, hasOutput = 0, hasAppend = 0;
+    char *inp = (char*)calloc(0, 0), *outp = (char*)calloc(0, 0),
+         *append = (char*)calloc(0, 0);
 
     // first parse main command and all its args
     char* delim = "\t ";
@@ -243,9 +247,35 @@ void execCommand(char* command) {
         }
         if (!arg)
             break;
+        if (!strcmp(arg, "<")) {
+            hasInput = 1;
+            continue;
+        }
+        if (hasInput) {
+            inp = arg;
+            hasInput = 0;
+            continue;
+        }
+        if (!strcmp(arg, ">")) {
+            hasOutput = 1;
+            continue;
+        }
+        if (hasOutput) {
+            outp = arg;
+            hasOutput = 0;
+            continue;
+        }
+        if (!strcmp(arg, ">>")) {
+            hasAppend = 1;
+            continue;
+        }
+        if (hasAppend) {
+            append = arg;
+            hasAppend = 0;
+            continue;
+        }
         args[argCount++] = arg;
     }
-
     for (int i = 0; i < argCount; i++) {
         args[i] = trim(args[i]);
     }
@@ -259,6 +289,35 @@ void execCommand(char* command) {
             isBackgroundJob = 1;
             break;
         }
+    }
+
+    int fd1 = -1, fd2 = -1;
+    // save original file descriptors for later restoration
+    int fdin = dup(0);
+    int fdout = dup(1);
+    if (inp && strlen(inp)) {
+        fd1 = open(inp, O_RDONLY, 0644);
+        if (fd1 < 0) {
+            perror("Opening < file");
+            return;
+        }
+        dup2(fd1, STDIN_FILENO);
+    }
+    if (outp && strlen(outp)) {
+        fd2 = open(outp, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+        if (fd2 < 0) {
+            perror("Opening > file");
+            return;
+        }
+        dup2(fd2, STDOUT_FILENO);
+    }
+    if (append && strlen(append)) {
+        fd2 = open(append, O_CREAT | O_WRONLY | O_APPEND, 0644);
+        if (fd2 < 0) {
+            perror("Opening >> file");
+            return;
+        }
+        dup2(fd2, STDOUT_FILENO);
     }
 
     if (!strcmp(cmd, "ls")) {
@@ -426,6 +485,9 @@ void execCommand(char* command) {
             printf("%s\n", ans);
         else
             printf("var %s not found\n", var);
+    } else if (!strcmp(cmd, "fg")) {
+    } else if (!strcmp(cmd, "bg")) {
+    } else if (!strcmp(cmd, "overkill")) {
     } else {
         int idOfChild = execProcess(cmd, args, isBackgroundJob);
 
@@ -434,5 +496,17 @@ void execCommand(char* command) {
             pendingIDs[pendingCount] = idOfChild;
             pendingCount++;
         }
+    }
+    if (fd1 >= 0) {
+        close(fd1);
+    }
+    if (fd2 >= 0) {
+        close(fd2);
+    }
+    if (inp && strlen(inp)) {
+        dup2(fdin, STDIN_FILENO);
+    }
+    if ((outp && strlen(outp)) || (append && strlen(append))) {
+        dup2(fdout, STDOUT_FILENO);
     }
 }
