@@ -486,8 +486,52 @@ void execCommand(char* command) {
         else
             printf("var %s not found\n", var);
     } else if (!strcmp(cmd, "fg")) {
+        if (argCount != 2) {
+            printf("Usage: fg <jobNumber>\n");
+            return;
+        }
+
+        int jobn = atoi(args[1]);
+
+        if (jobn > pendingCount || jobn <= 0) {
+            printf("Invalid job number\n");
+            return;
+        }
+
+        int pid = pendingIDs[jobn - 1];
+        kill(pid, SIGCONT);
+        kill(pid, SIGTTIN);
+        kill(pid, SIGTTOU);
+
+        for (int i = jobn - 1; i < pendingCount - 1; i++) {
+            pendingNames[i] = pendingNames[i + 1];
+            pendingIDs[i] = pendingIDs[i + 1];
+        }
+        pendingCount--;
+
+        waitpid(pid, NULL, WUNTRACED);
     } else if (!strcmp(cmd, "bg")) {
+        if (argCount != 2) {
+            printf("Usage: bg <jobNumber>\n");
+            return;
+        }
+
+        int jobn = atoi(args[1]);
+
+        if (jobn > pendingCount || jobn <= 0) {
+            printf("Invalid job number\n");
+            return;
+        }
+
+        int pid = pendingIDs[jobn - 1];
+        kill(pid, SIGTTIN);
+        kill(pid, SIGCONT);
     } else if (!strcmp(cmd, "overkill")) {
+        for (int i = 0; i < pendingCount; i++) {
+            kill(pendingIDs[i], 9);
+        }
+
+        checkPending();
     } else {
         int idOfChild = execProcess(cmd, args, isBackgroundJob);
 
