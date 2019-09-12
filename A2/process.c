@@ -19,12 +19,8 @@ int execProcess(char* cmd, char** args, int isBackgroundJob) {
         return -1;
     } else if (child == 0) {
         if (isBackgroundJob) {
-            // pid=0,gid=0
+            // pid=0, gid=0
             setpgid(0, 0);
-            // do not show input output error
-            close(STDIN_FILENO);
-            close(STDOUT_FILENO);
-            close(STDERR_FILENO);
         }
 
         /**
@@ -42,6 +38,9 @@ int execProcess(char* cmd, char** args, int isBackgroundJob) {
         // wait for child to complete
         if (!isBackgroundJob)
             wait(NULL);
+        else {
+            tcsetpgrp(0, getpgrp());
+        }
     }
     return (isBackgroundJob ? child : -1);
 }

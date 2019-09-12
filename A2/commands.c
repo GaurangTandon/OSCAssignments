@@ -12,6 +12,7 @@
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
+#include "cronjob.h"
 #include "directory.h"
 #include "history.h"
 #include "pinfo.h"
@@ -499,9 +500,21 @@ void execCommand(char* command) {
         }
 
         int pid = pendingIDs[jobn - 1];
+        // group1
+        signal(SIGTTIN, SIG_IGN);
+        signal(SIGTTOU, SIG_IGN);
+        tcsetpgrp(STDIN_FILENO, pid);
         kill(pid, SIGCONT);
-        kill(pid, SIGTTIN);
-        kill(pid, SIGTTOU);
+
+        waitpid(pid, NULL, 0);
+
+        tcsetpgrp(0, getpgrp());
+        signal(SIGTTIN, SIG_DFL);
+        signal(SIGTTOU, SIG_DFL);
+
+        // group2
+        // setpgid(pid, getpgrp());
+        // kill(pid, SIGCONT);
 
         for (int i = jobn - 1; i < pendingCount - 1; i++) {
             pendingNames[i] = pendingNames[i + 1];
@@ -509,7 +522,6 @@ void execCommand(char* command) {
         }
         pendingCount--;
 
-        waitpid(pid, NULL, WUNTRACED);
     } else if (!strcmp(cmd, "bg")) {
         if (argCount != 2) {
             printf("Usage: bg <jobNumber>\n");
@@ -532,6 +544,8 @@ void execCommand(char* command) {
         }
 
         checkPending();
+    } else if (!strcmp(cmd, "cronjob")) {
+        cronjobParse(args);
     } else {
         int idOfChild = execProcess(cmd, args, isBackgroundJob);
 
