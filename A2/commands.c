@@ -164,7 +164,9 @@ void handleArrows(char* command) {
         printf("Command doesn't exist");
     } else {
         command = commandHistory[storedCount - offset];
+        l = strlen(command);
         memcpy(cmd2, command, l + 1);
+        cmd2[l] = 0;
         printPrompt();
         printf("%s\n", cmd2);
         addNewCommand(cmd2);
