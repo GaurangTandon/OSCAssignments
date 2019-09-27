@@ -45,7 +45,7 @@ char* getProcStatus(char* pid) {
         // printf("Path is %s", path);
         return NULL;
     }
-    char* buf = (char*)malloc(1000);
+    char* buf = (char*)calloc(1000, 1);
     int charsread = read(statfile, buf, 10000);
     if (charsread == 0) {
         perror("Couldn't read statfile");
@@ -62,10 +62,10 @@ char* getProcStatus(char* pid) {
 
 void printPinfo(int argCount, char** args) {
     int pid = getpid();
-    char* pid_str = (char*)malloc(100);
+    char* pid_str = (char*)calloc(100, 1);
     snprintf(pid_str, 100, "%d", pid);
     int len = log10(pid) + 1;
-    char* str = (char*)malloc(len * sizeof(char));
+    char* str = (char*)calloc(len * sizeof(char), 1);
     sprintf(str, "%d", pid);
 
     int isSelf = 1;
@@ -84,7 +84,7 @@ void printPinfo(int argCount, char** args) {
     strcat(path, "/stat");
     strcat(path, "m");
     int statfile = open(path, O_RDONLY);
-    buf = (char*)malloc(1000);
+    buf = (char*)calloc(1000, 1);
     read(statfile, buf, 10000);
     char* ptr = strtok(buf, " ");
     printf("Memory:\t\t\t%s\n", ptr);
@@ -93,7 +93,7 @@ void printPinfo(int argCount, char** args) {
     char path2[100] = "/proc/";
     strcat(path2, str);
     strcat(path2, "/exe");
-    buf = (char*)malloc(1000);
+    buf = (char*)calloc(1000, 1);
     readlink(path2, buf, 1000);
 
     if (isSelf) {
@@ -110,7 +110,7 @@ char* getProcPath(char* pid) {
     char path2[100] = "/proc/";
     strcat(path2, pid);
     strcat(path2, "/exe");
-    char* buf = (char*)malloc(1000);
+    char* buf = (char*)calloc(1000, 1);
     readlink(path2, buf, 1000);
 
     return buf;

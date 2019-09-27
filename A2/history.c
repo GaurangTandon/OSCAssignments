@@ -19,7 +19,7 @@ char* fileName;
 void retrieveStored() {
     int fd = open(fileName, O_CREAT | O_RDONLY, S_IRWXU);
     // nevar use square brackets
-    char* buf = (char*)malloc(1000);
+    char* buf = (char*)calloc(1000, 1);
     read(fd, buf, 1000);
 
     if (fd < 0) {
@@ -83,7 +83,7 @@ void printHistory(int n) {
 }
 
 void historySetup() {
-    fileName = (char*)malloc(1000);
+    fileName = (char*)calloc(1000, 1);
     strcat(fileName, expectedHomeDir);
     strcat(fileName, "/history.txt");
     retrieveStored();

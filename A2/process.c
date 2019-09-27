@@ -68,7 +68,7 @@ int execProcess(char* cmd, char** args, int isBackgroundJob) {
 
 void interruptPrint(int doNotPrintFirstLine) {
     int fd = open("/proc/interrupts", O_RDONLY);
-    char* value = (char*)malloc(10000);
+    char* value = (char*)calloc(10000, 1);
     read(fd, value, 10000);
 
     char* line = strtok(value, "\n");
@@ -95,7 +95,7 @@ void interruptPrint(int doNotPrintFirstLine) {
 
 void dirtyMemPrint() {
     int fd = open("/proc/meminfo", O_RDONLY);
-    char* value = (char*)malloc(10000);
+    char* value = (char*)calloc(10000, 1);
     read(fd, value, 10000);
     char* ptr = strtok(value, "\n");
     for (int i = 0; i < 16; i++) {

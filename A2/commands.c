@@ -43,13 +43,13 @@ int countPipes(const char* commands) {
 
 void handlePipelining(char* commands, int noOfCommands) {
     char *PIPE = "|", *cmd = strtok(commands, PIPE);
-    int cmdIndex = 0, *oddPipe = (int*)malloc(sizeof(int) * 2),
-        *evenPipe = (int*)malloc(sizeof(int) * 2),
-        **pipes = (int**)malloc(sizeof(int*) * 2);
+    int cmdIndex = 0, *oddPipe = (int*)calloc(sizeof(int) * 2, 1),
+        *evenPipe = (int*)calloc(sizeof(int) * 2, 1),
+        **pipes = (int**)calloc(sizeof(int*) * 2, 1);
     pipes[0] = evenPipe;
     pipes[1] = oddPipe;
     int parity;
-    char** allCmds = (char**)malloc(sizeof(char*) * 400);
+    char** allCmds = (char**)calloc(sizeof(char*) * 400, 1);
 
     allCmds[0] = cmd;
     while ((cmd = strtok(NULL, PIPE))) {
@@ -82,7 +82,7 @@ void handlePipelining(char* commands, int noOfCommands) {
                 dup2(pipes[!parity][0], STDIN_FILENO);
             }
 
-            char* cmd2 = (char*)malloc(1000);
+            char* cmd2 = (char*)calloc(1000, 1);
             memcpy(cmd2, cmd, 1000);
 
             execCommand(cmd2);
@@ -103,9 +103,9 @@ void handlePipelining(char* commands, int noOfCommands) {
 }
 
 char** tokenizeCommands(char* allCommandsString, int* commandsCountRef) {
-    char** commands = (char**)malloc(100);
+    char** commands = (char**)calloc(1000, 1);
     for (int i = 0; i < 100; i++) {
-        commands[i] = (char*)malloc(100);
+        commands[i] = (char*)calloc(1000, 1);
     }
     char* delim = ";";
 
@@ -148,10 +148,14 @@ int keyboardWasPressed() {
 }
 
 void handleArrows(char* command) {
-    char* cmd2 = (char*)malloc(strlen(command));
-    memcpy(cmd2, command, strlen(command) + 1);
+    int l = strlen(command);
+    char* cmd2 = (char*)calloc(l + 1, 1);
+    memcpy(cmd2, command, l + 1);
+
+    cmd2[l] = 0;
     int offset = 0;
-    for (int i = 2; i < (int)strlen(command); i += 3) {
+
+    for (int i = 2; i < (int)l; i += 3) {
         offset += (command[i] == 'A' ? 1 : -1);
     }
 
@@ -160,9 +164,10 @@ void handleArrows(char* command) {
         printf("Command doesn't exist");
     } else {
         command = commandHistory[storedCount - offset];
-        memcpy(cmd2, command, strlen(command) + 1);
+        memcpy(cmd2, command, l + 1);
         printPrompt();
         printf("%s\n", cmd2);
+        addNewCommand(cmd2);
         execCommand(cmd2);
     }
 }
@@ -175,8 +180,8 @@ void execCommand(char* command) {
     }
 
     int cmdLength = strlen(command);
-    char* cmd2 = (char*)malloc(cmdLength);
-    char* cmd3 = (char*)malloc(cmdLength);
+    char* cmd2 = (char*)calloc(cmdLength, 1);
+    char* cmd3 = (char*)calloc(cmdLength, 1);
     memcpy(cmd2, command, strlen(command) + 1);
     memcpy(cmd3, command, strlen(command) + 1);
 
@@ -192,7 +197,7 @@ void execCommand(char* command) {
 
     // first parse main command and all its args
     char* delim = "\t ";
-    char** args = (char**)malloc(100);
+    char** args = (char**)calloc(1000, 1);
     int argCount = 0;
     int firstCall = 1;
 
@@ -333,7 +338,7 @@ void execCommand(char* command) {
     } else if (!strcmp(cmd, "pwd")) {
         printPWD(1, 1);
     } else if (!strcmp(cmd, "echo")) {
-        char* finalArg = (char*)malloc(1000);
+        char* finalArg = (char*)calloc(1000, 1);
         int len = 0;
         for (int i = 1; i < argCount; i++) {
             char* arg = args[i];
@@ -381,7 +386,7 @@ void execCommand(char* command) {
         for (int i = 0; i < pendingCount; i++) {
             if (pendingIDs[i] == 0)
                 continue;
-            char* pid = (char*)malloc(100);
+            char* pid = (char*)calloc(1000, 1);
             snprintf(pid, 100, "%d", pendingIDs[i]);
 
             // check status of process here
@@ -420,7 +425,7 @@ void execCommand(char* command) {
         char* value = "";
 
         if (argCount > 2) {
-            value = (char*)malloc(1000);
+            value = (char*)calloc(1000, 1);
             strcat(value, args[2]);
         }
 

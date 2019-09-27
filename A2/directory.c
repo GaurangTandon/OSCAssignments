@@ -70,7 +70,7 @@ void initDirSetup(int updateHome) {
     if (updateHome)
         getcwd(expectedHomeDir, 1000);
 
-    char* temp = (char*)malloc(1000);
+    char* temp = (char*)calloc(1000, 1);
     getcwd(temp, 1000);
     char* ptr = strtok(temp, "/");
     currDirectoryPathLen = 0;

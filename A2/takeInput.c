@@ -15,8 +15,8 @@ char** takeInput(int* commandsCount) {
     }
 
     if (len != 0) {
-        char* x = (char*)malloc(1000);
-        memcpy(x, s, strlen(s));
+        char* x = (char*)calloc(1000, 1);
+        memcpy(x, s, strlen(s) + 1);
         // do not store up arrow stuff in history
         if (x[0] != 27)
             addNewCommand(x);
