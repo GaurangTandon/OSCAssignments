@@ -15,20 +15,20 @@
 #include "takeInput.h"
 
 void sigintHandlerC() {
-    if (processpid > 0 && processpid != getpid()) {
+    if (foregroundProcId > 0 && foregroundProcId != getpid()) {
         raise(SIGINT);
     }
 }
 
 void sigintHandlerZ() {
-    if (processpid > 0 && processpid != getpid()) {
+    if (foregroundProcId > 0 && foregroundProcId != getpid()) {
         raise(SIGTSTP);
     }
 }
 
 void inputter() {
     int commandsCount = 0;
-    processpid = 0;
+    foregroundProcId = 0;
     char** commands = takeInput(&commandsCount);
     for (int i = 0; i < commandsCount; i++) {
         execCommand(commands[i]);

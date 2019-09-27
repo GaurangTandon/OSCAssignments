@@ -26,39 +26,9 @@
 char* pendingNames[100];
 int pendingIDs[100];
 int pendingCount = 0;
-int processpid = -1;
+int foregroundProcId = -1;
 
 void execCommand(char* command);
-
-void checkPending() {
-    for (int i = 0; i < pendingCount; i++) {
-        if (pendingIDs[i] == 0)
-            continue;
-        int st;
-        int ret = waitpid(pendingIDs[i], &st, WNOHANG);
-
-        if (ret == -1) {
-            char buf[100];
-            sprintf(buf, "Error checking status %d", pendingIDs[i]);
-            perror(buf);
-            continue;
-        } else if (ret == 0) {
-            continue;
-        } else if (WIFEXITED(st)) {
-            int ec = WEXITSTATUS(st);
-            printf("Process %s with id %d exited ", pendingNames[i],
-                   pendingIDs[i]);
-            if (ec == 0) {
-                printf("normally");
-            } else {
-                printf("with status %d", ec);
-            }
-
-            printf("\n");
-        }
-    }
-    fflush(stdout);
-}
 
 int countPipes(const char* commands) {
     int i = 0, c = 0;
@@ -478,7 +448,7 @@ void execCommand(char* command) {
         }
 
         int pid = pendingIDs[jobn - 1];
-        processpid = pid;
+        foregroundProcId = pid;
 
         signal(SIGTTIN, SIG_IGN);
         signal(SIGTTOU, SIG_IGN);
@@ -518,16 +488,14 @@ void execCommand(char* command) {
         kill(pid, SIGCONT);
     } else if (!strcmp(cmd, "overkill")) {
         for (int i = 0; i < pendingCount; i++) {
-            if (!pendingIDs[i])
+            if (pendingIDs[i]) {
                 kill(pendingIDs[i], 9);
+            }
         }
-
-        checkPending();
     } else if (!strcmp(cmd, "cronjob")) {
         cronjobParse(args);
     } else {
         int idOfChild = execProcess(cmd, args, isBackgroundJob);
-
         if (idOfChild != -1) {
             pendingNames[pendingCount] = cmd2;
             pendingIDs[pendingCount] = idOfChild;

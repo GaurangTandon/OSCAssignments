@@ -38,7 +38,7 @@ int execProcess(char* cmd, char** args, int isBackgroundJob) {
     } else {
         // wait for child to complete
         if (!isBackgroundJob) {
-            processpid = child;
+            foregroundProcId = child;
 
             signal(SIGTTIN, SIG_IGN);
             signal(SIGTTOU, SIG_IGN);
@@ -57,7 +57,7 @@ int execProcess(char* cmd, char** args, int isBackgroundJob) {
                 pendingNames[pendingCount] = cmd;
                 pendingCount++;
             }
-            processpid = 0;
+            foregroundProcId = 0;
         } else {
             setpgid(child, 0);
             tcsetpgrp(0, getpgrp());
