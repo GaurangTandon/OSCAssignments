@@ -36,10 +36,10 @@ int execProcess(char* cmd, char** args, int isBackgroundJob) {
 
         exit(0);
     } else {
-        processpid = child;
-
         // wait for child to complete
         if (!isBackgroundJob) {
+            processpid = child;
+
             signal(SIGTTIN, SIG_IGN);
             signal(SIGTTOU, SIG_IGN);
             setpgid(child, 0);

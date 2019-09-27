@@ -65,8 +65,8 @@ void childTermination() {
     printf("\n");
     fflush(stdout);
     // print prompt again, do not wait for input as inputter is already there
-    \  // doing this
-        printPrompt();
+    // doing this
+    printPrompt();
 
     return;
 }
