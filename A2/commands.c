@@ -519,6 +519,7 @@ void execCommand(char* command) {
     } else if (!strcmp(cmd, "overkill")) {
         for (int i = 0; i < pendingCount; i++) {
             int pid = pendingIDs[i];
+
             if (pid) {
                 // stackoverflow.com/questions/14110738/how-to-terminate-a-child-process-which-is-running-another-program-by-doing-exec
                 // give the child a chance to exit gracefully and then
@@ -527,8 +528,7 @@ void execCommand(char* command) {
                 usleep(1000);
                 int st;
                 waitpid(pid, &st, WNOHANG);
-                if (!WIFEXITED(st))
-                    kill(pid, SIGKILL);
+                kill(pid, SIGKILL);
             }
         }
     } else if (!strcmp(cmd, "cronjob")) {
