@@ -18,7 +18,6 @@
 #include "pinfo.h"
 #include "print.h"
 #include "process.h"
-#include "processpid.c"
 #include "prompt.h"
 #include "stringers.h"
 
@@ -32,17 +31,15 @@ int processpid = -1;
 void execCommand(char* command);
 
 void checkPending() {
-    int statusThings[pendingCount];
-
     for (int i = 0; i < pendingCount; i++) {
-        statusThings[i] = 0;
+        if (pendingIDs[i] == 0)
+            continue;
         int st;
         int ret = waitpid(pendingIDs[i], &st, WNOHANG);
         if (ret == -1) {
             char buf[100];
             sprintf(buf, "Error checking status %d", pendingIDs[i]);
             perror(buf);
-            statusThings[i] = 1;
             continue;
         } else if (ret == 0) {
             continue;
@@ -57,22 +54,9 @@ void checkPending() {
             }
 
             printf("\n");
-
-            statusThings[i] = 1;
         }
     }
     fflush(stdout);
-    int o = pendingCount;
-    pendingCount = 0;
-
-    for (int i = 0, j = 0; i < o; i++) {
-        if (!statusThings[i]) {
-            pendingIDs[j] = pendingIDs[i];
-            pendingNames[j] = pendingNames[i];
-            j++;
-            pendingCount++;
-        }
-    }
 }
 
 int countPipes(const char* commands) {
@@ -289,6 +273,12 @@ void execCommand(char* command) {
     int isBackgroundJob = 0;
     for (int i = 0; i < argCount; i++) {
         if (strcmp(args[i], "&") == 0) {
+            // remove & from arguments
+            for (int j = i + 1; j < argCount; j++) {
+                args[j - 1] = args[j];
+            }
+            args[argCount - 1] = NULL;
+            argCount--;
             isBackgroundJob = 1;
             break;
         }
@@ -449,7 +439,7 @@ void execCommand(char* command) {
         }
         union sigval;
 
-        int pid = atoi(args[1]), signalNumber = atoi(args[2]);
+        int pid = pendingIDs[atoi(args[1]) - 1], signalNumber = atoi(args[2]);
 
         kill(pid, signalNumber);
     } else if (!strcmp(cmd, "setenv")) {
@@ -517,13 +507,7 @@ void execCommand(char* command) {
         // group2
         // setpgid(pid, getpgrp());
         // kill(pid, SIGCONT);
-
-        for (int i = jobn - 1; i < pendingCount - 1; i++) {
-            pendingNames[i] = pendingNames[i + 1];
-            pendingIDs[i] = pendingIDs[i + 1];
-        }
-        pendingCount--;
-
+        pendingIDs[jobn - 1] = 0;
     } else if (!strcmp(cmd, "bg")) {
         if (argCount != 2) {
             printf("Usage: bg <jobNumber>\n");
@@ -542,7 +526,8 @@ void execCommand(char* command) {
         kill(pid, SIGCONT);
     } else if (!strcmp(cmd, "overkill")) {
         for (int i = 0; i < pendingCount; i++) {
-            kill(pendingIDs[i], 9);
+            if (!pendingIDs[i])
+                kill(pendingIDs[i], 9);
         }
 
         checkPending();
