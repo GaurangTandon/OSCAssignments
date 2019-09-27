@@ -390,13 +390,24 @@ void execCommand(char* command) {
             printf("[%d] %s %s [%s]\n", i + 1, status, pendingNames[i], pid);
         }
     } else if (!strcmp(cmd, "kjob")) {
-        if (argCount < 3) {
+        if (argCount != 3) {
             printf("Error: usage kjob <jobNumber> <signalNumber>\n");
             return;
         }
         union sigval;
+        int idx = atoi(args[1]) - 1;
 
-        int pid = pendingIDs[atoi(args[1]) - 1], signalNumber = atoi(args[2]);
+        if (idx >= pendingCount || idx < 0) {
+            printf("Invalid job id");
+            return;
+        }
+
+        int pid = pendingIDs[idx], signalNumber = atoi(args[2]);
+
+        if (pid == 0) {
+            printf("Invalid job id");
+            return;
+        }
 
         kill(pid, signalNumber);
     } else if (!strcmp(cmd, "setenv")) {
@@ -449,6 +460,12 @@ void execCommand(char* command) {
         }
 
         int pid = pendingIDs[jobn - 1];
+
+        if (pid == 0) {
+            printf("Invalid job number\n");
+            return;
+        }
+
         foregroundProcId = pid;
 
         signal(SIGTTIN, SIG_IGN);
@@ -485,6 +502,11 @@ void execCommand(char* command) {
         }
 
         int pid = pendingIDs[jobn - 1];
+        if (pid == 0) {
+            printf("Invalid job number\n");
+            return;
+        }
+
         kill(pid, SIGTTIN);
         kill(pid, SIGCONT);
     } else if (!strcmp(cmd, "overkill")) {

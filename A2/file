@@ -1,0 +1,20 @@
+setenv a b
+env
+unsetenv a
+unsetenv
+unsetenv ab
+ebc
+env
+exit
+sort < pinfo.c > l1
+cat l1
+rm l1
+cat < forkpid.c | sort | grep e
+cat < pinfo.c | sort | grep e
+cat < pinfo.c | sort | grep e | wc -l
+exit
+cat history.txt > file
+cat file
+rm file
+history
+cat history.txt >> file
