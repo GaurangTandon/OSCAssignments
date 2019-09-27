@@ -23,7 +23,7 @@ void cronJob(char* cmd, int interval, int time) {
 
 void cronjobParse(char** args) {
     char* cmd = (char*)calloc(1, 1000);
-    int interval, time;
+    int interval = -1, time = -1;
 
     int i = 0;
     int needs[3] = {0, 0, 0};
@@ -60,6 +60,12 @@ void cronjobParse(char** args) {
             needs[2] = 0;
         }
         i++;
+    }
+
+    if (!cmd[0] || interval == -1 || time == -1) {
+        printf(
+            "Invalid format. Syntax: cronjob -c <cmd> -t <time> -p <period>");
+        return;
     }
 
     cronJob(cmd, interval, time);
