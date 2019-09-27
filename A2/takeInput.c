@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "commands.h"
+#include "history.h"
 #include "prompt.h"
 
 char** takeInput(int* commandsCount) {
@@ -14,6 +15,9 @@ char** takeInput(int* commandsCount) {
     }
 
     if (len != 0) {
+        char* x = (char*)malloc(1000);
+        memcpy(x, s, strlen(s));
+        addNewCommand(x);
         return tokenizeCommands(s, commandsCount);
     }
 

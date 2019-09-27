@@ -208,7 +208,6 @@ void execCommand(char* command) {
     char* cmd3 = (char*)malloc(cmdLength);
     memcpy(cmd2, command, strlen(command) + 1);
     memcpy(cmd3, command, strlen(command) + 1);
-    addNewCommand(cmd2);
 
     int c = countPipes(cmd2);
     if (c) {
