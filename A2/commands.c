@@ -264,6 +264,7 @@ void execCommand(char* command) {
         }
         args[argCount++] = arg;
     }
+
     for (int i = 0; i < argCount; i++) {
         args[i] = trim(args[i]);
     }
@@ -282,6 +283,18 @@ void execCommand(char* command) {
             argCount--;
             isBackgroundJob = 1;
             break;
+        }
+    }
+
+    for (int i = 0; i < argCount; i++) {
+        if (strcmp(args[i], "<") == 0 || strcmp(args[i], ">>") == 0 ||
+            strcmp(args[i], ">") == 0) {
+            // remove them from arguments
+            for (int j = i + 2; j < argCount; j++) {
+                args[j - 2] = args[j];
+            }
+            args[argCount - 2] = NULL;
+            argCount -= 2;
         }
     }
 
