@@ -5,15 +5,19 @@
 #define min(x, y) ((x) <= (y)) ? (x) : (y)
 
 void cronJob(char* cmd, int interval, int time) {
-    int curr = 0;
-    while (curr < time) {
-        int sleepTime = min(time - curr, interval);
-        sleep(sleepTime);
+    int f = fork();
+    // do it in child process
+    if (f == 0) {
+        int curr = 0;
+        while (curr < time) {
+            int sleepTime = min(time - curr, interval);
+            sleep(sleepTime);
 
-        char* cpy = (char*)calloc(1, 1000);
-        strcat(cpy, cmd);
-        execCommand(cpy);
-        curr += sleepTime;
+            char* cpy = (char*)calloc(1, 1000);
+            strcat(cpy, cmd);
+            execCommand(cpy);
+            curr += sleepTime;
+        }
     }
 }
 
