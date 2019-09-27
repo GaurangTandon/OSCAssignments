@@ -60,7 +60,7 @@ void childTermination() {
     if (WIFEXITED(st) && WEXITSTATUS(st) == EXIT_SUCCESS) {
         printf("normally.");
     } else {
-        printf("with nzec.");
+        printf("with nzec %d.", WEXITSTATUS(st));
     }
     printf("\n");
     fflush(stdout);
