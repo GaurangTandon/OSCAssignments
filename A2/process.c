@@ -37,7 +37,6 @@ int execProcess(char* cmd, char** args, int isBackgroundJob) {
         exit(0);
     } else {
         processpid = child;
-        int st;
 
         // wait for child to complete
         if (!isBackgroundJob) {
