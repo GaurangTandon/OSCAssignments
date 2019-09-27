@@ -14,15 +14,13 @@
 #include "takeInput.h"
 
 void sigintHandlerC(int sig_num) {
-    int process = processpid;
-    if (process > 0 && process != getpid()) {
+    if (processpid > 0 && processpid != getpid()) {
         raise(SIGINT);
     }
 }
 
 void sigintHandlerZ(int sig_num) {
-    int process = processpid;
-    if (process > 0 && process != getpid()) {
+    if (processpid > 0 && processpid != getpid()) {
         raise(SIGTSTP);
     }
 }

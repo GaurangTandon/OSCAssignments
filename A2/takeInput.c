@@ -17,7 +17,9 @@ char** takeInput(int* commandsCount) {
     if (len != 0) {
         char* x = (char*)malloc(1000);
         memcpy(x, s, strlen(s));
-        addNewCommand(x);
+        // do not store up arrow stuff in history
+        if (x[0] != 27)
+            addNewCommand(x);
         return tokenizeCommands(s, commandsCount);
     }
 
