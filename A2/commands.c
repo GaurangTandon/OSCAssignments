@@ -18,6 +18,7 @@
 #include "pinfo.h"
 #include "print.h"
 #include "process.h"
+#include "processpid.c"
 #include "prompt.h"
 #include "stringers.h"
 
@@ -26,6 +27,7 @@
 char* pendingNames[100];
 int pendingIDs[100];
 int pendingCount = 0;
+int processpid = -1;
 
 void execCommand(char* command);
 
@@ -503,12 +505,12 @@ void execCommand(char* command) {
         // group1
         signal(SIGTTIN, SIG_IGN);
         signal(SIGTTOU, SIG_IGN);
-        tcsetpgrp(STDIN_FILENO, pid);
+        tcsetpgrp(0, __getpgid(pid));
         kill(pid, SIGCONT);
 
-        waitpid(pid, NULL, 0);
+        waitpid(pid, NULL, WUNTRACED);
 
-        tcsetpgrp(0, getpgrp());
+        tcsetpgrp(0, getpid());
         signal(SIGTTIN, SIG_DFL);
         signal(SIGTTOU, SIG_DFL);
 

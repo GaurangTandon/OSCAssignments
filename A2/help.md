@@ -2,7 +2,7 @@
 
 ## PROCESS STATE CODES
 
-on running `ps aux`, these are the things about the stat column:
+on running `ps aux`, these are the things about the stat column: Check them out in `man ps`.
 
        Here are the different values that the s, stat and state output specifiers (header "STAT" or "S") will display to describe the state of a process:
 

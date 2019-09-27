@@ -9,6 +9,31 @@
 #include <unistd.h>
 #include "directory.h"
 
+char* getProcName(int pid) {
+    char path[100] = "/proc/";
+    char p2[100] = {0};
+    snprintf(p2, 10, "%d", pid);
+    strcat(path, p2);
+    strcat(path, "/stat");
+
+    int fd = open(path, O_RDONLY, 0644);
+    if (fd < 0) {
+        perror("Couldn't open proc file");
+        return NULL;
+    }
+
+    char buf[1000], *name = (char*)calloc(1000, 1);
+    read(fd, buf, 1000);
+
+    int x = strlen(buf + 1);
+    // printf("%s\n", buf);
+    char* ptr = strtok(buf, " ");
+    ptr = strtok(NULL, " ");
+    memcpy(name, ptr + 1, x);
+    name[x - 2] = 0;
+    return name;
+}
+
 char* getProcStatus(char* pid) {
     char path[100] = "/proc/";
     strcat(path, pid);

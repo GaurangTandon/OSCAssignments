@@ -7,21 +7,47 @@
 #include "commands.h"
 #include "directory.h"
 #include "history.h"
+#include "pinfo.h"
 #include "prompt.h"
 #include "takeInput.h"
 
-void sigintHandler() {
-    // catching for next time as well
-    signal(SIGINT, sigintHandler);
-    // terminate an ongoing foreground job
-    // or do nothing
+void sigintHandlerC(int sig_num) {
+    int process = processpid;
+    if (process > 0) {
+        kill(process, sig_num);
+        printf("\n");
+        fflush(stdout);
+    } else {
+        printf("\n");
+        takeInput();
+        fflush(stdout);
+    }
+}
+
+void sigintHandlerZ(int sig_num) {
+    int process = processpid;
+
+    if (process > 0) {
+        kill(process, sig_num);
+        char* x = getProcName(process);
+        pendingNames[pendingCount] = x;
+        pendingIDs[pendingCount] = process;
+        pendingCount++;
+        printf("\n");
+        fflush(stdout);
+    } else {
+        printf("\n");
+        takeInput();
+        fflush(stdout);
+    }
 }
 
 void initSetup() {
     initDirSetup(1);
     historySetup();
 
-    signal(SIGINT, sigintHandler);
+    signal(SIGINT, sigintHandlerC);
+    signal(SIGTSTP, sigintHandlerZ);
 }
 
 int main() {
@@ -30,6 +56,7 @@ int main() {
 
     while (1) {
         int commandsCount = 0;
+        processpid = 0;
         char** commands = takeInput(&commandsCount);
         checkPending();
         for (int i = 0; i < commandsCount; i++) {

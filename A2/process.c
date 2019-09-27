@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "commands.h"
 #include "stringers.h"
 #define _GNU_SOURCE
 
@@ -35,9 +36,11 @@ int execProcess(char* cmd, char** args, int isBackgroundJob) {
 
         exit(0);
     } else {
+        processpid = child;
+        int st;
         // wait for child to complete
         if (!isBackgroundJob)
-            wait(NULL);
+            waitpid(child, &st, WUNTRACED);
         else {
             tcsetpgrp(0, getpgrp());
         }
