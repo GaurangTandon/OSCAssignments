@@ -396,6 +396,8 @@ void execCommand(char* command) {
 
     } else if (!strcmp(cmd, "jobs")) {
         for (int i = 0; i < pendingCount; i++) {
+            if (pendingIDs[i] == 0)
+                continue;
             char* pid = (char*)malloc(100);
             snprintf(pid, 100, "%d", pendingIDs[i]);
 
@@ -464,27 +466,28 @@ void execCommand(char* command) {
         }
 
         int pid = pendingIDs[jobn - 1];
-        // group1
+        processpid = pid;
+
         signal(SIGTTIN, SIG_IGN);
         signal(SIGTTOU, SIG_IGN);
-        tcsetpgrp(0, __getpgid(pid));
+        tcsetpgrp(0, pid);
         kill(pid, SIGCONT);
 
-        waitpid(pid, NULL, WUNTRACED);
+        int st;
+        waitpid(pid, &st, WUNTRACED);
 
-        tcsetpgrp(0, getpid());
+        tcsetpgrp(0, getpgrp());
         signal(SIGTTIN, SIG_DFL);
         signal(SIGTTOU, SIG_DFL);
 
-        // group2
-        // setpgid(pid, getpgrp());
-        // kill(pid, SIGCONT);
         pendingIDs[jobn - 1] = 0;
 
-        // similar to that of process.c
-        // if (WIFSTOPPED(st)) {
-        //     // store in jobs array
-        // }
+        // similar to that of process.c, if we get ctrl z
+        if (WIFSTOPPED(st)) {
+            pendingIDs[pendingCount] = pid;
+            pendingNames[pendingCount] = pendingNames[jobn - 1];
+            pendingCount++;
+        }
     } else if (!strcmp(cmd, "bg")) {
         if (argCount != 2) {
             printf("Usage: bg <jobNumber>\n");

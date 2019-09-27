@@ -18,7 +18,7 @@ char* getProcName(int pid) {
 
     int fd = open(path, O_RDONLY, 0644);
     if (fd < 0) {
-        perror("Couldn't open proc file");
+        // perror("Couldn't open proc file");
         return NULL;
     }
 
@@ -40,8 +40,19 @@ char* getProcStatus(char* pid) {
     strcat(path, "/stat");
 
     int statfile = open(path, O_RDONLY);
+    if (statfile < 0) {
+        // perror("Couldn't open statfile");
+        // printf("Path is %s", path);
+        return NULL;
+    }
     char* buf = (char*)malloc(1000);
-    read(statfile, buf, 10000);
+    int charsread = read(statfile, buf, 10000);
+    if (charsread == 0) {
+        perror("Couldn't read statfile");
+        printf("Path is %s", path);
+        return NULL;
+    }
+
     char* ptr = strtok(buf, " ");
     ptr = strtok(NULL, " ");
     ptr = strtok(NULL, " ");
@@ -107,6 +118,8 @@ char* getProcPath(char* pid) {
 
 char* getProcStatusString(char* pid) {
     char* stat = getProcStatus(pid);
+    if (!stat)
+        return NULL;
 
     switch (stat[0]) {
         case 'R':

@@ -1,6 +1,7 @@
 #include "process.h"
 #include <errno.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +10,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include "commands.h"
+#include "pinfo.h"
 #include "stringers.h"
 #define _GNU_SOURCE
 
@@ -19,10 +21,8 @@ int execProcess(char* cmd, char** args, int isBackgroundJob) {
         perror("Could not fork child");
         return -1;
     } else if (child == 0) {
-        if (isBackgroundJob) {
-            // pid=0, gid=0
-            setpgid(0, 0);
-        }
+        // pid=0, gid=0
+        setpgid(0, 0);
 
         /**
          * echo and probably a lot of other shell builtins are really messed up
@@ -38,10 +38,29 @@ int execProcess(char* cmd, char** args, int isBackgroundJob) {
     } else {
         processpid = child;
         int st;
+
         // wait for child to complete
-        if (!isBackgroundJob)
+        if (!isBackgroundJob) {
+            signal(SIGTTIN, SIG_IGN);
+            signal(SIGTTOU, SIG_IGN);
+            setpgid(child, 0);
+            tcsetpgrp(0, __getpgid(child));
+            int st;
             waitpid(child, &st, WUNTRACED);
-        else {
+
+            tcsetpgrp(0, getpgrp());
+            signal(SIGTTIN, SIG_DFL);
+            signal(SIGTTOU, SIG_DFL);
+
+            // if we get ctrl z signal
+            if (WIFSTOPPED(st)) {
+                pendingIDs[pendingCount] = child;
+                pendingNames[pendingCount] = cmd;
+                pendingCount++;
+            }
+            processpid = 0;
+        } else {
+            setpgid(child, 0);
             tcsetpgrp(0, getpgrp());
         }
     }

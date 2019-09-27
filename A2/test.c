@@ -2,5 +2,8 @@
 #include <stdlib.h>
 
 int main(void) {
-    return 1;
+    int a;
+    scanf("%d", &a);
+    printf("%d", a + 1);
+    return 0;
 }
