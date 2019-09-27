@@ -10,11 +10,11 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <termios.h>
-#include <time.h>
 #include <unistd.h>
 #include "cronjob.h"
 #include "directory.h"
 #include "history.h"
+#include "nightswatch.h"
 #include "pinfo.h"
 #include "print.h"
 #include "process.h"
@@ -36,6 +36,7 @@ void checkPending() {
             continue;
         int st;
         int ret = waitpid(pendingIDs[i], &st, WNOHANG);
+
         if (ret == -1) {
             char buf[100];
             sprintf(buf, "Error checking status %d", pendingIDs[i]);
@@ -102,6 +103,7 @@ void handlePipelining(char* commands, int noOfCommands) {
             // configure IO
             if (cmdIndex == 0) {
                 dup2(evenPipe[1], STDOUT_FILENO);
+                // dup2(pipes[parity][1], STDOUT_FILENO);
             } else if (cmdIndex == noOfCommands - 1) {
                 dup2(pipes[!parity][0], STDIN_FILENO);
             } else {
@@ -388,37 +390,7 @@ void execCommand(char* command) {
                 if (!strcmp(args[i], "dirty")) {
                     printValue = 1;
                 }
-                int c = 0;
-                int msec = 0, iterations = 0;
-                interval *= 1000;
-                clock_t before = clock();
-
-                if (printValue)
-                    dirtyMemPrint();
-                else
-                    interruptPrint(c++);
-
-                while (1) {
-                    clock_t difference = clock() - before;
-                    msec = difference * 1000 / CLOCKS_PER_SEC;
-                    iterations++;
-
-                    if (keyboardWasPressed()) {
-                        char c = getchar();
-                        if (c == 'q') {
-                            printf("\n");
-                            fflush(stdout);
-                            break;
-                        }
-                    }
-                    if (msec >= interval) {
-                        before = clock();
-                        if (printValue)
-                            dirtyMemPrint();
-                        else
-                            interruptPrint(c++);
-                    }
-                }
+                nightsprint(printValue, interval);
             }
         }
 
@@ -508,6 +480,11 @@ void execCommand(char* command) {
         // setpgid(pid, getpgrp());
         // kill(pid, SIGCONT);
         pendingIDs[jobn - 1] = 0;
+
+        // similar to that of process.c
+        // if (WIFSTOPPED(st)) {
+        //     // store in jobs array
+        // }
     } else if (!strcmp(cmd, "bg")) {
         if (argCount != 2) {
             printf("Usage: bg <jobNumber>\n");
