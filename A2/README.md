@@ -5,8 +5,9 @@ This shell is designed for the Assignment 2 of CSE.
 ## Features
 
 1. Background process completion notification (when user presses enter) and shows exit code.
-2. History and nightswatch
-3. `ls [-al] [<Directory>]`, `cd`, `pwd`, `echo` implemented on its own.
+2. History and nightswatch. Cronjob and up arrow.
+3. `ls [-al] [<Directory>]`, `cd`, `pwd`, `echo` implemented on its own. Also setenv, unsetenv, etc.
+4. Done with piping and redirection.
 
 ## Files used
 
