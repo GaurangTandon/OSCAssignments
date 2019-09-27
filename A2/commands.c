@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <termios.h>
+#include <time.h>
 #include <unistd.h>
 #include "cronjob.h"
 #include "directory.h"
@@ -488,8 +489,17 @@ void execCommand(char* command) {
         kill(pid, SIGCONT);
     } else if (!strcmp(cmd, "overkill")) {
         for (int i = 0; i < pendingCount; i++) {
-            if (pendingIDs[i]) {
-                kill(pendingIDs[i], 9);
+            int pid = pendingIDs[i];
+            if (pid) {
+                // stackoverflow.com/questions/14110738/how-to-terminate-a-child-process-which-is-running-another-program-by-doing-exec
+                // give the child a chance to exit gracefully and then
+                // forcefully abort it if required
+                kill(pid, SIGTERM);
+                usleep(1000);
+                int st;
+                waitpid(pid, &st, WNOHANG);
+                if (!WIFEXITED(st))
+                    kill(pid, SIGKILL);
             }
         }
     } else if (!strcmp(cmd, "cronjob")) {
