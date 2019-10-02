@@ -19,6 +19,7 @@ void cronJob(char* cmd, int interval, int time) {
             execCommand(cpy);
             curr += sleepTime;
         }
+        exit(0);
     }
 }
 
