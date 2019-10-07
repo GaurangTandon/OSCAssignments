@@ -164,6 +164,11 @@ void *threaded_mergesort(void *a) {
     merge(arr, l, r);
 }
 
+long double gettime(struct timespec *ts) {
+    clock_gettime(CLOCK_MONOTONIC_RAW, ts);
+    return (*ts).tv_nsec / 1e9 + (*ts).tv_sec;
+}
+
 void runSorts(long long int n) {
     struct timespec ts;
 
@@ -173,24 +178,24 @@ void runSorts(long long int n) {
         perror("Couldn't attach memory segment");
         return;
     }
-    for (int i = 0; i < n; i++)
+    // you are storing an already sorted array into brr. Why?
+    // I changed it to store the (original) unsorted array
+    int brr[n], crr[n];  // fixed dimension
+    for (int i = 0; i < n; i++) {
         scanf("%d", arr + i);
+        brr[i] = arr[i];
+        crr[i] = arr[i];
+    }
 
     printf("Running concurrent_mergesort for n = %lld\n", n);
-    clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-    long double st = ts.tv_nsec / (1e9) + ts.tv_sec;
+    long double startTime = gettime(&ts);
 
     // multiprocess mergesort
     mergesort(arr, 0, n - 1);
 
-    clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-    long double en = ts.tv_nsec / (1e9) + ts.tv_sec;
-    printf("time = %Lf\n", en - st);
-    long double t1 = en - st;
-
-    int brr[n + 1];
-    for (int i = 0; i < n; i++)
-        brr[i] = arr[i];
+    long double endTime = gettime(&ts);
+    long double t1 = endTime - startTime;
+    printf("time = %Lf\n", t1);
 
     pthread_t tid;
     struct arg a;
@@ -198,36 +203,32 @@ void runSorts(long long int n) {
     a.r = n - 1;
     a.arr = brr;
     printf("Running threaded_concurrent_mergesort for n = %lld\n", n);
-    clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-    st = ts.tv_nsec / (1e9) + ts.tv_sec;
+    startTime = gettime(&ts);
 
     // multithreaded mergesort
     pthread_create(&tid, NULL, threaded_mergesort, &a);
     pthread_join(tid, NULL);
 
-    clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-    en = ts.tv_nsec / (1e9) + ts.tv_sec;
-    printf("time = %Lf\n", en - st);
-    long double t2 = en - st;
+    endTime = gettime(&ts);
+    long double t2 = endTime - startTime;
+    printf("time = %Lf\n", t2);
 
     printf("Running normal_mergesort for n = %lld\n", n);
-    clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-    st = ts.tv_nsec / (1e9) + ts.tv_sec;
+    startTime = gettime(&ts);
 
     // normal mergesort
-    normal_mergesort(brr, 0, n - 1);
+    normal_mergesort(crr, 0, n - 1);
 
-    clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-    en = ts.tv_nsec / (1e9) + ts.tv_sec;
-    printf("time = %Lf\n", en - st);
-    long double t3 = en - st;
+    endTime = gettime(&ts);
+    long double t3 = endTime - startTime;
+    printf("time = %Lf\n", t3);
 
-    // why does normal merge sort run faster??
+    // isn't the print statment wrong?
     printf(
         "normal_mergesort ran:\n\t[ %Lf ] times faster than "
         "concurrent_mergesort\n\t[ %Lf ] times faster than "
         "threaded_concurrent_mergesort\n\n\n",
-        t1 / t3, t2 / t3);
+        t3 / t1, t2 / t3);
     shmdt(arr);
     return;
 }
