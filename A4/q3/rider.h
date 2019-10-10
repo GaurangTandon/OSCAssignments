@@ -9,4 +9,4 @@ typedef struct rider {
 } rider;
 rider* riders[MAX_RIDERS];
 
-void* initRider(rider* rider);
+void* initRider(void* rider);

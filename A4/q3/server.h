@@ -5,8 +5,7 @@ typedef struct server {
 
 server* servers[MAX_SERVERS];
 
-void* getNewServer(server* server) {
-}
+void* getNewServer(server* server);
 
 void acceptPayment();
 

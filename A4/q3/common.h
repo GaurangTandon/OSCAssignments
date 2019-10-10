@@ -9,6 +9,9 @@
 #include <time.h>
 #include <unistd.h>
 
+#ifndef commonDone
+#define commonDone 1
+
 #define MAX_WAIT_TIME 100
 #define MAX_RIDE_TIME 100
 #define MAX_ARRIVAL_TIME 100
@@ -34,3 +37,4 @@ struct timespec* getTimeStructSinceEpoch(int extraTime) {
     st->tv_nsec = 0;
     return st;
 }
+#endif

@@ -1,7 +1,9 @@
 #include "cab.h"
 
-void* initCab(cab* cab) {
-    cab->state = waitState;
+void* initCab(void* cabTemp) {
+    cab* mycab = (cab*)cabTemp;
+    mycab->state = waitState;
+    return NULL;
 }
 
 // TODO: move around these cabs in the respective arrays

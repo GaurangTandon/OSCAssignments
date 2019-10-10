@@ -12,5 +12,4 @@ cab* waitingCabs[MAX_CABS];
 cab* poolTwoCabs[MAX_CABS];
 cab* premierCabs[MAX_CABS];
 
-void* initCab(cab* cab) {
-}
+void* initCab(void* cab);
