@@ -28,9 +28,9 @@ int serversOpenCount;
 int totalCabsOpen, totalPoolCabsOpen, totalPremierCabsOpen;
 
 pthread_mutex_t checkCab;
-pthread_mutex_t riderMutexes[MAX_RIDERS];
-short riderWaiting[MAX_RIDERS];
-pthread_cond_t riderConditions[MAX_RIDERS];  // initialized in main.c
+pthread_mutex_t* riderMutexes;
+short* riderWaiting;
+pthread_cond_t* riderConditions;  // initialized in main.c
 
 typedef struct rider {
     int cabType;

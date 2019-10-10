@@ -2,7 +2,7 @@
 #define riderss
 #include "common.h"
 
-rider* riders[MAX_RIDERS];
+rider** riders;
 
 void* initRider(void* rider);
 

@@ -2,7 +2,7 @@
 #define sevrer
 #include "common.h"
 
-server* servers[MAX_SERVERS];
+server** servers;
 
 void* initServer(void* server);
 

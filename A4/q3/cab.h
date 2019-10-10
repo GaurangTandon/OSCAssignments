@@ -6,8 +6,8 @@
 enum cabStates { waitState, onRidePoolOne, oneRidePoolFull, onRidePremier };
 
 // keep track of usable cabs
-cab* poolOneCabs[MAX_CABS];
-cab* waitingCabs[MAX_CABS];
+cab** poolOneCabs;
+cab** waitingCabs;
 
 void* initCab(void* cab);
 
