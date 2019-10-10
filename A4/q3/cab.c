@@ -29,3 +29,35 @@ void endRide(cab* cab) {
     else
         cab->state--;
 }
+
+void shiftCabsAround(cab* cab) {
+    // delete this cab from the array
+    // it will always be at the 0th index
+    for (int i = 0; i < MAX_CABS - 1; i++) {
+        if (cab->state == onRidePremier) {
+            waitingCabs[i] = waitingCabs[i + 1];
+        } else {
+            poolOneCabs[i] = poolOneCabs[i + 1];
+        }
+    }
+
+    if (cab->state == onRidePoolOne) {
+        int i = 0;
+        while (poolOneCabs[i])
+            i++;
+        poolOneCabs[i] = cab;
+    }
+}
+
+void startRide(cab* cab, rider* rider) {
+    shiftCabsAround(cab);
+
+}
+
+cab* getFreeCab(int cabType) {
+    if (cabType == POOL_CAB) {
+        return poolOneCabs[0];
+    } else {
+        return waitingCabs[0];
+    }
+}

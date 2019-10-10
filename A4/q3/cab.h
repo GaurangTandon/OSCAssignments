@@ -3,13 +3,12 @@
 // the order matters here, see acceptRide function in cab.c
 enum cabStates { waitState, onRidePoolOne, oneRidePoolFull, onRidePremier };
 
-typedef struct cab {
-    int state;
-} cab;
-
+// keep track of usable cabs
 cab* poolOneCabs[MAX_CABS];
 cab* waitingCabs[MAX_CABS];
-cab* poolTwoCabs[MAX_CABS];
-cab* premierCabs[MAX_CABS];
 
 void* initCab(void* cab);
+
+cab* getFreeCab(int cabType);
+
+void startRide(cab* cab, rider* rider);

@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 #ifndef commonDone
-#define commonDone 1
+#define commonDone
 
 #define MAX_WAIT_TIME 100
 #define MAX_RIDE_TIME 100
@@ -23,10 +23,30 @@
 #define PREMIER_CAB 1
 char** CAB_STRING = {"POOL", "PREMIER"};
 
-sem_t totalCabsOpen, totalPoolCabsOpen, totalPremierCabsOpen, serversOpen;
+sem_t serversOpen;
 int serversOpenCount;
+int totalCabsOpen, totalPoolCabsOpen, totalPremierCabsOpen;
+
+pthread_mutex_t checkCab;
+short riderWaiting[MAX_RIDERS] = {0};
+pthread_cond_t riderConditions[MAX_RIDERS];  // initialized in main.c
 
 int ridersInitialized = 0;
+
+typedef struct rider {
+    int cabType;
+    int maxWaitTime;
+    int rideTime;
+    int id;
+    int arrivalTime;
+} rider;
+
+typedef struct cab {
+    int state;
+} cab;
+
+typedef struct server {
+} server;
 
 struct timespec* getTimeStructSinceEpoch(int extraTime) {
     time_t passed;

@@ -1,4 +1,5 @@
 #include "rider.h"
+#include "cab.h"
 #include "server.h"
 
 void bookCab(rider* rider);
@@ -26,46 +27,43 @@ void bookCab(rider* rider) {
     // semaphore which is a type of busy waiting :/ answer: without this we
     // will do busy waiting (a lot of it), so this is better
 
-    sem_t* used;
-    int res;
+    cab* usedCab = NULL;
     struct timespec* st = getTimeStructSinceEpoch(rider->maxWaitTime);
 
-    int bookedCab;
-    if (rider->cabType == POOL_CAB) {
-        res = sem_timedwait(&totalCabsOpen, st);
-        if (res == -1)
-            goto out;
+    // entering CS
+    pthread_mutex_lock(&checkCab);
 
-        // for pool cab both options are open
-        used = &totalPoolCabsOpen;
-        int x = sem_trywait(used);
-        bookedCab = POOL_CAB;
-
-        if (x == -1) {
-            used = &totalPremierCabsOpen;
-            x = sem_trywait(used);
-            bookedCab = PREMIER_CAB;
+start:
+    if (totalCabsOpen > 0) {
+        if (rider->cabType == POOL_CAB) {
+            if (poolOneCabs[0]) {
+                usedCab = poolOneCabs[0];
+                usedCab->state = onRidePoolOne;
+            } else {
+                usedCab = waitingCabs[0];
+                usedCab->state = onRidePremier;
+            }
+        } else if (waitingCabs[0]) {
+            usedCab = waitingCabs[0];
+            usedCab->state = onRidePremier;
         }
 
-        // x cannot be negative, since we waited on total cabs open
-        assert(x != -1);
-
-        printf("Pool rider %d has acquired cab %d of type %s\n", rider->id,
-               -999, CAB_STRING[bookedCab]);
-    } else {
-        used = &totalPremierCabsOpen;
-        res = sem_timedwait(used, st);
-        bookedCab = PREMIER_CAB;
-        if (res == -1)
-            goto out;
-        printf("Premier rider %d has acquired cab %d\n", rider->id, -999);
-        // TODO: at this point I need to be forcibly decrement the totalcabsopen
-        // semaphore too
-        // waiting on totalCabsOpen and then on totalPremierCabsOpen is useless
-        // since that results in busy waiting since multiple riders might enter
-        // race condition with it
+        printf("Rider %d has acquired cab %d of type %s\n", rider->id, -999,
+               CAB_STRING[0]);
     }
-out:;
+
+    int res = !!usedCab;
+
+    if (!usedCab) {
+        pthread_mutex_unlock(&checkCab);
+        riderWaiting[rider->id] = rider->cabType + 1;
+        res =
+            pthread_cond_timedwait(&riderConditions[rider->id], &checkCab, st);
+
+        if (res != -1)
+            goto start;
+    }
+
     if (res == -1) {
         printf("Rider %d timed out waiting for a cab (maxwaittime: %d)\n",
                rider->id, rider->maxWaitTime);
@@ -73,9 +71,8 @@ out:;
     }
 
     // cab is booked, now start the ride
+    startRide(usedCab, rider);
 
-    sem_post(used);
-    sem_post(&totalCabsOpen);
-
+    // ride ended, make payment
     makePayment();
 }

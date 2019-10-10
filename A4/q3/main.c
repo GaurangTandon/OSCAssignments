@@ -7,6 +7,11 @@ int main() {
     assert(ridersCount <= MAX_RIDERS);
     assert(serversCount <= MAX_SERVERS);
 
+    for (int i = 0; i < MAX_RIDERS; i++) {
+        pthread_cond_t x = PTHREAD_COND_INITIALIZER;
+        riderConditions[i] = x;
+    }
+
     serversOpenCount = serversCount;
 
     for (int i = 0; i < cabsCount; i++) {
