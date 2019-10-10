@@ -23,10 +23,10 @@ int main() {
         pthread_create(&thread, NULL, getNewCab, &cabs[i]);
     }
 
-    // for (int i = 0; i < serversCount; i++) {
-    //     pthread_t thread;
-    //     pthread_create(&thread, NULL, getNewServer, &servers[i]);
-    // }
+    // second argument = 0 => initialize three semaphores shared between threads
+    sem_init(&totalCabsOpen, 0, cabsCount);
+    sem_init(&totalPoolCabsOpen, 0, 0);
+    sem_init(&totalPremierCabsOpen, 0, 0);
 
     for (int i = 0; i < ridersCount; i++) {
         pthread_t thread;
