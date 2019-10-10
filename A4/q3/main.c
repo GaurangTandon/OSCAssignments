@@ -43,6 +43,7 @@ int main() {
         waitingCabs[i]->state = waitState;
         printf("Cab id %d initialized in wait state\n", waitingCabs[i]->id);
     }
+    totalCabsOpen = cabsCount;
 
     servers = (server **)shareMem(sizeof(server *) * MAX_SERVERS);
     for (int i = 0; i < serversCount; i++) {

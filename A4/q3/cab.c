@@ -40,11 +40,6 @@ void endRide(cab* cab, rider* rider) {
         cab->state--;
     }
 
-    if (cab->state == waitState)
-        totalPremierCabsOpen++;
-    else
-        totalPoolCabsOpen++;
-
     if (cab->state == onRidePoolOne) {
         int i = 0;
         while (poolOneCabs[i])
@@ -87,6 +82,7 @@ void shiftCabsAround(cab* cab) {
             i++;
         poolOneCabs[i] = cab;
     }
+    totalCabsOpen--;
     pthread_mutex_unlock(&checkCab);
 }
 

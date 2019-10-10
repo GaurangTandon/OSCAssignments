@@ -25,7 +25,7 @@ char** CAB_STRING;
 
 sem_t serversOpen;
 int serversOpenCount;
-int totalCabsOpen, totalPoolCabsOpen, totalPremierCabsOpen;
+int totalCabsOpen;
 
 pthread_mutex_t checkCab;
 short* riderWaiting;

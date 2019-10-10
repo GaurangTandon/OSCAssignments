@@ -44,9 +44,7 @@ void bookCab(rider* rider) {
     cab* usedCab = NULL;
     struct timespec* st = getTimeStructSinceEpoch(rider->maxWaitTime);
 
-    // entering CS
     pthread_mutex_lock(&checkCab);
-
 start:
     if (totalCabsOpen > 0) {
         if (rider->cabType == POOL_CAB) {
