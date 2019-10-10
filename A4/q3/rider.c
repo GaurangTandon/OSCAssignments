@@ -84,6 +84,10 @@ start:
     // cab is booked, now start the ride
     startAndEndRide(usedCab, rider);
 
-    // ride ended, make payment
+    printf("Rider %d has got down to make payment\n", rider->id);
+
     makePayment();
+
+    printf("Rider %d has made payment. He will now exit the system\n",
+           rider->id);
 }
