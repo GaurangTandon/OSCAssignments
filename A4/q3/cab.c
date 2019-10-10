@@ -21,16 +21,39 @@ void acceptRide(cab* cab, int rideType, int rideTime) {
     sleep(rideTime);
 }
 
+int usefulCab(int reqCab, int currState) {
+    switch (reqCab) {
+        case -1:
+            return 0;
+            break;
+        case POOL_CAB:
+            return (currState == waitState || currState == onRidePoolOne);
+            break;
+        case PREMIER_CAB:
+            return (currState == waitState);
+            break;
+        default:
+            assert(0);
+            break;
+    }
+}
+
 void endRide(cab* cab, rider* rider) {
     assert(cab->state != waitState);
 
+    pthread_mutex_lock(&checkCab);
+
+    totalCabsOpen++;
     if (cab->state == onRidePremier) {
         cab->state = waitState;
     } else {
         cab->state--;
     }
 
-    pthread_mutex_lock(&checkCab);
+    if (cab->state == waitState)
+        totalPremierCabsOpen++;
+    else
+        totalPoolCabsOpen++;
 
     if (cab->state == onRidePoolOne) {
         int i = 0;
@@ -45,7 +68,7 @@ void endRide(cab* cab, rider* rider) {
     }
 
     int j = rider->id + 1;
-    while (j != rider->id && !riderWaiting[j]) {
+    while (j != rider->id && !usefulCab(riderWaiting[j], cab->state)) {
         j = (j + 1) % MAX_RIDERS;
     }
 
@@ -53,6 +76,7 @@ void endRide(cab* cab, rider* rider) {
         pthread_mutex_unlock(&checkCab);
     } else {
         pthread_cond_signal(&riderConditions[j]);
+        pthread_mutex_unlock(&checkCab);
     }
 }
 
@@ -73,6 +97,7 @@ void shiftCabsAround(cab* cab) {
             i++;
         poolOneCabs[i] = cab;
     }
+    pthread_mutex_unlock(&checkCab);
 }
 
 void startAndEndRide(cab* cab, rider* rider) {

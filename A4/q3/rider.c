@@ -58,27 +58,25 @@ start:
             usedCab->state = onRidePremier;
         }
 
-        printf("Rider %d has acquired cab %d of type %s\n", rider->id, -999,
-               CAB_STRING[0]);
+        printf("Rider %d has acquired cab %d of type %s\n", rider->id,
+               usedCab->id, CAB_STRING[rider->cabType]);
     }
 
     int res = !!usedCab;
 
-    if (!usedCab) {
-        pthread_mutex_unlock(&checkCab);
-
-        pthread_mutex_lock(&riderMutexes[rider->id]);
-        riderWaiting[rider->id] = rider->cabType + 1;
-        res = pthread_cond_timedwait(&riderConditions[rider->id],
-                                     &riderMutexes[rider->id], st);
-
-        if (res != -1)
+    if (!res) {
+        riderWaiting[rider->id] = rider->cabType;
+        res =
+            pthread_cond_timedwait(&riderConditions[rider->id], &checkCab, st);
+        if (res != -1) {
             goto start;
+        }
     }
 
     if (res == -1) {
         printf("Rider %d timed out waiting for a cab (maxwaittime: %d)\n",
                rider->id, rider->maxWaitTime);
+        pthread_mutex_unlock(&checkCab);
         return;
     }
 

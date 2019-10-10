@@ -27,15 +27,11 @@ int main() {
     riderConditions =
         (pthread_cond_t *)shareMem(sizeof(pthread_cond_t) * MAX_RIDERS);
     riderWaiting = (short *)shareMem(sizeof(short) * MAX_RIDERS);
-    riderMutexes =
-        (pthread_mutex_t *)shareMem(sizeof(pthread_mutex_t) * MAX_RIDERS);
 
     for (int i = 0; i < MAX_RIDERS; i++) {
         pthread_cond_t x = PTHREAD_COND_INITIALIZER;
         riderConditions[i] = x;
-        pthread_mutex_t x2 = PTHREAD_MUTEX_INITIALIZER;
-        riderMutexes[i] = x2;
-        riderWaiting[i] = 0;
+        riderWaiting[i] = -1;
     }
 
     serversOpenCount = serversCount;

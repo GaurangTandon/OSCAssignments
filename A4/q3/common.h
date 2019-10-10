@@ -12,9 +12,9 @@
 #include <time.h>
 #include <unistd.h>
 
-#define MAX_WAIT_TIME 100
-#define MAX_RIDE_TIME 100
-#define MAX_ARRIVAL_TIME 100
+#define MAX_WAIT_TIME 10
+#define MAX_RIDE_TIME 15
+#define MAX_ARRIVAL_TIME 5
 #define MAX_CABS 100
 #define MAX_RIDERS 100
 #define MAX_SERVERS 100
@@ -28,7 +28,6 @@ int serversOpenCount;
 int totalCabsOpen, totalPoolCabsOpen, totalPremierCabsOpen;
 
 pthread_mutex_t checkCab;
-pthread_mutex_t* riderMutexes;
 short* riderWaiting;
 pthread_cond_t* riderConditions;  // initialized in main.c
 
