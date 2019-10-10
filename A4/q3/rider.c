@@ -6,7 +6,6 @@ void bookCab(rider* rider);
 
 void* initRider(void* riderTemp) {
     rider* myrider = (rider*)riderTemp;
-    myrider->id = ++ridersInitialized;
     myrider->maxWaitTime = rand() % MAX_WAIT_TIME;
     myrider->arrivalTime = rand() % MAX_ARRIVAL_TIME;
     myrider->cabType = rand() % 2;
@@ -56,9 +55,11 @@ start:
 
     if (!usedCab) {
         pthread_mutex_unlock(&checkCab);
+
+        pthread_mutex_lock(&riderMutexes[rider->id]);
         riderWaiting[rider->id] = rider->cabType + 1;
-        res =
-            pthread_cond_timedwait(&riderConditions[rider->id], &checkCab, st);
+        res = pthread_cond_timedwait(&riderConditions[rider->id],
+                                     &riderMutexes[rider->id], st);
 
         if (res != -1)
             goto start;
@@ -71,7 +72,7 @@ start:
     }
 
     // cab is booked, now start the ride
-    startRide(usedCab, rider);
+    startAndEndRide(usedCab, rider);
 
     // ride ended, make payment
     makePayment();

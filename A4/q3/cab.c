@@ -6,9 +6,7 @@ void* initCab(void* cabTemp) {
     return NULL;
 }
 
-// TODO: move around these cabs in the respective arrays
-// if required
-// what should be the ride time if pooled one after the other?
+// TODO: what should be the ride time if pooled one after the other?
 
 void acceptRide(cab* cab, int rideType, int rideTime) {
     if (rideType == POOL_CAB) {
@@ -21,13 +19,39 @@ void acceptRide(cab* cab, int rideType, int rideTime) {
     sleep(rideTime);
 }
 
-void endRide(cab* cab) {
+void endRide(cab* cab, rider* rider) {
     assert(cab->state != waitState);
 
-    if (cab->state == onRidePremier)
+    if (cab->state == onRidePremier) {
         cab->state = waitState;
-    else
+    } else {
         cab->state--;
+    }
+
+    pthread_mutex_lock(&checkCab);
+
+    if (cab->state == onRidePoolOne) {
+        int i = 0;
+        while (poolOneCabs[i])
+            i++;
+        poolOneCabs[i] = cab;
+    } else {
+        int i = 0;
+        while (waitingCabs[i])
+            i++;
+        waitingCabs[i] = cab;
+    }
+
+    int j = rider->id + 1;
+    while (j != rider->id && !riderWaiting[j]) {
+        j = (j + 1) % MAX_RIDERS;
+    }
+
+    if (j == rider->id) {
+        pthread_mutex_unlock(&checkCab);
+    } else {
+        pthread_cond_signal(&riderConditions[j]);
+    }
 }
 
 void shiftCabsAround(cab* cab) {
@@ -49,9 +73,12 @@ void shiftCabsAround(cab* cab) {
     }
 }
 
-void startRide(cab* cab, rider* rider) {
+void startAndEndRide(cab* cab, rider* rider) {
     shiftCabsAround(cab);
 
+    sleep(rider->rideTime);
+
+    endRide(cab, rider);
 }
 
 cab* getFreeCab(int cabType) {
