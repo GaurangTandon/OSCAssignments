@@ -1,7 +1,4 @@
-#include "cab.h"
-#include "common.h"
-#include "rider.h"
-#include "server.h"
+#include "main.h"
 
 int main() {
     int cabsCount, ridersCount, serversCount;
@@ -14,7 +11,7 @@ int main() {
 
     for (int i = 0; i < cabsCount; i++) {
         pthread_t thread;
-        pthread_create(&thread, NULL, getNewCab, cabs[i]);
+        pthread_create(&thread, NULL, getNewCab, waitingCabs[i]);
     }
 
     // second argument = 0 => initialize three semaphores shared between threads

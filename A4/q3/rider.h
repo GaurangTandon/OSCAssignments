@@ -5,6 +5,8 @@ typedef struct rider {
     int maxWaitTime;
     int rideTime;
     int id;
+    int arrivalTime;
 } rider;
+rider* riders[MAX_RIDERS];
 
 void* initRider(rider* rider);

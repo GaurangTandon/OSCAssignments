@@ -4,13 +4,15 @@
 void* initRider(rider* rider) {
     rider->id = ++ridersInitialized;
     rider->maxWaitTime = rand() % MAX_WAIT_TIME;
+    rider->arrivalTime = rand() % MAX_ARRIVAL_TIME;
     rider->cabType = rand() % 2;
     rider->rideTime = rand() % MAX_RIDE_TIME;
     printf(
         "%d-th rider initialized with rideTime %d and max wait time %d and "
-        "cabType %s\n",
+        "cabType %s and arrival time %d\n",
         rider->id, rider->rideTime, rider->maxWaitTime,
-        CAB_STRING[rider->cabType]);
+        CAB_STRING[rider->cabType], rider->arrivalTime);
+    sleep(rider->arrivalTime);
     bookCab(rider);
 }
 
@@ -73,13 +75,4 @@ out:;
     sem_post(&totalCabsOpen);
 
     makePayment();
-}
-
-void makePayment() {
-    sem_wait(&serversOpen);
-
-    servers[serversOpenCount--]->acceptPayment();
-    serversOpenCount++;
-
-    sem_post(&serversOpen);
 }
