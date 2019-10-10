@@ -25,6 +25,7 @@ void* initRider(void* riderTemp) {
         "cabType %s and arrival time %d\n",
         myrider->id, myrider->rideTime, myrider->maxWaitTime,
         CAB_STRING[myrider->cabType], myrider->arrivalTime);
+    fflush(stdout);
     sleep(myrider->arrivalTime);
     bookCab(myrider);
     return NULL;

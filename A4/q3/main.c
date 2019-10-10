@@ -57,14 +57,18 @@ int main() {
     }
 
     // second argument = 0 => initialize semaphores shared between threads
-    sem_init(&serversOpen, 0, 0);
+    sem_init(&serversOpen, 0, serversCount);
 
+    pthread_t *threads = (pthread_t *)malloc(sizeof(pthread_t) * ridersCount);
     riders = (rider **)shareMem(sizeof(rider *) * MAX_RIDERS);
     for (int i = 0; i < ridersCount; i++) {
-        pthread_t thread;
         riders[i] = (rider *)shareMem(sizeof(rider));
         riders[i]->id = i;
-        pthread_create(&thread, NULL, initRider, riders[i]);
+        pthread_create(&threads[i], NULL, initRider, riders[i]);
+    }
+
+    for (int i = 0; i < ridersCount; i++) {
+        pthread_join(threads[i], NULL);
     }
 
     sem_destroy(&serversOpen);

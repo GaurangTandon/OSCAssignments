@@ -19,5 +19,6 @@ void makePayment(rider* rider) {
 void* initServer(void* serverTemp) {
     server* myserver = (server*)serverTemp;
     printf("Server id %d initialized\n", myserver->id);
+    fflush(stdout);
     return NULL;
 }
