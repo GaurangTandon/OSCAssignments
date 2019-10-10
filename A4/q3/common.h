@@ -5,6 +5,8 @@
 #include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 
 #define MAX_WAIT_TIME 100
@@ -22,3 +24,13 @@ sem_t totalCabsOpen, totalPoolCabsOpen, totalPremierCabsOpen, serversOpen;
 int serversOpenCount;
 
 int ridersInitialized = 0;
+
+struct timespec* getTimeStructSinceEpoch(int extraTime) {
+    time_t passed;
+    time(&passed);
+
+    struct timespec* st = (struct timespec*)malloc(sizeof(struct timespec*));
+    st->tv_sec = passed + extraTime;
+    st->tv_nsec = 0;
+    return st;
+}

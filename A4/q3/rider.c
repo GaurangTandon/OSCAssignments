@@ -24,8 +24,7 @@ void bookCab(rider* rider) {
 
     sem_t* used;
     int res;
-    struct timespec st;
-    // TODO: set to rider->maxWaitTime
+    struct timespec* st = getTimeStructSinceEpoch(st);
 
     int bookedCab;
     if (rider->cabType == POOL_CAB) {
