@@ -10,6 +10,16 @@ void *shareMem(size_t size) {
     return (void *)shmat(shm_id, NULL, 0);
 }
 
+void printTimestamp() {
+    time_t t;
+    time(&t);
+    char *t2 = ctime(&t);
+
+    char buf[9] = {0};
+    memcpy(buf, t2 + 11, 8);
+    printf("%s\t", buf);
+}
+
 int main() {
     int cabsCount, ridersCount, serversCount;
     // scanf("%d%d%d", &cabsCount, &ridersCount, &serversCount);
@@ -42,9 +52,12 @@ int main() {
         waitingCabs[i] = (cab *)shareMem(sizeof(cab));
         waitingCabs[i]->id = i;
         waitingCabs[i]->state = waitState;
+
+        printTimestamp();
         printf("Cab %d:\t\tinitialized in wait state\n", waitingCabs[i]->id);
     }
     totalCabsOpen = cabsCount;
+    ridersLeftToExit = ridersCount;
 
     pthread_t *serverThreads =
         (pthread_t *)malloc(sizeof(pthread_t) * serversCount);

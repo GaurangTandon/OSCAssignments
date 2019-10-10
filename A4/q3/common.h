@@ -29,7 +29,8 @@ int totalCabsOpen;
 
 pthread_mutex_t checkCab;
 short* riderWaiting;
-pthread_cond_t* riderConditions;  // initialized in main.c
+pthread_cond_t* riderConditions;
+int ridersLeftToExit;
 
 typedef struct rider {
     int cabType;
@@ -46,5 +47,7 @@ typedef struct cab {
 typedef struct server {
     int id;
 } server;
+
+void printTimestamp();
 
 #endif

@@ -89,6 +89,7 @@ void shiftCabsAround(cab* cab) {
 void startAndEndRide(cab* cab, rider* rider) {
     shiftCabsAround(cab);
 
+    printTimestamp();
     printf("Cab %d:\t\ttaking rider %d\n", cab->id, rider->id);
 
     sleep(rider->rideTime);
