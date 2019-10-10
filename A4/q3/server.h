@@ -4,7 +4,7 @@
 
 server* servers[MAX_SERVERS];
 
-void* getNewServer(server* server);
+void* initServer(void* server);
 
 void acceptPayment();
 

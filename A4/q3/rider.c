@@ -21,7 +21,7 @@ void* initRider(void* riderTemp) {
     myrider->cabType = rand() % 2;
     myrider->rideTime = rand() % MAX_RIDE_TIME;
     printf(
-        "%d-th rider initialized with rideTime %d and max wait time %d and "
+        "Rider id %d initialized with rideTime %d, max wait time %d, "
         "cabType %s and arrival time %d\n",
         myrider->id, myrider->rideTime, myrider->maxWaitTime,
         CAB_STRING[myrider->cabType], myrider->arrivalTime);

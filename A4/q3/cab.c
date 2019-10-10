@@ -3,6 +3,7 @@
 void* initCab(void* cabTemp) {
     cab* mycab = (cab*)cabTemp;
     mycab->state = waitState;
+    printf("Cab id %d initialized in wait state\n", mycab->id);
     return NULL;
 }
 

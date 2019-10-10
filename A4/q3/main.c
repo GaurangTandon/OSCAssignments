@@ -2,7 +2,10 @@
 
 int main() {
     int cabsCount, ridersCount, serversCount;
-    scanf("%d%d%d", &cabsCount, &ridersCount, &serversCount);
+    // scanf("%d%d%d", &cabsCount, &ridersCount, &serversCount);
+    cabsCount = 5;
+    ridersCount = 10;
+    serversCount = 2;
     assert(cabsCount <= MAX_CABS);
     assert(ridersCount <= MAX_RIDERS);
     assert(serversCount <= MAX_SERVERS);
@@ -23,8 +26,16 @@ int main() {
 
     for (int i = 0; i < cabsCount; i++) {
         pthread_t thread;
+        waitingCabs[i] = (cab*)malloc(sizeof(cab));
         waitingCabs[i]->id = i;
         pthread_create(&thread, NULL, initCab, waitingCabs[i]);
+    }
+
+    for (int i = 0; i < serversCount; i++) {
+        pthread_t thread;
+        servers[i] = (server*)malloc(sizeof(server));
+        servers[i]->id = i;
+        pthread_create(&thread, NULL, initServer, servers[i]);
     }
 
     // second argument = 0 => initialize semaphores shared between threads
@@ -32,6 +43,7 @@ int main() {
 
     for (int i = 0; i < ridersCount; i++) {
         pthread_t thread;
+        riders[i] = (rider*)malloc(sizeof(rider));
         riders[i]->id = i;
         pthread_create(&thread, NULL, initRider, riders[i]);
     }
