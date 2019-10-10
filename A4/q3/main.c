@@ -11,7 +11,7 @@ int main() {
 
     for (int i = 0; i < cabsCount; i++) {
         pthread_t thread;
-        pthread_create(&thread, NULL, getNewCab, waitingCabs[i]);
+        pthread_create(&thread, NULL, initCab, waitingCabs[i]);
     }
 
     // second argument = 0 => initialize three semaphores shared between threads

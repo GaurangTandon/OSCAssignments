@@ -1,8 +1,10 @@
 #include "common.h"
 
-enum cabStates { waitState, onRidePremier, onRidePoolOne, oneRidePoolFull };
+// the order matters here, see acceptRide function in cab.c
+enum cabStates { waitState, onRidePoolOne, oneRidePoolFull, onRidePremier };
 
 typedef struct cab {
+    int state;
 } cab;
 
 cab* poolOneCabs[MAX_CABS];
@@ -10,5 +12,5 @@ cab* waitingCabs[MAX_CABS];
 cab* poolTwoCabs[MAX_CABS];
 cab* premierCabs[MAX_CABS];
 
-void* getNewCab(cab* cab) {
+void* initCab(cab* cab) {
 }
