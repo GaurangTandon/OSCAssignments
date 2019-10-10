@@ -1,6 +1,6 @@
 #include "server.h"
 
-void acceptPayment(server* server) {
+void acceptPayment() {
     sleep(2);
 }
 

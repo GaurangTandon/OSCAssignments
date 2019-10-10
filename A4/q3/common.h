@@ -1,3 +1,6 @@
+#ifndef commonDone
+#define commonDone
+
 #include <assert.h>
 #include <math.h>
 #include <memory.h>
@@ -9,9 +12,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#ifndef commonDone
-#define commonDone
-
 #define MAX_WAIT_TIME 100
 #define MAX_RIDE_TIME 100
 #define MAX_ARRIVAL_TIME 100
@@ -21,7 +21,7 @@
 
 #define POOL_CAB 0
 #define PREMIER_CAB 1
-char** CAB_STRING = {"POOL", "PREMIER"};
+char** CAB_STRING;
 
 sem_t serversOpen;
 int serversOpenCount;
@@ -29,7 +29,7 @@ int totalCabsOpen, totalPoolCabsOpen, totalPremierCabsOpen;
 
 pthread_mutex_t checkCab;
 pthread_mutex_t riderMutexes[MAX_RIDERS];
-short riderWaiting[MAX_RIDERS] = {0};
+short riderWaiting[MAX_RIDERS];
 pthread_cond_t riderConditions[MAX_RIDERS];  // initialized in main.c
 
 typedef struct rider {
@@ -45,15 +45,7 @@ typedef struct cab {
 } cab;
 
 typedef struct server {
+    int id;
 } server;
 
-struct timespec* getTimeStructSinceEpoch(int extraTime) {
-    time_t passed;
-    time(&passed);
-
-    struct timespec* st = (struct timespec*)malloc(sizeof(struct timespec*));
-    st->tv_sec = passed + extraTime;
-    st->tv_nsec = 0;
-    return st;
-}
 #endif

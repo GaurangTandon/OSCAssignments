@@ -4,6 +4,16 @@
 
 void bookCab(rider* rider);
 
+struct timespec* getTimeStructSinceEpoch(int extraTime) {
+    time_t passed;
+    time(&passed);
+
+    struct timespec* st = (struct timespec*)malloc(sizeof(struct timespec*));
+    st->tv_sec = passed + extraTime;
+    st->tv_nsec = 0;
+    return st;
+}
+
 void* initRider(void* riderTemp) {
     rider* myrider = (rider*)riderTemp;
     myrider->maxWaitTime = rand() % MAX_WAIT_TIME;
