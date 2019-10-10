@@ -1,12 +1,9 @@
-#include "driver.h"
+#include "common.h"
 
 enum cabStates { waitState, onRidePremier, onRidePoolOne, oneRidePoolFull };
 
-void acceptRide() {
-}
+typedef struct cab {
+} cab;
 
-void onRide() {
-}
-
-void endRide() {
+void* getNewCab(cab* cab) {
 }
