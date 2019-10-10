@@ -1,15 +1,5 @@
 #include "cab.h"
 
-void* initCab(void* cabTemp) {
-    cab* mycab = (cab*)cabTemp;
-    mycab->state = waitState;
-    printf("Cab id %d initialized in wait state\n", mycab->id);
-    fflush(stdout);
-    return NULL;
-}
-
-// TODO: what should be the ride time if pooled one after the other?
-
 void acceptRide(cab* cab, int rideType, int rideTime) {
     if (rideType == POOL_CAB) {
         assert(cab->state != oneRidePoolFull);

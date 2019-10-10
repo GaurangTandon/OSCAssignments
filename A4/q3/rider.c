@@ -31,6 +31,10 @@ void* initRider(void* riderTemp) {
     return NULL;
 }
 
+void makePayment() {
+    sem_post(&serversOpen);
+}
+
 void bookCab(rider* rider) {
     // do we really need this semaphore?
     // this has the issue of repeatedly acquiring and releasing the

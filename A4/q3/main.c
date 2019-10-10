@@ -38,10 +38,10 @@ int main() {
 
     waitingCabs = (cab **)shareMem(sizeof(cab *) * MAX_CABS);
     for (int i = 0; i < cabsCount; i++) {
-        pthread_t thread;
-        waitingCabs[i] = (cab *)shareMem(sizeof(cab));
+        waitingCabs[i] = (cab *)malloc(sizeof(cab));
         waitingCabs[i]->id = i;
-        pthread_create(&thread, NULL, initCab, waitingCabs[i]);
+        waitingCabs[i]->state = waitState;
+        printf("Cab id %d initialized in wait state\n", waitingCabs[i]->id);
     }
 
     servers = (server **)shareMem(sizeof(server *) * MAX_SERVERS);
@@ -53,7 +53,7 @@ int main() {
     }
 
     // second argument = 0 => initialize semaphores shared between threads
-    sem_init(&serversOpen, 0, serversCount);
+    sem_init(&serversOpen, 0, 0);
 
     pthread_t *threads = (pthread_t *)malloc(sizeof(pthread_t) * ridersCount);
     riders = (rider **)shareMem(sizeof(rider *) * MAX_RIDERS);

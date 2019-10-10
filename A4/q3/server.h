@@ -8,5 +8,4 @@ void* initServer(void* server);
 
 void acceptPayment();
 
-void makePayment();
 #endif
