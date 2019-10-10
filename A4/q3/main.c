@@ -37,35 +37,41 @@ int main() {
     serversOpenCount = serversCount;
 
     waitingCabs = (cab **)shareMem(sizeof(cab *) * MAX_CABS);
+    poolOneCabs = (cab **)shareMem(sizeof(cab *) * MAX_CABS);
     for (int i = 0; i < cabsCount; i++) {
-        waitingCabs[i] = (cab *)malloc(sizeof(cab));
+        waitingCabs[i] = (cab *)shareMem(sizeof(cab));
         waitingCabs[i]->id = i;
         waitingCabs[i]->state = waitState;
-        printf("Cab id %d initialized in wait state\n", waitingCabs[i]->id);
+        printf("Cab %d:\t\tinitialized in wait state\n", waitingCabs[i]->id);
     }
     totalCabsOpen = cabsCount;
 
+    pthread_t *serverThreads =
+        (pthread_t *)malloc(sizeof(pthread_t) * serversCount);
     servers = (server **)shareMem(sizeof(server *) * MAX_SERVERS);
     for (int i = 0; i < serversCount; i++) {
-        pthread_t thread;
         servers[i] = (server *)shareMem(sizeof(server));
         servers[i]->id = i;
-        pthread_create(&thread, NULL, initServer, servers[i]);
+        pthread_create(&serverThreads[i], NULL, initServer, servers[i]);
     }
 
     // second argument = 0 => initialize semaphores shared between threads
     sem_init(&serversOpen, 0, 0);
 
-    pthread_t *threads = (pthread_t *)malloc(sizeof(pthread_t) * ridersCount);
+    pthread_t *riderThreads =
+        (pthread_t *)malloc(sizeof(pthread_t) * ridersCount);
     riders = (rider **)shareMem(sizeof(rider *) * MAX_RIDERS);
     for (int i = 0; i < ridersCount; i++) {
         riders[i] = (rider *)shareMem(sizeof(rider));
         riders[i]->id = i;
-        pthread_create(&threads[i], NULL, initRider, riders[i]);
+        pthread_create(&riderThreads[i], NULL, initRider, riders[i]);
     }
 
     for (int i = 0; i < ridersCount; i++) {
-        pthread_join(threads[i], NULL);
+        pthread_join(riderThreads[i], NULL);
+    }
+    for (int i = 0; i < serversCount; i++) {
+        pthread_join(serverThreads[i], NULL);
     }
 
     sem_destroy(&serversOpen);

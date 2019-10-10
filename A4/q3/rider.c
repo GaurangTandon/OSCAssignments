@@ -21,7 +21,7 @@ void* initRider(void* riderTemp) {
     myrider->cabType = rand() % 2;
     myrider->rideTime = rand() % MAX_RIDE_TIME;
     printf(
-        "Rider id %d initialized with rideTime %d, max wait time %d, "
+        "Rider %d:\tinitialized with rideTime %d, max wait time %d, "
         "cabType %s and arrival time %d\n",
         myrider->id, myrider->rideTime, myrider->maxWaitTime,
         CAB_STRING[myrider->cabType], myrider->arrivalTime);
@@ -60,7 +60,7 @@ start:
             usedCab->state = onRidePremier;
         }
 
-        printf("Rider %d has acquired cab %d of type %s\n", rider->id,
+        printf("Rider %d:\tacquired cab %d of type %s\n", rider->id,
                usedCab->id, CAB_STRING[rider->cabType]);
     }
 
@@ -76,19 +76,19 @@ start:
     }
 
     if (res == -1) {
-        printf("Rider %d timed out waiting for a cab (maxwaittime: %d)\n",
+        printf("Rider %d:\ttimed out waiting for a cab (maxwaittime: %d)\n",
                rider->id, rider->maxWaitTime);
         pthread_mutex_unlock(&checkCab);
         return;
     }
 
-    // cab is booked, now start the ride
     startAndEndRide(usedCab, rider);
 
-    printf("Rider %d has got down to make payment\n", rider->id);
+    printf("Rider %d:\thas left the cab.\n", rider->id);
 
     makePayment();
 
-    printf("Rider %d has made payment. He will now exit the system\n",
+    // TODO: this printf prints before the payment has finished
+    printf("Rider %d:\thas made payment, and will now exit the system\n",
            rider->id);
 }

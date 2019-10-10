@@ -7,15 +7,15 @@ void acceptPayment() {
 
 void* initServer(void* serverTemp) {
     server* myserver = (server*)serverTemp;
-    printf("Server id %d initialized\n", myserver->id);
+    printf("Server %d:\tinitialized\n", myserver->id);
     fflush(stdout);
 
     while (1) {
         sem_wait(&serversOpen);
-        printf("Server %d: accepting payment from %d\n", myserver->id, -1);
+        printf("Server %d:\taccepting payment from %d\n", myserver->id, -1);
         fflush(stdout);
         sleep(2);
-        printf("Server %d: received payment from %d\n", myserver->id, -1);
+        printf("Server %d:\treceived payment from %d\n", myserver->id, -1);
         fflush(stdout);
     }
 
