@@ -1,4 +1,5 @@
 #include "rider.h"
+#include "server.h"
 
 void* initRider(rider* rider) {
     rider->id = ++ridersInitialized;
@@ -22,8 +23,9 @@ void bookCab(rider* rider) {
     sem_t* used;
     int res;
     struct timespec st;
-    // set to rider->maxWaitTime
+    // TODO: set to rider->maxWaitTime
 
+    int bookedCab;
     if (rider->cabType == POOL_CAB) {
         res = sem_timedwait(&totalCabsOpen, st);
         if (res == -1)
@@ -32,21 +34,26 @@ void bookCab(rider* rider) {
         // for pool cab both options are open
         used = &totalPoolCabsOpen;
         int x = sem_trywait(used);
+        bookedCab = POOL_CAB;
 
         if (x == -1) {
             used = &totalPremierCabsOpen;
             x = sem_trywait(used);
+            bookedCab = PREMIER_CAB;
         }
 
         // x cannot be negative, since we waited on total cabs open
         assert(x != -1);
 
-        printf("Pool rider %d has acquired cab %d\n", rider->id, -999);
+        printf("Pool rider %d has acquired cab %d of type %s\n", rider->id,
+               -999, CAB_STRING[bookedCab]);
     } else {
         used = &totalPremierCabsOpen;
         res = sem_timedwait(used, st);
+        bookedCab = PREMIER_CAB;
         if (res == -1)
             goto out;
+        printf("Premier rider %d has acquired cab %d\n", rider->id, -999);
         // TODO: at this point I need to be forcibly decrement the totalcabsopen
         // semaphore too
         // waiting on totalCabsOpen and then on totalPremierCabsOpen is useless
@@ -59,8 +66,20 @@ out:;
                rider->id, rider->maxWaitTime);
         return;
     }
-    // used contains the cab
+
+    // cab is booked, now start the ride
+
+    sem_post(used);
+    sem_post(&totalCabsOpen);
+
+    makePayment();
 }
 
 void makePayment() {
+    sem_wait(&serversOpen);
+
+    servers[serversOpenCount--]->acceptPayment();
+    serversOpenCount++;
+
+    sem_post(&serversOpen);
 }

@@ -3,14 +3,6 @@
 #include "rider.h"
 #include "server.h"
 
-#define MAX_CABS 100
-#define MAX_RIDERS 100
-#define MAX_SERVERS 100
-
-cab cabs[MAX_CABS];
-rider riders[MAX_RIDERS];
-server servers[MAX_SERVERS];
-
 int main() {
     int cabsCount, ridersCount, serversCount;
     scanf("%d%d%d", &cabsCount, &ridersCount, &serversCount);
@@ -18,9 +10,11 @@ int main() {
     assert(ridersCount <= MAX_RIDERS);
     assert(serversCount <= MAX_SERVERS);
 
+    serversOpenCount = serversCount;
+
     for (int i = 0; i < cabsCount; i++) {
         pthread_t thread;
-        pthread_create(&thread, NULL, getNewCab, &cabs[i]);
+        pthread_create(&thread, NULL, getNewCab, cabs[i]);
     }
 
     // second argument = 0 => initialize three semaphores shared between threads
@@ -30,8 +24,13 @@ int main() {
 
     for (int i = 0; i < ridersCount; i++) {
         pthread_t thread;
-        pthread_create(&thread, NULL, initRider, &riders[i]);
+        pthread_create(&thread, NULL, initRider, riders[i]);
     }
+
+    sem_destroy(&totalCabsOpen);
+    sem_destroy(&totalPoolCabsOpen);
+    sem_destroy(&totalPremierCabsOpen);
+    sem_destroy(&serversOpen);
 
     return 0;
 }

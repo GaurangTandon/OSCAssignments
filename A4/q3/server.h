@@ -5,3 +5,5 @@ typedef struct server {
 
 void* getNewServer(server* server) {
 }
+
+void acceptPayment();
