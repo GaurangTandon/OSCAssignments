@@ -86,7 +86,7 @@ start:
 
     if (res == ETIMEDOUT) {
         printRiderHead(rider->id);
-        printf("timed out waiting for a cab (maxwaittime: %d)\n",
+        printf(KRED "timed out waiting for a cab (maxwaittime: %d)\n" KNRM,
                rider->maxWaitTime);
         pthread_mutex_unlock(&checkCab);
         return;
