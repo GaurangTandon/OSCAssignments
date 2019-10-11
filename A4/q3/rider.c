@@ -39,9 +39,10 @@ void* initRider(void* riderTemp) {
     return NULL;
 }
 
-void makePayment() {
+void makePayment(rider* rider) {
     sem_post(&serversOpen);
-    sleep(2);
+    pthread_cond_wait(&riderConditions[rider->id], &checkPayment);
+    pthread_mutex_unlock(&checkPayment);
 }
 
 void bookCab(rider* rider) {
@@ -100,8 +101,7 @@ start:
 
     pthread_mutex_lock(&checkPayment);
     ridersPaying[ridersPayingCount++] = rider;
-    pthread_mutex_unlock(&checkPayment);
-    makePayment();
+    makePayment(rider);
 
     printRiderHead(rider->id);
     printf("has made payment, and will now exit the system\n");
