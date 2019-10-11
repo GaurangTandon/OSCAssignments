@@ -29,7 +29,7 @@ int main() {
     // cabsCount = 10;
     // ridersCount = 100;
     // serversCount = 5;
-    // TODO this test fails :(
+    // TODO this test fails :( also this 5 5 5
     assert(cabsCount <= MAX_CABS);
     assert(ridersCount <= MAX_RIDERS);
     assert(serversCount <= MAX_SERVERS);
