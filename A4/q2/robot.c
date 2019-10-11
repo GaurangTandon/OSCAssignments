@@ -16,7 +16,7 @@ void prepBiryani(robot* robot) {
         capacityStudents = genRandomInRange(25, 50);
 
     robotPrintMsg(robot->id,
-                  "starting with biryani prepartion, takes %d seconds to "
+                  "starting with biryani preparation, takes %d seconds to "
                   "prepare %d vessels, each feeds %d students.\n",
                   timeTaken, numOfVessels, capacityStudents);
 

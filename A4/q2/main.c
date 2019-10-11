@@ -1,5 +1,6 @@
 #include "main.h"
 #include <sys/shm.h>
+#include "table.h"
 
 int genRandomInRange(int l, int r) {
     return rand() % (r - l + 1) + l;
@@ -135,12 +136,29 @@ int main() {
         pthread_join(studentThreads[i], NULL);
     }
 
-    for (int i = 0; i < studentCount; i++) {
-        pthread_join(tableThreads[i], NULL);
+    for (int i = 0; i < tableCount; i++) {
+        if (tables[i]->studentsEatingHere[0] != -1) {
+            table *table = tables[i];
+
+            tablePrintMsg(table->id, "entering serving phase\n");
+            table->readyToServe = 0;
+            for (int i = 0; i < 10; i++) {
+                if (table->studentsEatingHere[i] == -1)
+                    break;
+
+                studentPrintMsg(table->studentsEatingHere[i],
+                                "on serving table %d has been served.\n",
+                                table->id + 1);
+            }
+        }
+    }
+
+    for (int i = 0; i < tableCount; i++) {
+        pthread_cancel(tableThreads[i]);
     }
 
     for (int i = 0; i < studentCount; i++) {
-        pthread_join(robotThreads[i], NULL);
+        pthread_cancel(studentThreads[i]);
     }
 
     printf("Simulation over\n");

@@ -38,6 +38,9 @@ void ready_to_serve_table(table* table) {
                         table->id + 1);
     }
 
+    for (int i = 0; i < 10; i++)
+        table->studentsEatingHere[i] = -1;
+
     tablePrintMsg(table->id,
                   "serving container is empty, waiting for refill\n");
 }
