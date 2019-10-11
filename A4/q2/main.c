@@ -118,6 +118,8 @@ int main() {
         robotMutexes[i] = x2;
     }
 
+    gameOver = 0;
+
     for (int i = 0; i < studentCount; i++) {
         students[i] = (student *)shareMem(sizeof(student));
         students[i]->id = i;
@@ -136,7 +138,17 @@ int main() {
         pthread_join(studentThreads[i], NULL);
     }
 
+    gameOver = 1;
+
     printf("DEBUG: student threads exited\n");
+
+    for (int i = 0; i < tableCount; i++) {
+        pthread_join(tableThreads[i], NULL);
+    }
+
+    for (int i = 0; i < robotCount; i++) {
+        pthread_join(robotThreads[i], NULL);
+    }
 
     for (int i = 0; i < tableCount; i++) {
         if (tables[i]->studentsEatingHere[0] != -1) {
@@ -153,14 +165,6 @@ int main() {
                                 table->id + 1);
             }
         }
-    }
-
-    for (int i = 0; i < tableCount; i++) {
-        pthread_cancel(tableThreads[i]);
-    }
-
-    for (int i = 0; i < studentCount; i++) {
-        pthread_cancel(studentThreads[i]);
     }
 
     printf("Simulation over\n");

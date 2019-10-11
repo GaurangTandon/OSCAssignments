@@ -58,6 +58,7 @@ char* getHeader(int type, int id);
 void printMsg(int type, int id, char* fmt, va_list arg);
 int genRandomInRange(int l, int r);
 int robotCount, studentCount, tableCount;
+int gameOver;
 
 // cannot use such global variables because
 // we are not allowed to use a global mutex

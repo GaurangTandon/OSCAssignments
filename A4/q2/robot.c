@@ -34,13 +34,20 @@ void biryani_ready(robot* robot) {
                   "be emptied to resume cooking\n",
                   robot->biryaniVesselsRemaining);
 
-    while (1) {
+    while (!gameOver) {
         pthread_mutex_lock(&robotMutexes[robot->id]);
 
         if (robot->biryaniVesselsRemaining == 0)
             break;
 
         pthread_mutex_unlock(&robotMutexes[robot->id]);
+    }
+
+    pthread_mutex_trylock(&robotMutexes[robot->id]);
+    pthread_mutex_unlock(&robotMutexes[robot->id]);
+
+    if (gameOver) {
+        return;
     }
 
     robotPrintMsg(robot->id,
@@ -54,6 +61,8 @@ void* initRobot(void* rTemp) {
     robotPrintMsg(myrobot->id, "initialized\n");
 
     prepBiryani(myrobot);
+
+    robotPrintMsg(myrobot->id, "has left the system\n");
 
     return NULL;
 }
