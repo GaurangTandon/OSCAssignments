@@ -41,9 +41,17 @@ typedef struct student {
     int id;
 } student;
 
+pthread_mutex_t* checkTable;
+pthread_mutex_t* checkRobot;
+pthread_cond_t* tableConditions;
+pthread_mutex_t* tableMutexes;
+pthread_cond_t* robotConditions;
+pthread_mutex_t* robotMutexes;
+
 char* getTimestamp();
 char* getHeader(int type, int id);
 void printMsg(int type, int id, char* fmt, va_list arg);
 int genRandomInRange(int l, int r);
+int robotCount, studentCount, tableCount;
 
 #endif

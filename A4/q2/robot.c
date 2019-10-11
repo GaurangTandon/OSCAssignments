@@ -1,4 +1,5 @@
 #include "robot.h"
+#include "table.h"
 
 void robotPrintMsg(int id, char* fmt, ...) {
     va_list argptr;
@@ -7,7 +8,22 @@ void robotPrintMsg(int id, char* fmt, ...) {
     va_end(argptr);
 }
 
-void biryani_ready() {
+void biryani_ready(robot* robot) {
+    while (robot->biryaniVesselsRemaining) {
+        for (int i = 0; i < tableCount; i++) {
+            pthread_mutex_lock(&tableMutexes[i]);
+
+            if (tables[i]->biryaniAmountRemaining == 0) {
+                robot->biryaniVesselsRemaining--;
+                pthread_cond_signal(tables[i]);
+                pthread_mutex_unlock(&tableMutexes[i]);
+                goto success;
+            }
+        }
+        break;
+    success:
+        continue;
+    }
 }
 
 void prepBiryani(robot* robot, int timeTaken, int numOfVessels,
@@ -18,9 +34,9 @@ void prepBiryani(robot* robot, int timeTaken, int numOfVessels,
                   timeTaken, numOfVessels, capacityStudents);
 
     sleep(timeTaken);
+    robot->biryaniVesselsRemaining = numOfVessels;
 
-    // once all done
-    biryani_ready();
+    biryani_ready(robot);
 }
 
 void* initRobot(void* rTemp) {

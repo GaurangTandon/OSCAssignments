@@ -62,7 +62,6 @@ void *shareMem(size_t size) {
 int main() {
     srand(time(0));
 
-    int robotCount, studentCount, tableCount;
     printf("Enter robot count, student count, and table count:\n");
     // scanf("%d%d%d", &robotCount, &studentCount, &tableCount);
     robotCount = 5;
@@ -76,6 +75,17 @@ int main() {
     robots = (robot **)shareMem(MAX_ROBOTS);
     students = (student **)shareMem(MAX_STUDENTS);
 
+    checkTable = (pthread_mutex_t *)shareMem(sizeof(pthread_mutex_t));
+    checkRobot = (pthread_mutex_t *)shareMem(sizeof(pthread_mutex_t));
+    tableConditions =
+        (pthread_cond_t *)shareMem(sizeof(pthread_cond_t) * tableCount);
+    tableMutexes =
+        (pthread_mutex_t *)shareMem(sizeof(pthread_mutex_t) * tableCount);
+    robotConditions =
+        (pthread_cond_t *)shareMem(sizeof(pthread_cond_t) * robotCount);
+    robotMutexes =
+        (pthread_mutex_t *)shareMem(sizeof(pthread_mutex_t) * robotCount);
+
     pthread_t *tableThreads =
         (pthread_t *)malloc(sizeof(pthread_t) * tableCount);
     pthread_t *studentThreads =
@@ -86,12 +96,20 @@ int main() {
     for (int i = 0; i < tableCount; i++) {
         tables[i] = (table *)shareMem(sizeof(table));
         tables[i]->id = i;
+        pthread_cond_t x = PTHREAD_COND_INITIALIZER;
+        tableConditions[i] = x;
+        pthread_mutex_t x2 = PTHREAD_MUTEX_INITIALIZER;
+        tableMutexes[i] = x2;
         pthread_create(&tableThreads[i], NULL, initTable, tables[i]);
     }
 
     for (int i = 0; i < robotCount; i++) {
         robots[i] = (robot *)shareMem(sizeof(robot));
         robots[i]->id = i;
+        pthread_cond_t x = PTHREAD_COND_INITIALIZER;
+        robotConditions[i] = x;
+        pthread_mutex_t x2 = PTHREAD_MUTEX_INITIALIZER;
+        robotMutexes[i] = x2;
         pthread_create(&robotThreads[i], NULL, initRobot, robots[i]);
     }
 
