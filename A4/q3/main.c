@@ -87,6 +87,8 @@ int main() {
         pthread_join(riderThreads[i], NULL);
     }
     for (int i = 0; i < serversCount; i++) {
+        // release the servers in case they're stuck
+        sem_post(&serversOpen);
         pthread_join(serverThreads[i], NULL);
     }
 

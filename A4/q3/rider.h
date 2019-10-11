@@ -6,5 +6,6 @@ rider** riders;
 rider** ridersPaying;
 
 void* initRider(void* rider);
+void madePayment(rider* rider);
 
 #endif

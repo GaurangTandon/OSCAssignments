@@ -17,7 +17,8 @@ void* initServer(void* serverTemp) {
         pthread_mutex_lock(&checkPayment);
         rider* r = ridersPaying[--ridersPayingCount];
         pthread_mutex_unlock(&checkPayment);
-
+        if (!r)
+            break;
         printServerHead(myserver->id);
         printf("accepting payment from %d\n", r->id);
 
@@ -25,10 +26,7 @@ void* initServer(void* serverTemp) {
 
         printServerHead(myserver->id);
         printf("received payment from %d\n", r->id);
-
-        pthread_mutex_lock(&checkPayment);
-        pthread_cond_signal(&riderConditions[r->id]);
-        pthread_mutex_unlock(&checkPayment);
+        madePayment(r);
     }
 
     printServerHead(myserver->id);
