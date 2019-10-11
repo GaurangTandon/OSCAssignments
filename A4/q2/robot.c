@@ -8,21 +8,7 @@ void robotPrintMsg(int id, char* fmt, ...) {
     va_end(argptr);
 }
 
-void biryani_ready(robot* robot) {
-    while (1) {
-        pthread_mutex_lock(&robotMutexes[robot->id]);
-
-        if (robot->biryaniVesselsRemaining == 0) {
-            break;
-        }
-
-        pthread_mutex_unlock(&robotMutexes[robot->id]);
-    }
-
-    robotPrintMsg(robot->id,
-                  "finished all my vessels. Moving onto next batch\n");
-    prepBiryani(robot);
-}
+void biryani_ready(robot* robot);
 
 void prepBiryani(robot* robot) {
     int timeTaken = genRandomInRange(2, 5),
@@ -41,10 +27,26 @@ void prepBiryani(robot* robot) {
     biryani_ready(robot);
 }
 
+void biryani_ready(robot* robot) {
+    while (1) {
+        pthread_mutex_lock(&robotMutexes[robot->id]);
+
+        if (robot->biryaniVesselsRemaining == 0) {
+            break;
+        }
+
+        pthread_mutex_unlock(&robotMutexes[robot->id]);
+    }
+
+    robotPrintMsg(robot->id,
+                  "finished all my vessels. Moving onto next batch\n");
+    prepBiryani(robot);
+}
+
 void* initRobot(void* rTemp) {
     robot* myrobot = (robot*)rTemp;
 
-    robotPrintMsg("initialized\n");
+    robotPrintMsg(myrobot->id, "initialized\n");
 
     prepBiryani(myrobot);
 

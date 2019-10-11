@@ -71,9 +71,9 @@ int main() {
     assert(studentCount <= MAX_STUDENTS);
     assert(tableCount <= MAX_TABLES);
 
-    tables = (table **)shareMem(MAX_TABLES);
-    robots = (robot **)shareMem(MAX_ROBOTS);
-    students = (student **)shareMem(MAX_STUDENTS);
+    tables = (table **)shareMem(MAX_TABLES * sizeof(table *));
+    robots = (robot **)shareMem(MAX_ROBOTS * sizeof(robot *));
+    students = (student **)shareMem(MAX_STUDENTS * sizeof(student *));
     pthread_mutex_t xx = PTHREAD_MUTEX_INITIALIZER;
     updateMutex = xx;
 
@@ -87,8 +87,6 @@ int main() {
         (pthread_cond_t *)shareMem(sizeof(pthread_cond_t) * robotCount);
     robotMutexes =
         (pthread_mutex_t *)shareMem(sizeof(pthread_mutex_t) * robotCount);
-
-    studentsLeftCount = studentCount;
 
     pthread_t *tableThreads =
         (pthread_t *)malloc(sizeof(pthread_t) * tableCount);
@@ -104,7 +102,6 @@ int main() {
         tableConditions[i] = x;
         pthread_mutex_t x2 = PTHREAD_MUTEX_INITIALIZER;
         tableMutexes[i] = x2;
-        pthread_create(&tableThreads[i], NULL, initTable, tables[i]);
     }
 
     for (int i = 0; i < robotCount; i++) {
@@ -114,13 +111,20 @@ int main() {
         robotConditions[i] = x;
         pthread_mutex_t x2 = PTHREAD_MUTEX_INITIALIZER;
         robotMutexes[i] = x2;
-        pthread_create(&robotThreads[i], NULL, initRobot, robots[i]);
     }
 
     for (int i = 0; i < studentCount; i++) {
         students[i] = (student *)shareMem(sizeof(student));
         students[i]->id = i;
         pthread_create(&studentThreads[i], NULL, initStudent, students[i]);
+    }
+
+    for (int i = 0; i < tableCount; i++) {
+        pthread_create(&tableThreads[i], NULL, initTable, tables[i]);
+    }
+
+    for (int i = 0; i < robotCount; i++) {
+        pthread_create(&robotThreads[i], NULL, initRobot, robots[i]);
     }
 
     for (int i = 0; i < studentCount; i++) {
