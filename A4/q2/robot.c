@@ -10,13 +10,15 @@ void robotPrintMsg(int id, char* fmt, ...) {
 
 void biryani_ready(robot* robot) {
     while (robot->biryaniVesselsRemaining) {
+        pthread_mutex_lock(&updateMutex);
+    check:
         for (int i = 0; i < tableCount; i++) {
-            pthread_mutex_lock(&tableMutexes[i]);
-
-            if (tables[i]->biryaniAmountRemaining == 0) {
+            if (tables[i]->needVessel) {
                 robot->biryaniVesselsRemaining--;
+                robotPrintMsg(robot->id, "Serving biryani to table %d\n",
+                              tables[i]);
                 pthread_cond_signal(tables[i]);
-                pthread_mutex_unlock(&tableMutexes[i]);
+                pthread_mutex_unlock(&updateMutex);
                 goto success;
             }
         }
@@ -24,17 +26,30 @@ void biryani_ready(robot* robot) {
     success:
         continue;
     }
+
+    if (robot->biryaniVesselsRemaining == 0) {
+        robotPrintMsg(robot->id,
+                      "finished all my vessels. Moving onto next batch\n");
+        prepBiryani(robot);
+    } else {
+        pthread_cond_wait(&robotConditions[robot->id], &updateMutex);
+        goto check;
+    }
 }
 
-void prepBiryani(robot* robot, int timeTaken, int numOfVessels,
-                 int capacityStudents) {
+void prepBiryani(robot* robot) {
+    int timeTaken = genRandomInRange(2, 5),
+        numOfVessels = genRandomInRange(1, 10),
+        capacityStudents = genRandomInRange(25, 50);
+
     robotPrintMsg(robot->id,
                   "starting with biryani prepartion, takes %d seconds to "
-                  "prepare %d vessels, each feeds %d students.",
+                  "prepare %d vessels, each feeds %d students.\n",
                   timeTaken, numOfVessels, capacityStudents);
 
     sleep(timeTaken);
     robot->biryaniVesselsRemaining = numOfVessels;
+    robot->vesselSize = capacityStudents;
 
     biryani_ready(robot);
 }
@@ -42,8 +57,7 @@ void prepBiryani(robot* robot, int timeTaken, int numOfVessels,
 void* initRobot(void* rTemp) {
     robot* myrobot = (robot*)rTemp;
 
-    prepBiryani(myrobot, genRandomInRange(2, 5), genRandomInRange(1, 10),
-                genRandomInRange(25, 50));
+    prepBiryani(myrobot);
 
     return NULL;
 }

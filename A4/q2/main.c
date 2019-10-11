@@ -74,6 +74,8 @@ int main() {
     tables = (table **)shareMem(MAX_TABLES);
     robots = (robot **)shareMem(MAX_ROBOTS);
     students = (student **)shareMem(MAX_STUDENTS);
+    pthread_mutex_t xx = PTHREAD_MUTEX_INITIALIZER;
+    updateMutex = xx;
 
     checkTable = (pthread_mutex_t *)shareMem(sizeof(pthread_mutex_t));
     checkRobot = (pthread_mutex_t *)shareMem(sizeof(pthread_mutex_t));

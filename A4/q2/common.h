@@ -29,12 +29,14 @@
 typedef struct table {
     int id;
     int biryaniAmountRemaining;
+    int needVessel;
 } table;
 
 typedef struct robot {
     int id;
     int biryaniVesselsRemaining;
     int isReady;
+    int vesselSize;
 } robot;
 
 typedef struct student {
@@ -45,6 +47,7 @@ pthread_mutex_t* checkTable;
 pthread_mutex_t* checkRobot;
 pthread_cond_t* tableConditions;
 pthread_mutex_t* tableMutexes;
+pthread_mutex_t updateMutex;
 pthread_cond_t* robotConditions;
 pthread_mutex_t* robotMutexes;
 
