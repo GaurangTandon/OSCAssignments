@@ -7,18 +7,21 @@ void* initServer(void* serverTemp) {
     printf("Server %d:\tinitialized\n", myserver->id);
     fflush(stdout);
 
-    // TODO: why doesn't server code exit?
     while (ridersLeftToExit) {
         sem_wait(&serversOpen);
 
+        pthread_mutex_lock(&checkPayment);
+        rider* r = ridersPaying[--ridersPayingCount];
+        pthread_mutex_unlock(&checkPayment);
+
         printTimestamp();
-        printf("Server %d:\taccepting payment from %d\n", myserver->id, -1);
+        printf("Server %d:\taccepting payment from %d\n", myserver->id, r->id);
         fflush(stdout);
 
         sleep(2);
 
         printTimestamp();
-        printf("Server %d:\treceived payment from %d\n", myserver->id, -1);
+        printf("Server %d:\treceived payment from %d\n", myserver->id, r->id);
         fflush(stdout);
     }
 

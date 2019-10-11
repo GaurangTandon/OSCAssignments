@@ -36,6 +36,7 @@ void* initRider(void* riderTemp) {
 
 void makePayment() {
     sem_post(&serversOpen);
+    sleep(2);
 }
 
 void bookCab(rider* rider) {
@@ -92,9 +93,11 @@ start:
     printTimestamp();
     printf("Rider %d:\thas left the cab\n", rider->id);
 
+    pthread_mutex_lock(&checkPayment);
+    ridersPaying[ridersPayingCount++] = rider;
+    pthread_mutex_unlock(&checkPayment);
     makePayment();
 
-    // TODO: this printf prints before the payment has finished
     printTimestamp();
     printf("Rider %d:\thas made payment, and will now exit the system\n",
            rider->id);

@@ -13,7 +13,7 @@
 #include <unistd.h>
 
 #define MAX_WAIT_TIME 10
-#define MAX_RIDE_TIME 15
+#define MAX_RIDE_TIME 5
 #define MAX_ARRIVAL_TIME 5
 #define MAX_CABS 100
 #define MAX_RIDERS 100
@@ -28,9 +28,11 @@ int serversOpenCount;
 int totalCabsOpen;
 
 pthread_mutex_t checkCab;
+pthread_mutex_t checkPayment;
 short* riderWaiting;
 pthread_cond_t* riderConditions;
 int ridersLeftToExit;
+int ridersPayingCount;
 
 typedef struct rider {
     int cabType;

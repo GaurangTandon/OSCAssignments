@@ -74,8 +74,11 @@ int main() {
     pthread_t *riderThreads =
         (pthread_t *)malloc(sizeof(pthread_t) * ridersCount);
     riders = (rider **)shareMem(sizeof(rider *) * MAX_RIDERS);
+    ridersPaying = (rider **)shareMem(sizeof(rider *) * MAX_RIDERS);
+    ridersPayingCount = 0;
     for (int i = 0; i < ridersCount; i++) {
         riders[i] = (rider *)shareMem(sizeof(rider));
+        ridersPaying[i] = NULL;
         riders[i]->id = i;
         pthread_create(&riderThreads[i], NULL, initRider, riders[i]);
     }
