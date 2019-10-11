@@ -5,60 +5,37 @@ int genRandomInRange(int l, int r) {
     return rand() % (r - l + 1) + l;
 }
 
+char *getTimestamp() {
+    time_t t;
+    time(&t);
+    char *t2 = ctime(&t);
 
+    char *buf = (char *)calloc(sizeof(char), 9);
+    memcpy(buf, t2 + 11, 8);
+    return buf;
+}
 
-void appendToBuffer(char *buf, char *fmt, ...) {
-    char *to_print = (char *)malloc(len_str(fmt) + 1), *ch = fmt;
-    int l = 0;
-
-    int fmt_i;
-    long fmt_l;
-    long long fmt_L;
-    char *fmt_s;
-
-    va_list arg;
-    va_start(arg, fmt);
-
-    while (*ch) {
-        while (*ch != '%') {
-            to_print[l++] = *ch;
-            ch++;
-
-            if (*ch == 0) {
-                to_print[l++] = 0;
-                strcat(buf, "\0");
-
-                free(to_print);
-                va_end(arg);
-                return;
-            }
-        }
-
-        // concatenate n normal characters
-        strncat(buf, to_print, l);
-        l = 0;
-        ch++;
-
-        switch (*ch) {
-            case 'c':
-                fmt_i = va_arg(arg, int);
-                char b2[10] = {0};
-                sprintf(b2, "%c", fmt_i);
-                strcat(buf, b2);
-                break;
-            case 'd':
-                fmt_i = va_arg(arg, int);
-                char b2[10] = {0};
-                sprintf(b2, "%d", fmt_i);
-                strcat(buf, b2);
-                break;
-        }
-
-        ch++;
+char *getHeader(int type, int id) {
+    char *buf = (char *)malloc(sizeof(char));
+    strcat(buf, getTimestamp());
+    strcat(buf, "\t");
+    switch (type) {
+        case ROBOT_TYPE:
+            strcat(buf, KGREEN "Robot" KNRM);
+            break;
+        case TABLE_TYPE:
+            strcat(buf, "Table");
+            break;
+        case STUDENT_TYPE:
+            strcat(buf, "Student");
+            break;
     }
 
-    free(to_print);
-    va_end(arg);
+    char b2[10] = {0};
+    sprintf(b2, " %d:", id);
+    strcat(buf, "\t\t");
+    strcat(buf, b2);
+    return buf;
 }
 
 void *shareMem(size_t size) {
@@ -68,16 +45,6 @@ void *shareMem(size_t size) {
     int shm_id = shmget(mem_key, size, IPC_CREAT | 0666);
     // attach the address space of shared memory to myself (callee)
     return (void *)shmat(shm_id, NULL, 0);
-}
-
-void printTimestamp() {
-    time_t t;
-    time(&t);
-    char *t2 = ctime(&t);
-
-    char buf[9] = {0};
-    memcpy(buf, t2 + 11, 8);
-    printf("%s\t", buf);
 }
 
 int main() {

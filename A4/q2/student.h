@@ -1,4 +1,4 @@
 #include "common.h"
 
 student** students;
-void initStudent(student* stTemp);
+void* initStudent(void* stTemp);

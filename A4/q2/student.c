@@ -1,6 +1,6 @@
 #include "student.h"
 
-void initStudent(student* stTemp) {
+void* initStudent(void* stTemp) {
     student* myStud = (student*)stTemp;
     return NULL;
 }

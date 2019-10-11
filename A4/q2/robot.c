@@ -1,20 +1,30 @@
 #include "robot.h"
 
-void robotChefHeader(int id) {
-    printTimestamp();
-    printf(KGREEN "Robot chef %d\t\t" KNRM, id + 1);
-}
-
-void printMsg(char* fmt, ...) {
-    char buf[1000] = {0}, buf2[1000] = {0};
+void printMsg(int id, char* fmt, ...) {
+    char* buf = (char*)calloc(sizeof(char) * 1000, 1);
+    char buf2[1000] = {0};
     va_list argptr;
     va_start(argptr, fmt);
     sprintf(buf, fmt, argptr);
 
-    strcat(buf2, )
+    strcat(buf2, getHeader(ROBOT_TYPE, id));
+    strcat(buf2, buf);
 
-        robotChefHeader();
-    printf("%s%s%s", gettimeofday(), robots, );
+    printf("%s\n", buf2);
+}
+
+void biryani_ready() {
+}
+
+void prepBiryani(robot* robot, int timePerVessel, int numOfVessels,
+                 int capacityStudents) {
+    printMsg(robot->id, "starting with biryani.");
+
+    for (int i = 0; i < numOfVessels; i++)
+        sleep(timePerVessel);
+
+    // once all done
+    biryani_ready();
 }
 
 void* initRobot(void* rTemp) {
@@ -24,18 +34,4 @@ void* initRobot(void* rTemp) {
                 genRandomInRange(25, 50));
 
     return NULL;
-}
-
-void prepBiryani(robot* robot, int timePerVessel, int numOfVessels,
-                 int capacityStudents) {
-    printMsg("starting with biryani.");
-
-    for (int i = 0; i < numOfVessels; i++)
-        sleep(timePerVessel);
-
-    // once all done
-    biryani_ready();
-}
-
-void biryani_ready() {
 }

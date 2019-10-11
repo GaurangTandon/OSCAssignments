@@ -5,5 +5,8 @@ void* initTable(void* tableTemp) {
     return NULL;
 }
 
+void* tablePrint() {
+}
+
 void ready_to_serve_table(int slots) {
 }

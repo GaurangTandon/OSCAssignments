@@ -22,6 +22,10 @@
 #define MAX_STUDENTS 100
 #define MAX_TABLES 100
 
+#define ROBOT_TYPE 1
+#define TABLE_TYPE 2
+#define STUDENT_TYPE 3
+
 typedef struct table {
     int id;
     int biryaniAmountRemaining;
@@ -37,6 +41,7 @@ typedef struct student {
     int id;
 } student;
 
-void printTimestamp();
+char* getTimestamp();
+char* getHeader(int type, int id);
 
 #endif
