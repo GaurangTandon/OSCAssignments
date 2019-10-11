@@ -22,7 +22,8 @@ void printTimestamp() {
 
 int main() {
     int cabsCount, ridersCount, serversCount;
-    // scanf("%d%d%d", &cabsCount, &ridersCount, &serversCount);
+    printf("Enter cab count, rider count, server count:\n");
+    scanf("%d%d%d", &cabsCount, &ridersCount, &serversCount);
     cabsCount = 10;
     ridersCount = 100;
     serversCount = 5;
