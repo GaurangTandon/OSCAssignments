@@ -136,17 +136,19 @@ int main() {
         pthread_join(studentThreads[i], NULL);
     }
 
+    printf("DEBUG: student threads exited\n");
+
     for (int i = 0; i < tableCount; i++) {
         if (tables[i]->studentsEatingHere[0] != -1) {
             table *table = tables[i];
 
             tablePrintMsg(table->id, "entering serving phase\n");
             table->readyToServe = 0;
-            for (int i = 0; i < 10; i++) {
-                if (table->studentsEatingHere[i] == -1)
+            for (int j = 0; j < 10; j++) {
+                if (table->studentsEatingHere[j] == -1)
                     break;
 
-                studentPrintMsg(table->studentsEatingHere[i],
+                studentPrintMsg(table->studentsEatingHere[j],
                                 "on serving table %d has been served.\n",
                                 table->id + 1);
             }

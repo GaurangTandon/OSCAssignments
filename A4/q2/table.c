@@ -71,7 +71,9 @@ void* initTable(void* tableTemp) {
                               "resuming serving now\n",
                               robots[i]->id + 1);
                 robots[i]->biryaniVesselsRemaining--;
+                pthread_mutex_lock(&tableMutexes[mytable->id]);
                 mytable->biryaniAmountRemaining += robots[i]->vesselSize;
+                pthread_mutex_unlock(&tableMutexes[mytable->id]);
             }
 
             pthread_mutex_unlock(&robotMutexes[i]);

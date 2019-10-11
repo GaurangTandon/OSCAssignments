@@ -37,9 +37,8 @@ void biryani_ready(robot* robot) {
     while (1) {
         pthread_mutex_lock(&robotMutexes[robot->id]);
 
-        if (robot->biryaniVesselsRemaining == 0) {
+        if (robot->biryaniVesselsRemaining == 0)
             break;
-        }
 
         pthread_mutex_unlock(&robotMutexes[robot->id]);
     }
