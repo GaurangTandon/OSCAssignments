@@ -23,7 +23,7 @@ void printTimestamp() {
 int main() {
     int cabsCount, ridersCount, serversCount;
     // scanf("%d%d%d", &cabsCount, &ridersCount, &serversCount);
-    cabsCount = 5;
+    cabsCount = 2;
     ridersCount = 10;
     serversCount = 2;
     assert(cabsCount <= MAX_CABS);

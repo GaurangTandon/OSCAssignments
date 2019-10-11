@@ -2,6 +2,7 @@
 #define commonDone
 
 #include <assert.h>
+#include <errno.h>
 #include <math.h>
 #include <memory.h>
 #include <pthread.h>

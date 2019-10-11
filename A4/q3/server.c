@@ -15,10 +15,14 @@ void* initServer(void* serverTemp) {
         sem_wait(&serversOpen);
 
         pthread_mutex_lock(&checkPayment);
-        rider* r = ridersPaying[--ridersPayingCount];
-        pthread_mutex_unlock(&checkPayment);
-        if (!r)
+        if (!ridersPaying[0]) {
+            pthread_mutex_unlock(&checkPayment);
             break;
+        }
+        rider* r = ridersPaying[ridersPayingCount - 1];
+        ridersPaying[ridersPayingCount - 1] = NULL;
+        ridersPayingCount -= 1;
+        pthread_mutex_unlock(&checkPayment);
         printServerHead(myserver->id);
         printf("accepting payment from %d\n", r->id);
 

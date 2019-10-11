@@ -5,18 +5,18 @@
 void bookCab(rider* rider);
 
 struct timespec* getTimeStructSinceEpoch(int extraTime) {
-    time_t passed;
-    time(&passed);
-
     struct timespec* st = (struct timespec*)malloc(sizeof(struct timespec*));
-    st->tv_sec = passed + extraTime;
-    st->tv_nsec = 0;
+
+    // https://stackoverflow.com/q/46018295/
+    clock_gettime(CLOCK_REALTIME, st);
+    st->tv_sec += extraTime;
+
     return st;
 }
 
 void printRiderHead(int id) {
     printTimestamp();
-    printf(KMAGENTA "Rider %d\t" KNRM, id);
+    printf(KMAGENTA "Rider %d\t\t" KNRM, id);
 }
 
 void* initRider(void* riderTemp) {
@@ -79,12 +79,12 @@ start:
         riderWaiting[rider->id] = rider->cabType;
         res =
             pthread_cond_timedwait(&riderConditions[rider->id], &checkCab, st);
-        if (res != -1) {
+        if (res != ETIMEDOUT) {
             goto start;
         }
     }
 
-    if (res == -1) {
+    if (res == ETIMEDOUT) {
         printRiderHead(rider->id);
         printf("timed out waiting for a cab (maxwaittime: %d)\n",
                rider->maxWaitTime);
