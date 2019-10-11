@@ -15,4 +15,5 @@ Cab 0           taking rider 2
 
 sync messed up sometimes??
 
-gets stuck in the end for now, maybe due to the addition of the new mutex
+check your pool logic
+riding alone/riding with another rider printf
