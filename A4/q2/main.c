@@ -34,19 +34,19 @@ char *getHeader(int type, int id) {
 
     char b2[10] = {0};
     sprintf(b2, " %d:", id);
-    strcat(buf, "\t\t");
     strcat(buf, b2);
     return buf;
 }
 
 void printMsg(int type, int id, char *fmt, ...) {
-    char *buf = (char *)calloc(sizeof(char) * 1000, 1);
+    char *buf = (char *)calloc(sizeof(char), 1000);
     char buf2[1000] = {0};
     va_list argptr;
     va_start(argptr, fmt);
     sprintf(buf, fmt, argptr);
 
     strcat(buf2, getHeader(type, id));
+    strcat(buf2, "\t");
     strcat(buf2, buf);
 
     printf("%s\n", buf2);
