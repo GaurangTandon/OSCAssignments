@@ -88,6 +88,8 @@ int main() {
     robotMutexes =
         (pthread_mutex_t *)shareMem(sizeof(pthread_mutex_t) * robotCount);
 
+    studentsLeftCount = studentCount;
+
     pthread_t *tableThreads =
         (pthread_t *)malloc(sizeof(pthread_t) * tableCount);
     pthread_t *studentThreads =

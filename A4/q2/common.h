@@ -30,6 +30,9 @@ typedef struct table {
     int id;
     int biryaniAmountRemaining;
     int needVessel;
+    int readyToServe;
+    int slotsLeft;
+    int studentsEatingHere[11];
 } table;
 
 typedef struct robot {
@@ -41,6 +44,7 @@ typedef struct robot {
 
 typedef struct student {
     int id;
+    int arrivalTime;
 } student;
 
 pthread_mutex_t* checkTable;
@@ -56,5 +60,7 @@ char* getHeader(int type, int id);
 void printMsg(int type, int id, char* fmt, va_list arg);
 int genRandomInRange(int l, int r);
 int robotCount, studentCount, tableCount;
+
+int studentsLeftCount;
 
 #endif

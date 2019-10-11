@@ -14,28 +14,52 @@ void* initTable(void* tableTemp) {
     mytable->biryaniAmountRemaining = 0;
     mytable->needVessel = 1;
 
-    while (1) {
-        pthread_mutex_lock(&updateMutex);
-        pthread_cond_wait(&tableConditions[mytable->id], &updateMutex);
-
-        // some chef sent me a signal
-        // that means he is giving me biryani :D
+    while (studentsLeftCount > 0) {
         for (int i = 0; i < robotCount; i++) {
+            pthread_mutex_lock(&robotMutexes[i]);
+            int flag = 0;
+
             if (robots[i]->biryaniVesselsRemaining > 0) {
+                flag = 1;
                 robots[i]->biryaniVesselsRemaining--;
-                mytable->needVessel = 0;
                 mytable->biryaniAmountRemaining += robots[i]->vesselSize;
-                pthread_mutex_unlock(&updateMutex);
-                ready_to_serve_table();
             }
+
+            pthread_mutex_unlock(&robotMutexes[i]);
+
+            if (flag)
+                ready_to_serve_table(mytable);
         }
     }
 
     return NULL;
 }
 
-void* tablePrint() {
-}
+void ready_to_serve_table(table* table) {
+    for (int i = 0; i < 10; i++)
+        table->studentsEatingHere[i] = -1;
 
-void ready_to_serve_table() {
+    int slots;
+    table->slotsLeft = (slots = genRandomInRange(1, 10));
+    table->readyToServe = 1;
+
+    while (1) {
+        pthread_mutex_lock(&tableMutexes[table->id]);
+        if (table->slotsLeft == 0)
+            break;
+        pthread_mutex_unlock(&tableMutexes[table->id]);
+    }
+
+    table->readyToServe = 0;
+    tablePrintMsg("has been occupied by %d students, with ids", slots);
+    for (int i = 0; i < 10; i++) {
+        if (table->studentsEatingHere[i] == -1)
+            break;
+        printf(" %d", table->studentsEatingHere[i]);
+    }
+
+    // need a mutex here
+    studentsLeftCount -= slots;
+
+    printf("\n");
 }

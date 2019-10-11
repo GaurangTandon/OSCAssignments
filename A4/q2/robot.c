@@ -9,32 +9,19 @@ void robotPrintMsg(int id, char* fmt, ...) {
 }
 
 void biryani_ready(robot* robot) {
-    while (robot->biryaniVesselsRemaining) {
-        pthread_mutex_lock(&updateMutex);
-    check:
-        for (int i = 0; i < tableCount; i++) {
-            if (tables[i]->needVessel) {
-                robot->biryaniVesselsRemaining--;
-                robotPrintMsg(robot->id, "Serving biryani to table %d\n",
-                              tables[i]);
-                pthread_cond_signal(tables[i]);
-                pthread_mutex_unlock(&updateMutex);
-                goto success;
-            }
+    while (1) {
+        pthread_mutex_lock(&robotMutexes[robot->id]);
+
+        if (robot->biryaniVesselsRemaining == 0) {
+            break;
         }
-        break;
-    success:
-        continue;
+
+        pthread_mutex_unlock(&robotMutexes[robot->id]);
     }
 
-    if (robot->biryaniVesselsRemaining == 0) {
-        robotPrintMsg(robot->id,
-                      "finished all my vessels. Moving onto next batch\n");
-        prepBiryani(robot);
-    } else {
-        pthread_cond_wait(&robotConditions[robot->id], &updateMutex);
-        goto check;
-    }
+    robotPrintMsg(robot->id,
+                  "finished all my vessels. Moving onto next batch\n");
+    prepBiryani(robot);
 }
 
 void prepBiryani(robot* robot) {
@@ -56,6 +43,8 @@ void prepBiryani(robot* robot) {
 
 void* initRobot(void* rTemp) {
     robot* myrobot = (robot*)rTemp;
+
+    robotPrintMsg("initialized\n");
 
     prepBiryani(myrobot);
 
