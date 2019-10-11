@@ -22,18 +22,22 @@ char *getHeader(int type, int id) {
 
     switch (type) {
         case ROBOT_TYPE:
-            strcat(buf, KGREEN "Robot" KNRM);
+            strcat(buf, KGREEN "Robot");
             break;
         case TABLE_TYPE:
-            strcat(buf, KMAGENTA "Table" KNRM);
+            strcat(buf, KMAGENTA "Table");
             break;
         case STUDENT_TYPE:
-            strcat(buf, KBLUE "Student" KNRM);
+            strcat(buf, KBLUE "Student");
             break;
     }
 
     char b2[10] = {0};
-    sprintf(b2, " %d:", id + 1);
+    // alignment woes
+    if (type == STUDENT_TYPE)
+        sprintf(b2, " %d\t" KNRM, id + 1);
+    else
+        sprintf(b2, " %d\t\t" KNRM, id + 1);
     strcat(buf, b2);
     return buf;
 }
@@ -44,7 +48,6 @@ void printMsg(int type, int id, char *fmt, va_list arg) {
     vsprintf(buf, fmt, arg);
 
     strcat(buf2, getHeader(type, id));
-    strcat(buf2, "\t");
     strcat(buf2, buf);
 
     printf("%s", buf2);
@@ -107,6 +110,7 @@ int main() {
     for (int i = 0; i < robotCount; i++) {
         robots[i] = (robot *)shareMem(sizeof(robot));
         robots[i]->id = i;
+        robots[i]->biryaniVesselsRemaining = 0;
         pthread_cond_t x = PTHREAD_COND_INITIALIZER;
         robotConditions[i] = x;
         pthread_mutex_t x2 = PTHREAD_MUTEX_INITIALIZER;

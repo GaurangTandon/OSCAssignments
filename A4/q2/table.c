@@ -17,7 +17,7 @@ void ready_to_serve_table(table* table) {
     table->slotsLeft = (slots = genRandomInRange(1, 10));
     table->readyToServe = 1;
 
-    tablePrintMsg(table->id, "is reade to serve with %d slots\n",
+    tablePrintMsg(table->id, "is ready to serve with %d slots\n",
                   table->slotsLeft);
 
     while (1) {
@@ -51,9 +51,9 @@ void* initTable(void* tableTemp) {
     mytable->needVessel = 1;
 
     while (1) {
+        int flag = 0;
         for (int i = 0; i < robotCount; i++) {
             pthread_mutex_lock(&robotMutexes[i]);
-            int flag = 0;
 
             if (robots[i]->biryaniVesselsRemaining > 0) {
                 flag = 1;
@@ -77,7 +77,8 @@ void* initTable(void* tableTemp) {
                 break;
         }
 
-        ready_to_serve_table(mytable);
+        if (flag)
+            ready_to_serve_table(mytable);
     }
 
     return NULL;
