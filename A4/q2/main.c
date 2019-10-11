@@ -140,8 +140,6 @@ int main() {
 
     gameOver = 1;
 
-    printf("DEBUG: student threads exited\n");
-
     for (int i = 0; i < tableCount; i++) {
         pthread_join(tableThreads[i], NULL);
     }

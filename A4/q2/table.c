@@ -2,6 +2,8 @@
 #include "robot.h"
 #include "student.h"
 
+#define min(x, y) ((x) >= (y) ? (x) : (y))
+
 void tablePrintMsg(int id, char* fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
@@ -16,7 +18,8 @@ void ready_to_serve_table(table* table) {
     pthread_mutex_unlock(&tableMutexes[table->id]);
 
     int slots;
-    table->slotsLeft = (slots = genRandomInRange(1, 10));
+    table->slotsLeft =
+        (slots = genRandomInRange(1, min(10, table->biryaniAmountRemaining)));
     table->readyToServe = 1;
 
     tablePrintMsg(table->id, "is ready to serve with %d slots\n",
@@ -49,9 +52,6 @@ void ready_to_serve_table(table* table) {
         table->studentsEatingHere[i] = -1;
 
     pthread_mutex_unlock(&tableMutexes[table->id]);
-
-    tablePrintMsg(table->id,
-                  "serving container is empty, waiting for refill\n");
 }
 
 void* initTable(void* tableTemp) {
@@ -91,8 +91,22 @@ void* initTable(void* tableTemp) {
                 break;
         }
 
-        if (flag)
-            ready_to_serve_table(mytable);
+        if (flag) {
+            while (!gameOver) {
+                pthread_mutex_lock(&tableMutexes[mytable->id]);
+                int x = mytable->biryaniAmountRemaining;
+                pthread_mutex_unlock(&tableMutexes[mytable->id]);
+
+                if (x > 0)
+                    ready_to_serve_table(mytable);
+            }
+
+            tablePrintMsg(mytable->id,
+                          "serving container is empty, waiting for refill\n");
+
+            if (gameOver)
+                break;
+        }
     }
 
     tablePrintMsg(mytable->id, "has left the system\n");

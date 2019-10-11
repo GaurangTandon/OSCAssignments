@@ -8,6 +8,40 @@ void studentPrintMsg(int id, char* fmt, ...) {
     va_end(argptr);
 }
 
+void student_in_slot(student* myStud, table* t) {
+    studentPrintMsg(myStud->id,
+                    "assigned a slot on the serving table %d and "
+                    "is waiting to be served\n",
+                    t->id + 1);
+    int j = 0;
+    while (t->studentsEatingHere[j] != -1)
+        j++;
+    t->studentsEatingHere[j] = myStud->id;
+    pthread_mutex_unlock(&tableMutexes[t->id]);
+}
+
+void wait_for_slot(student* myStud) {
+    while (1) {
+        for (int i = 0; i < tableCount; i++) {
+            pthread_mutex_lock(&tableMutexes[i]);
+            int flag = 0;
+
+            if (tables[i]->slotsLeft > 0) {
+                tables[i]->slotsLeft--;
+
+                flag = 1;
+            }
+
+            if (flag) {
+                student_in_slot(myStud, tables[i]);
+                return;
+            }
+
+            pthread_mutex_unlock(&tableMutexes[i]);
+        }
+    }
+}
+
 void* initStudent(void* stTemp) {
     student* myStud = (student*)stTemp;
 
@@ -19,36 +53,7 @@ void* initStudent(void* stTemp) {
     studentPrintMsg(myStud->id,
                     "is waiting to be allocated a slot on the serving table\n");
 
-    while (1) {
-        for (int i = 0; i < tableCount; i++) {
-            pthread_mutex_lock(&tableMutexes[i]);
-            int flag = 0;
-
-            if (tables[i]->slotsLeft > 0) {
-                tables[i]->slotsLeft--;
-                int j = 0;
-                while (tables[i]->studentsEatingHere[j] != -1)
-                    j++;
-                tables[i]->studentsEatingHere[j] = myStud->id;
-                flag = 1;
-            }
-
-            pthread_mutex_unlock(&tableMutexes[i]);
-            if (flag) {
-                studentPrintMsg(myStud->id,
-                                "assigned a slot on the serving table %d and "
-                                "is waiting to be served\n",
-                                tables[i]->id + 1);
-                return NULL;
-            }
-        }
-    }
+    wait_for_slot(myStud);
 
     return NULL;
-}
-
-void wait_for_slot() {
-}
-
-void student_in_slot() {
 }
