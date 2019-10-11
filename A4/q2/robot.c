@@ -31,7 +31,7 @@ void prepBiryani(robot* robot) {
 void biryani_ready(robot* robot) {
     robotPrintMsg(robot->id,
                   "has prepared %d vessels of biryani. Waiting for vesels to "
-                  "be emptied to resume cooking",
+                  "be emptied to resume cooking\n",
                   robot->biryaniVesselsRemaining);
 
     while (1) {

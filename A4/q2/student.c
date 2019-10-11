@@ -38,7 +38,7 @@ void* initStudent(void* stTemp) {
                 studentPrintMsg(myStud->id,
                                 "assigned a slot on the serving table %d and "
                                 "is waiting to be served\n",
-                                tables[i]->id);
+                                tables[i]->id + 1);
                 return NULL;
             }
         }

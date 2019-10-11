@@ -34,9 +34,9 @@ void ready_to_serve_table(table* table) {
         if (table->studentsEatingHere[i] == -1)
             break;
         studentPrintMsg(table->studentsEatingHere[i],
-                        "on serving table %d has been served.\n", table->id);
+                        "on serving table %d has been served.\n",
+                        table->id + 1);
     }
-    printf("\n");
 
     tablePrintMsg(table->id,
                   "serving container is empty, waiting for refill\n");
@@ -59,13 +59,14 @@ void* initTable(void* tableTemp) {
                 flag = 1;
 
                 // TODO scammy isn't this?
-                robotPrintMsg(robots[i]->id,
-                              "refilling serving container of serving table\n",
-                              mytable->id);
+                robotPrintMsg(
+                    robots[i]->id,
+                    "refilling serving container of serving table %d\n",
+                    mytable->id + 1);
                 tablePrintMsg(mytable->id,
                               "serving container refilled by robot chef %d, "
                               "resuming serving now\n",
-                              robots[i]->id);
+                              robots[i]->id + 1);
                 robots[i]->biryaniVesselsRemaining--;
                 mytable->biryaniAmountRemaining += robots[i]->vesselSize;
             }

@@ -25,15 +25,15 @@ char *getHeader(int type, int id) {
             strcat(buf, KGREEN "Robot" KNRM);
             break;
         case TABLE_TYPE:
-            strcat(buf, "Table");
+            strcat(buf, KMAGENTA "Table" KNRM);
             break;
         case STUDENT_TYPE:
-            strcat(buf, "Student");
+            strcat(buf, KBLUE "Student" KNRM);
             break;
     }
 
     char b2[10] = {0};
-    sprintf(b2, " %d:", id);
+    sprintf(b2, " %d:", id + 1);
     strcat(buf, b2);
     return buf;
 }
@@ -47,7 +47,7 @@ void printMsg(int type, int id, char *fmt, va_list arg) {
     strcat(buf2, "\t");
     strcat(buf2, buf);
 
-    printf("%s\n", buf2);
+    printf("%s", buf2);
 }
 
 void *shareMem(size_t size) {
