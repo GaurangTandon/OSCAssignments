@@ -1,16 +1,9 @@
 #include "robot.h"
 
-void printMsg(int id, char* fmt, ...) {
-    char* buf = (char*)calloc(sizeof(char) * 1000, 1);
-    char buf2[1000] = {0};
+void robotPrintMsg(int id, char* fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
-    sprintf(buf, fmt, argptr);
-
-    strcat(buf2, getHeader(ROBOT_TYPE, id));
-    strcat(buf2, buf);
-
-    printf("%s\n", buf2);
+    printMsg(ROBOT_TYPE, id, fmt, argptr);
 }
 
 void biryani_ready() {
@@ -18,7 +11,7 @@ void biryani_ready() {
 
 void prepBiryani(robot* robot, int timePerVessel, int numOfVessels,
                  int capacityStudents) {
-    printMsg(robot->id, "starting with biryani.");
+    robotPrintMsg(robot->id, "starting with biryani.");
 
     for (int i = 0; i < numOfVessels; i++)
         sleep(timePerVessel);
