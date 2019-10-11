@@ -38,12 +38,10 @@ char *getHeader(int type, int id) {
     return buf;
 }
 
-void printMsg(int type, int id, char *fmt, ...) {
+void printMsg(int type, int id, char *fmt, va_list arg) {
     char *buf = (char *)calloc(sizeof(char), 1000);
     char buf2[1000] = {0};
-    va_list argptr;
-    va_start(argptr, fmt);
-    sprintf(buf, fmt, argptr);
+    vsprintf(buf, fmt, arg);
 
     strcat(buf2, getHeader(type, id));
     strcat(buf2, "\t");
@@ -66,7 +64,10 @@ int main() {
 
     int robotCount, studentCount, tableCount;
     printf("Enter robot count, student count, and table count:\n");
-    scanf("%d%d%d", &robotCount, &studentCount, &tableCount);
+    // scanf("%d%d%d", &robotCount, &studentCount, &tableCount);
+    robotCount = 5;
+    studentCount = 5;
+    tableCount = 5;
     assert(robotCount <= MAX_ROBOTS);
     assert(studentCount <= MAX_STUDENTS);
     assert(tableCount <= MAX_TABLES);

@@ -4,17 +4,20 @@ void robotPrintMsg(int id, char* fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
     printMsg(ROBOT_TYPE, id, fmt, argptr);
+    va_end(argptr);
 }
 
 void biryani_ready() {
 }
 
-void prepBiryani(robot* robot, int timePerVessel, int numOfVessels,
+void prepBiryani(robot* robot, int timeTaken, int numOfVessels,
                  int capacityStudents) {
-    robotPrintMsg(robot->id, "starting with biryani.");
+    robotPrintMsg(robot->id,
+                  "starting with biryani prepartion, takes %d seconds to "
+                  "prepare %d vessels, each feeds %d students.",
+                  timeTaken, numOfVessels, capacityStudents);
 
-    for (int i = 0; i < numOfVessels; i++)
-        sleep(timePerVessel);
+    sleep(timeTaken);
 
     // once all done
     biryani_ready();
