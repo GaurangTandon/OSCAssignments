@@ -13,7 +13,7 @@ void acceptRide(cab* cab, int rideType, int rideTime) {
 
 void printCabHead(int id) {
     printTimestamp();
-    printf(KGREEN "Cab %d\t\t" KNRM, id);
+    printf(KGREEN "Cab %d\t\t" KNRM, id + 1);
 }
 
 int usefulCab(int reqCab, int currState) {
@@ -95,7 +95,7 @@ void startAndEndRide(cab* cab, rider* rider) {
     shiftCabsAround(cab);
 
     printCabHead(cab->id);
-    printf("taking rider %d\n", rider->id);
+    printf("taking rider %d\n", rider->id + 1);
 
     sleep(rider->rideTime);
 

@@ -23,9 +23,9 @@ void printTimestamp() {
 int main() {
     int cabsCount, ridersCount, serversCount;
     // scanf("%d%d%d", &cabsCount, &ridersCount, &serversCount);
-    cabsCount = 2;
-    ridersCount = 10;
-    serversCount = 2;
+    cabsCount = 10;
+    ridersCount = 100;
+    serversCount = 5;
     assert(cabsCount <= MAX_CABS);
     assert(ridersCount <= MAX_RIDERS);
     assert(serversCount <= MAX_SERVERS);
@@ -89,6 +89,9 @@ int main() {
     for (int i = 0; i < serversCount; i++) {
         // release the servers in case they're stuck
         sem_post(&serversOpen);
+    }
+
+    for (int i = 0; i < serversCount; i++) {
         pthread_join(serverThreads[i], NULL);
     }
 

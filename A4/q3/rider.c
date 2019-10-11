@@ -16,7 +16,7 @@ struct timespec* getTimeStructSinceEpoch(int extraTime) {
 
 void printRiderHead(int id) {
     printTimestamp();
-    printf(KMAGENTA "Rider %d\t\t" KNRM, id);
+    printf(KMAGENTA "Rider %d\t\t" KNRM, id + 1);
 }
 
 void* initRider(void* riderTemp) {
@@ -69,7 +69,7 @@ start:
         }
 
         printRiderHead(rider->id);
-        printf("acquired cab %d of type %s\n", usedCab->id,
+        printf("acquired cab %d of type %s\n", usedCab->id + 1,
                CAB_STRING[rider->cabType]);
     }
 

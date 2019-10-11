@@ -3,7 +3,7 @@
 
 void printServerHead(int id) {
     printTimestamp();
-    printf(KBLUE "Server %d\t" KNRM, id);
+    printf(KBLUE "Server %d\t" KNRM, id + 1);
 }
 
 void* initServer(void* serverTemp) {
@@ -24,12 +24,12 @@ void* initServer(void* serverTemp) {
         ridersPayingCount -= 1;
         pthread_mutex_unlock(&checkPayment);
         printServerHead(myserver->id);
-        printf("accepting payment from %d\n", r->id);
+        printf("accepting payment from %d\n", r->id + 1);
 
         sleep(2);
 
         printServerHead(myserver->id);
-        printf("received payment from %d\n", r->id);
+        printf("received payment from %d\n", r->id + 1);
         madePayment(r);
     }
 
