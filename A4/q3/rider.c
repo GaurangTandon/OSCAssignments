@@ -14,6 +14,11 @@ struct timespec* getTimeStructSinceEpoch(int extraTime) {
     return st;
 }
 
+void printRiderHead(int id) {
+    printTimestamp();
+    printf(KMAGENTA "Rider %d\t" KNRM, id);
+}
+
 void* initRider(void* riderTemp) {
     rider* myrider = (rider*)riderTemp;
     myrider->maxWaitTime = rand() % MAX_WAIT_TIME;
@@ -21,12 +26,12 @@ void* initRider(void* riderTemp) {
     myrider->cabType = rand() % 2;
     myrider->rideTime = rand() % MAX_RIDE_TIME;
 
-    printTimestamp();
+    printRiderHead(myrider->id);
     printf(
-        "Rider %d:\tinitialized with rideTime %d, max wait time %d, "
+        "initialized with rideTime %d, max wait time %d, "
         "cabType %s and arrival time %d\n",
-        myrider->id, myrider->rideTime, myrider->maxWaitTime,
-        CAB_STRING[myrider->cabType], myrider->arrivalTime);
+        myrider->rideTime, myrider->maxWaitTime, CAB_STRING[myrider->cabType],
+        myrider->arrivalTime);
     fflush(stdout);
 
     sleep(myrider->arrivalTime);
@@ -64,9 +69,9 @@ start:
             usedCab->state = onRidePremier;
         }
 
-        printTimestamp();
-        printf("Rider %d:\tacquired cab %d of type %s\n", rider->id,
-               usedCab->id, CAB_STRING[rider->cabType]);
+        printRiderHead(rider->id);
+        printf("acquired cab %d of type %s\n", usedCab->id,
+               CAB_STRING[rider->cabType]);
     }
 
     int res = !!usedCab;
@@ -81,25 +86,24 @@ start:
     }
 
     if (res == -1) {
-        printTimestamp();
-        printf("Rider %d:\ttimed out waiting for a cab (maxwaittime: %d)\n",
-               rider->id, rider->maxWaitTime);
+        printRiderHead(rider->id);
+        printf("timed out waiting for a cab (maxwaittime: %d)\n",
+               rider->maxWaitTime);
         pthread_mutex_unlock(&checkCab);
         return;
     }
 
     startAndEndRide(usedCab, rider);
 
-    printTimestamp();
-    printf("Rider %d:\thas left the cab\n", rider->id);
+    printRiderHead(rider->id);
+    printf("has left the cab\n");
 
     pthread_mutex_lock(&checkPayment);
     ridersPaying[ridersPayingCount++] = rider;
     pthread_mutex_unlock(&checkPayment);
     makePayment();
 
-    printTimestamp();
-    printf("Rider %d:\thas made payment, and will now exit the system\n",
-           rider->id);
+    printRiderHead(rider->id);
+    printf("has made payment, and will now exit the system\n");
     ridersLeftToExit--;
 }

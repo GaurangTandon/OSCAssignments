@@ -11,6 +11,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
+#include "colors.h"
 
 #define MAX_WAIT_TIME 10
 #define MAX_RIDE_TIME 5

@@ -13,5 +13,7 @@ void* initCab(void* cab);
 
 cab* getFreeCab(int cabType);
 
+void printCabHead(int id);
+
 void startAndEndRide(cab* cab, rider* rider);
 #endif

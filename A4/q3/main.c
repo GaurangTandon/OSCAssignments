@@ -53,8 +53,8 @@ int main() {
         waitingCabs[i]->id = i;
         waitingCabs[i]->state = waitState;
 
-        printTimestamp();
-        printf("Cab %d:\t\tinitialized in wait state\n", waitingCabs[i]->id);
+        printCabHead(waitingCabs[i]->id);
+        printf("initialized in wait state\n");
     }
     totalCabsOpen = cabsCount;
     ridersLeftToExit = ridersCount;

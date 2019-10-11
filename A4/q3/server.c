@@ -1,10 +1,15 @@
 #include "server.h"
 #include "rider.h"
 
+void printServerHead(int id) {
+    printTimestamp();
+    printf(KBLUE "Server %d\t" KNRM, id);
+}
+
 void* initServer(void* serverTemp) {
     server* myserver = (server*)serverTemp;
-    printTimestamp();
-    printf("Server %d:\tinitialized\n", myserver->id);
+    printServerHead(myserver->id);
+    printf("initialized\n");
     fflush(stdout);
 
     while (ridersLeftToExit) {
@@ -14,19 +19,19 @@ void* initServer(void* serverTemp) {
         rider* r = ridersPaying[--ridersPayingCount];
         pthread_mutex_unlock(&checkPayment);
 
-        printTimestamp();
-        printf("Server %d:\taccepting payment from %d\n", myserver->id, r->id);
+        printServerHead(myserver->id);
+        printf("accepting payment from %d\n", r->id);
         fflush(stdout);
 
         sleep(2);
 
-        printTimestamp();
-        printf("Server %d:\treceived payment from %d\n", myserver->id, r->id);
+        printServerHead(myserver->id);
+        printf("received payment from %d\n", r->id);
         fflush(stdout);
     }
 
-    printTimestamp();
-    printf("Server %d:\tAll riders left, so closing down\n", myserver->id);
+    printServerHead(myserver->id);
+    printf("All riders left, so closing down\n");
 
     return NULL;
 }
