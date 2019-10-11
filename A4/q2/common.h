@@ -21,36 +21,20 @@
 #define MAX_STUDENTS 100
 #define MAX_TABLES 100
 
-#define POOL_CAB 0
-#define PREMIER_CAB 1
-char** CAB_STRING;
-
-sem_t serversOpen;
-int serversOpenCount;
-int totalCabsOpen;
-
-pthread_mutex_t checkCab;
-pthread_mutex_t checkPayment;
-short* riderWaiting;
-pthread_cond_t* riderConditions;
-int ridersLeftToExit;
-int ridersPayingCount;
-
-typedef struct rider {
-    int cabType;
-    int maxWaitTime;
-    int rideTime;
+typedef struct table {
     int id;
-    int arrivalTime;
-} rider;
+    int biryaniAmountRemaining;
+} table;
 
-typedef struct cab {
-    int state, id;
-} cab;
-
-typedef struct server {
+typedef struct robot {
     int id;
-} server;
+    int biryaniVesselsRemaining;
+    int isReady;
+} robot;
+
+typedef struct student {
+    int id;
+} student;
 
 void printTimestamp();
 

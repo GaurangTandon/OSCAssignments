@@ -21,12 +21,15 @@ void printTimestamp() {
 }
 
 int main() {
+    srand(time(0));
+
     int cabsCount, ridersCount, serversCount;
     printf("Enter cab count, rider count, server count:\n");
     scanf("%d%d%d", &cabsCount, &ridersCount, &serversCount);
-    cabsCount = 10;
-    ridersCount = 100;
-    serversCount = 5;
+    // cabsCount = 10;
+    // ridersCount = 100;
+    // serversCount = 5;
+    // TODO this test fails :(
     assert(cabsCount <= MAX_CABS);
     assert(ridersCount <= MAX_RIDERS);
     assert(serversCount <= MAX_SERVERS);
