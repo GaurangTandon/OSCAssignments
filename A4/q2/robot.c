@@ -21,6 +21,7 @@ void prepBiryani(robot* robot) {
                   timeTaken, numOfVessels, capacityStudents);
 
     sleep(timeTaken);
+
     robot->biryaniVesselsRemaining = numOfVessels;
     robot->vesselSize = capacityStudents;
 
@@ -28,6 +29,11 @@ void prepBiryani(robot* robot) {
 }
 
 void biryani_ready(robot* robot) {
+    robotPrintMsg(robot->id,
+                  "has prepared %d vessels of biryani. Waiting for vesels to "
+                  "be emptied to resume cooking",
+                  robot->biryaniVesselsRemaining);
+
     while (1) {
         pthread_mutex_lock(&robotMutexes[robot->id]);
 
@@ -39,7 +45,7 @@ void biryani_ready(robot* robot) {
     }
 
     robotPrintMsg(robot->id,
-                  "finished all my vessels. Moving onto next batch\n");
+                  "all my vessels have been emptied. Resuming cooking now\n");
     prepBiryani(robot);
 }
 

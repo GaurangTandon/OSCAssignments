@@ -15,8 +15,6 @@
 #include <unistd.h>
 #include "colors.h"
 
-#define MAX_WAIT_TIME 10
-#define MAX_RIDE_TIME 5
 #define MAX_ARRIVAL_TIME 5
 #define MAX_ROBOTS 100
 #define MAX_STUDENTS 100

@@ -139,5 +139,7 @@ int main() {
         pthread_join(robotThreads[i], NULL);
     }
 
+    printf("Simulation over\n");
+
     return 0;
 }

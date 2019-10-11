@@ -11,10 +11,13 @@ void studentPrintMsg(int id, char* fmt, ...) {
 void* initStudent(void* stTemp) {
     student* myStud = (student*)stTemp;
 
-    myStud->arrivalTime = genRandomInRange(1, 100);
+    myStud->arrivalTime = genRandomInRange(1, MAX_ARRIVAL_TIME);
     studentPrintMsg(myStud->id, "initialized with arrival time %d\n",
                     myStud->arrivalTime);
     sleep(myStud->arrivalTime);
+    studentPrintMsg(myStud->id, "has arrived\n");
+    studentPrintMsg(myStud->id,
+                    "is waiting to be allocated a slot on the serving table\n");
 
     while (1) {
         for (int i = 0; i < tableCount; i++) {
@@ -32,7 +35,10 @@ void* initStudent(void* stTemp) {
 
             pthread_mutex_unlock(&tableMutexes[i]);
             if (flag) {
-                studentPrintMsg(myStud->id, "sat at table %d\n", tables[i]->id);
+                studentPrintMsg(myStud->id,
+                                "assigned a slot on the serving table %d and "
+                                "is waiting to be served\n",
+                                tables[i]->id);
                 return NULL;
             }
         }
