@@ -39,10 +39,8 @@ void* initRider(void* riderTemp) {
     return NULL;
 }
 
-void makePayment(rider* rider) {
+void makePayment() {
     sem_post(&serversOpen);
-    pthread_cond_wait(&riderConditions[rider->id], &checkPayment);
-    pthread_mutex_unlock(&checkPayment);
 }
 
 void bookCab(rider* rider) {
@@ -101,9 +99,18 @@ start:
 
     pthread_mutex_lock(&checkPayment);
     ridersPaying[ridersPayingCount++] = rider;
+    pthread_mutex_unlock(&checkPayment);
     makePayment(rider);
+}
 
+void madePayment(rider* rider) {
     printRiderHead(rider->id);
     printf("has made payment, and will now exit the system\n");
+
+    // probably there is race condition in trying to
+    // modify this variable; so it does not get decremented
+    // all of the time
+    pthread_mutex_lock(&checkPayment);
     ridersLeftToExit--;
+    pthread_mutex_unlock(&checkPayment);
 }
