@@ -6,8 +6,19 @@ void *shareMem(size_t size) {
     // get shared memory of this much size and with this private key
     // what is 0666?
     int shm_id = shmget(mem_key, size, IPC_CREAT | 0666);
+    if (shm_id == -1) {
+        perror("Could not get shared memory space");
+        exit(1);
+    }
+
     // attach the address space of shared memory to myself (callee)
-    return (void *)shmat(shm_id, NULL, 0);
+    void *ans = (void *)shmat(shm_id, NULL, 0);
+    if (ans == (void *)-1) {
+        perror("Couldn't shmat");
+        exit(2);
+    }
+
+    return ans;
 }
 
 void printTimestamp() {
@@ -110,18 +121,19 @@ int main() {
     totalCabsOpen = cabsCount;
     ridersLeftToExit = ridersCount;
 
-    pthread_t *serverThreads =
-        (pthread_t *)malloc(sizeof(pthread_t) * serversCount);
+    pthread_t **serverThreads =
+        (pthread_t **)shareMem(sizeof(pthread_t *) * serversCount);
     servers = (server **)shareMem(sizeof(server *) * MAX_SERVERS);
     for (int i = 0; i < serversCount; i++) {
         servers[i] = (server *)shareMem(sizeof(server));
         servers[i]->id = i;
+        serverThreads[i] = (pthread_t *)shareMem(sizeof(pthread_t));
     }
 
     // second argument = 0 => initialize semaphores shared between threads
     sem_init(&serversOpen, 0, 0);
-    pthread_t *riderThreads =
-        (pthread_t *)malloc(sizeof(pthread_t) * ridersCount);
+    pthread_t **riderThreads =
+        (pthread_t **)shareMem(sizeof(pthread_t *) * ridersCount);
     riders = (rider **)shareMem(sizeof(rider *) * MAX_RIDERS);
     ridersPaying = (rider **)shareMem(sizeof(rider *) * MAX_RIDERS);
     ridersPayingCount = 0;
@@ -129,18 +141,19 @@ int main() {
         riders[i] = (rider *)shareMem(sizeof(rider));
         ridersPaying[i] = NULL;
         riders[i]->id = i;
+        riderThreads[i] = (pthread_t *)shareMem(sizeof(pthread_t));
     }
 
     for (int i = 0; i < serversCount; i++) {
-        pthread_create(&serverThreads[i], NULL, initServer, servers[i]);
+        pthread_create(serverThreads[i], NULL, initServer, servers[i]);
     }
 
     for (int i = 0; i < ridersCount; i++) {
-        pthread_create(&riderThreads[i], NULL, initRider, riders[i]);
+        pthread_create(riderThreads[i], NULL, initRider, riders[i]);
     }
 
     for (int i = 0; i < ridersCount; i++) {
-        pthread_join(riderThreads[i], NULL);
+        pthread_join(*riderThreads[i], NULL);
     }
 
     printf("DEBUG: student threads joined\n");
@@ -160,7 +173,7 @@ int main() {
         x = sem_post(&serversOpen);
         if (x == -1)
             perror("a");
-        pthread_join(serverThreads[i], NULL);
+        pthread_join(*serverThreads[i], NULL);
     }
 
     sem_destroy(&serversOpen);
