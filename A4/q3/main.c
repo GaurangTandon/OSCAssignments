@@ -146,8 +146,6 @@ int main() {
         pthread_join(*riderThreads[i], NULL);
     }
 
-    printf("DEBUG: student threads joined\n");
-
     for (int i = 0; i < serversCount; i++) {
         // release the servers in case they're stuck
         int x = sem_post(&serversOpen);

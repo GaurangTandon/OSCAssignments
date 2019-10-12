@@ -2,8 +2,6 @@
 #include "cab.h"
 #include "server.h"
 
-void bookCab(rider* rider);
-
 struct timespec* getTimeStructSinceEpoch(int extraTime) {
     struct timespec* st = (struct timespec*)malloc(sizeof(struct timespec*));
 
@@ -13,6 +11,8 @@ struct timespec* getTimeStructSinceEpoch(int extraTime) {
 
     return st;
 }
+
+void bookCab(rider* rider);
 
 void riderPrintMsg(int id, char* fmt, ...) {
     va_list argptr;
@@ -27,6 +27,8 @@ void* initRider(void* riderTemp) {
     myrider->arrivalTime = rand() % MAX_ARRIVAL_TIME + 1;
     myrider->cabType = rand() % 2;
     myrider->rideTime = rand() % MAX_RIDE_TIME + 1;
+    myrider->st =
+        getTimeStructSinceEpoch(myrider->arrivalTime + myrider->maxWaitTime);
 
     riderPrintMsg(myrider->id,
                   "initialized with rideTime %d, max wait time %d, "
@@ -92,8 +94,6 @@ cab* findCab(rider* rider) {
 }
 
 void bookCab(rider* rider) {
-    struct timespec* st = getTimeStructSinceEpoch(rider->maxWaitTime);
-
     cab* usedCab = NULL;
 
     pthread_mutex_lock(&checkCab);
@@ -105,32 +105,24 @@ void bookCab(rider* rider) {
     if (usedCab == NULL) {
         riderPrintMsg(rider->id, "did not find any cab. Waiting.\n");
         rider->isWaiting = rider->cabType;
-        int res = pthread_cond_timedwait(&rider->cond, &checkCab, st);
+        int res = pthread_cond_timedwait(&rider->cond, &checkCab, rider->st);
 
         rider->isWaiting = -1;
 
+        pthread_mutex_unlock(&checkCab);
+
         if (res == 0) {
-            riderPrintMsg(rider->id,
-                          "got signal that suitable cab is available\n");
-
-            if (totalCabsOpen > 0) {
-                usedCab = findCab(rider);
-            }
-
-            if (totalCabsOpen <= 0 || !usedCab) {
-                riderPrintMsg(rider->id,
-                              "didn't find any cab even after the signal\n");
-                return;
-            }
+            // riderPrintMsg(rider->id,
+            //               "got signal that suitable cab is available\n");
+            bookCab(rider);
+            return;
         } else if (res == ETIMEDOUT) {
-            pthread_mutex_unlock(&checkCab);
             riderPrintMsg(
                 rider->id,
                 KRED "timed out waiting for a cab (maxwaittime: %d)\n" KNRM,
                 rider->maxWaitTime);
             return;
         } else {
-            pthread_mutex_unlock(&checkCab);
             perror("DEBUG: ");
             return;
         }

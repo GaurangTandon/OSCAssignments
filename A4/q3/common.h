@@ -46,6 +46,7 @@ typedef struct rider {
     int maxWaitTime;
     int rideTime;
     int id;
+    struct timespec* st;
     int arrivalTime;
     pthread_cond_t cond;
     short isWaiting;
