@@ -120,12 +120,14 @@ void bookCab(rider* rider) {
                 return;
             }
         } else if (res == ETIMEDOUT) {
+            pthread_mutex_unlock(&checkCab);
             riderPrintMsg(
                 rider->id,
                 KRED "timed out waiting for a cab (maxwaittime: %d)\n" KNRM,
                 rider->maxWaitTime);
             return;
         } else {
+            pthread_mutex_unlock(&checkCab);
             perror("DEBUG: ");
             return;
         }

@@ -63,9 +63,12 @@ void endRide(cab* cab, rider* rider) {
     if (j == rider->id) {
         pthread_mutex_unlock(&checkCab);
     } else {
+        cabPrintMsg(cab->id, "sends signal to %d before ending\n",
+                    rider->id + 1);
         pthread_cond_signal(&riders[j]->cond);
         pthread_mutex_unlock(&checkCab);
     }
+    cabPrintMsg(cab->id, "ended ride with rider %d\n", rider->id + 1);
 }
 
 void startAndEndRide(cab* cab, rider* rider) {
