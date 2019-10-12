@@ -151,8 +151,7 @@ int main() {
 
     for (int i = 0; i < tableCount; i++) {
         pthread_mutex_lock(&tableMutexes[i]);
-        if (tables[i]->studentsEatingHere[0] > 0) {
-            printf("DEBUG: nullified table %d\n", i);
+        if (tables[i]->slotsLeft > 0) {
             tables[i]->slotsLeft = 0;
         }
         pthread_mutex_unlock(&tableMutexes[i]);
