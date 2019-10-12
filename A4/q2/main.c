@@ -73,9 +73,9 @@ int main() {
     assert(studentCount <= MAX_STUDENTS);
     assert(tableCount <= MAX_TABLES);
 
-    tables = (table **)shareMem(MAX_TABLES * sizeof(table *));
-    robots = (robot **)shareMem(MAX_ROBOTS * sizeof(robot *));
-    students = (student **)shareMem(MAX_STUDENTS * sizeof(student *));
+    tables = (table **)shareMem(tableCount * sizeof(table *));
+    robots = (robot **)shareMem(robotCount * sizeof(robot *));
+    students = (student **)shareMem(studentCount * sizeof(student *));
     pthread_mutex_init(&updateMutex, NULL);
 
     checkTable = (pthread_mutex_t *)shareMem(sizeof(pthread_mutex_t));
