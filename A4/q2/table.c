@@ -22,20 +22,20 @@ void ready_to_serve_table(table* table) {
     table->slotsLeft =
         (slots = genRandomInRange(1, min(10, table->biryaniAmountRemaining)));
     table->readyToServe = 1;
-    pthread_mutex_unlock(&tableMutexes[table->id]);
-
     tablePrintMsg(table->id, "is ready to serve with %d slots\n",
                   table->slotsLeft);
+    pthread_mutex_unlock(&tableMutexes[table->id]);
 
     while (1) {
         pthread_mutex_lock(&tableMutexes[table->id]);
-        if (table->slotsLeft == 0)
+        if (table->slotsLeft == 0) {
+            tablePrintMsg(table->id, "entering serving phase\n");
             break;
+        }
         pthread_mutex_unlock(&tableMutexes[table->id]);
     }
 
     table->readyToServe = 0;
-    tablePrintMsg(table->id, "entering serving phase\n");
 
     for (int i = 0; i < 10; i++) {
         if (table->studentsEatingHere[i] == -1)
@@ -76,12 +76,12 @@ void* initTable(void* tableTemp) {
                     robots[i]->id,
                     "refilling serving container of serving table %d\n",
                     mytable->id + 1);
+                robots[i]->biryaniVesselsRemaining--;
+                pthread_mutex_lock(&tableMutexes[mytable->id]);
                 tablePrintMsg(mytable->id,
                               "serving container refilled by robot chef %d, "
                               "resuming serving now\n",
                               robots[i]->id + 1);
-                robots[i]->biryaniVesselsRemaining--;
-                pthread_mutex_lock(&tableMutexes[mytable->id]);
                 mytable->biryaniAmountRemaining += robots[i]->vesselSize;
                 pthread_mutex_unlock(&tableMutexes[mytable->id]);
             }

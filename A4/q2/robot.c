@@ -27,20 +27,21 @@ void prepBiryani(robot* robot) {
     }
 
     pthread_mutex_lock(&robotMutexes[robot->id]);
-    robot->biryaniVesselsRemaining = numOfVessels;
-    pthread_mutex_unlock(&robotMutexes[robot->id]);
-    if (gameOver) {
-        return;
-    }
-    robot->vesselSize = capacityStudents;
-    if (gameOver) {
-        return;
-    }
-
     robotPrintMsg(robot->id,
                   "has prepared %d vessels of biryani. Waiting for vesels to "
                   "be emptied to resume cooking\n",
                   robot->biryaniVesselsRemaining);
+    robot->vesselSize = capacityStudents;
+    robot->biryaniVesselsRemaining = numOfVessels;
+    pthread_mutex_unlock(&robotMutexes[robot->id]);
+
+    if (gameOver) {
+        return;
+    }
+
+    if (gameOver) {
+        return;
+    }
 
     biryani_ready(robot);
 }
@@ -49,8 +50,12 @@ void biryani_ready(robot* robot) {
     while (1) {
         pthread_mutex_lock(&robotMutexes[robot->id]);
 
-        if (robot->biryaniVesselsRemaining == 0)
+        if (robot->biryaniVesselsRemaining == 0) {
+            robotPrintMsg(
+                robot->id,
+                "all my vessels have been emptied. Resuming cooking now\n");
             break;
+        }
 
         pthread_mutex_unlock(&robotMutexes[robot->id]);
     }
@@ -61,9 +66,6 @@ void biryani_ready(robot* robot) {
     if (gameOver) {
         return;
     }
-
-    robotPrintMsg(robot->id,
-                  "all my vessels have been emptied. Resuming cooking now\n");
 }
 
 void* initRobot(void* rTemp) {
