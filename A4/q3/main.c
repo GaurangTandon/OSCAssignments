@@ -98,8 +98,8 @@ int main() {
 
     serversOpenCount = serversCount;
 
-    waitingCabs = (cab **)shareMem(sizeof(cab *) * MAX_CABS);
-    poolOneCabs = (cab **)shareMem(sizeof(cab *) * MAX_CABS);
+    waitingCabs = (cab **)shareMem(sizeof(cab *) * cabsCount);
+    poolOneCabs = (cab **)shareMem(sizeof(cab *) * cabsCount);
     for (int i = 0; i < cabsCount; i++) {
         waitingCabs[i] = (cab *)shareMem(sizeof(cab));
         waitingCabs[i]->id = i;
@@ -112,7 +112,7 @@ int main() {
 
     pthread_t **serverThreads =
         (pthread_t **)shareMem(sizeof(pthread_t *) * serversCount);
-    servers = (server **)shareMem(sizeof(server *) * MAX_SERVERS);
+    servers = (server **)shareMem(sizeof(server *) * serversCount);
     for (int i = 0; i < serversCount; i++) {
         servers[i] = (server *)shareMem(sizeof(server));
         servers[i]->id = i;
@@ -124,8 +124,8 @@ int main() {
 
     pthread_t **riderThreads =
         (pthread_t **)shareMem(sizeof(pthread_t *) * ridersCount);
-    riders = (rider **)shareMem(sizeof(rider *) * MAX_RIDERS);
-    ridersPaying = (rider **)shareMem(sizeof(rider *) * MAX_RIDERS);
+    riders = (rider **)shareMem(sizeof(rider *) * ridersCount);
+    ridersPaying = (rider **)shareMem(sizeof(rider *) * ridersCount);
     ridersPayingCount = 0;
 
     for (int i = 0; i < ridersCount; i++) {

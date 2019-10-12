@@ -76,13 +76,15 @@ void endRide(cab* cab, rider* rider) {
 void shiftCabsAround(cab* cab) {
     // delete this cab from the array
     // it will always be at the 0th index
-    for (int i = 0; i < MAX_CABS - 1; i++) {
+    for (int i = 0; i < cabsCount - 1; i++) {
         if (cab->state == onRidePremier) {
             waitingCabs[i] = waitingCabs[i + 1];
         } else {
             poolOneCabs[i] = poolOneCabs[i + 1];
         }
     }
+    waitingCabs[cabsCount - 1] = NULL;
+    poolOneCabs[cabsCount - 1] = NULL;
 
     if (cab->state == onRidePoolOne) {
         int i = 0;
