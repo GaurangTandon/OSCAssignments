@@ -7,6 +7,7 @@
 #include <memory.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
@@ -20,6 +21,10 @@
 #define MAX_CABS 100
 #define MAX_RIDERS 100
 #define MAX_SERVERS 100
+
+#define CAB_TYPE 0
+#define RIDER_TYPE 1
+#define SERVER_TYPE 2
 
 #define POOL_CAB 0
 #define PREMIER_CAB 1
@@ -53,5 +58,5 @@ typedef struct server {
 } server;
 
 void printTimestamp();
-
+void printMsg(int type, int id, char* fmt, va_list arg);
 #endif

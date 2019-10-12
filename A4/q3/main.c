@@ -20,6 +20,54 @@ void printTimestamp() {
     printf("%s\t", buf);
 }
 
+char *getTimestamp() {
+    time_t t;
+    time(&t);
+    char *t2 = ctime(&t);
+
+    char *buf = (char *)calloc(sizeof(char), 9);
+    memcpy(buf, t2 + 11, 8);
+    return buf;
+}
+
+char *getHeader(int type, int id) {
+    char *buf = (char *)calloc(sizeof(char), 1000);
+    strcat(buf, getTimestamp());
+    strcat(buf, "\t");
+
+    switch (type) {
+        case CAB_TYPE:
+            strcat(buf, KGREEN "Cab");
+            break;
+        case RIDER_TYPE:
+            strcat(buf, KMAGENTA "Rider");
+            break;
+        case SERVER_TYPE:
+            strcat(buf, KBLUE "Server");
+            break;
+    }
+
+    char b2[10] = {0};
+    // alignment woes
+    if (type == SERVER_TYPE)
+        sprintf(b2, " %d\t" KNRM, id + 1);
+    else
+        sprintf(b2, " %d\t\t" KNRM, id + 1);
+    strcat(buf, b2);
+    return buf;
+}
+
+void printMsg(int type, int id, char *fmt, va_list arg) {
+    char *buf = (char *)calloc(sizeof(char), 1000);
+    char buf2[1000] = {0};
+    vsprintf(buf, fmt, arg);
+
+    strcat(buf2, getHeader(type, id));
+    strcat(buf2, buf);
+
+    printf("%s", buf2);
+}
+
 int main() {
     srand(time(0));
 
@@ -57,8 +105,7 @@ int main() {
         waitingCabs[i]->id = i;
         waitingCabs[i]->state = waitState;
 
-        printCabHead(waitingCabs[i]->id);
-        printf("initialized in wait state\n");
+        cabPrintMsg(waitingCabs[i]->id, "initialized in wait state\n");
     }
     totalCabsOpen = cabsCount;
     ridersLeftToExit = ridersCount;
@@ -74,7 +121,6 @@ int main() {
 
     // second argument = 0 => initialize semaphores shared between threads
     sem_init(&serversOpen, 0, 0);
-
     pthread_t *riderThreads =
         (pthread_t *)malloc(sizeof(pthread_t) * ridersCount);
     riders = (rider **)shareMem(sizeof(rider *) * MAX_RIDERS);
@@ -90,12 +136,24 @@ int main() {
     for (int i = 0; i < ridersCount; i++) {
         pthread_join(riderThreads[i], NULL);
     }
+
+    printf("DEBUG: student threads joined\n");
+
     for (int i = 0; i < serversCount; i++) {
         // release the servers in case they're stuck
-        sem_post(&serversOpen);
+        int x = sem_post(&serversOpen);
+        if (x == -1)
+            perror("a");
+        x = sem_post(&serversOpen);
+        if (x == -1)
+            perror("a");
     }
 
     for (int i = 0; i < serversCount; i++) {
+        int x;
+        x = sem_post(&serversOpen);
+        if (x == -1)
+            perror("a");
         pthread_join(serverThreads[i], NULL);
     }
 

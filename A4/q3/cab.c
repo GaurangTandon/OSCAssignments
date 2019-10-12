@@ -1,5 +1,12 @@
 #include "cab.h"
 
+void cabPrintMsg(int id, char* fmt, ...) {
+    va_list argptr;
+    va_start(argptr, fmt);
+    printMsg(CAB_TYPE, id, fmt, argptr);
+    va_end(argptr);
+}
+
 void acceptRide(cab* cab, int rideType, int rideTime) {
     if (rideType == POOL_CAB) {
         assert(cab->state != oneRidePoolFull);
@@ -9,11 +16,6 @@ void acceptRide(cab* cab, int rideType, int rideTime) {
         cab->state = onRidePremier;
     }
     sleep(rideTime);
-}
-
-void printCabHead(int id) {
-    printTimestamp();
-    printf(KGREEN "Cab %d\t\t" KNRM, id + 1);
 }
 
 int usefulCab(int reqCab, int currState) {
@@ -94,8 +96,7 @@ void shiftCabsAround(cab* cab) {
 void startAndEndRide(cab* cab, rider* rider) {
     shiftCabsAround(cab);
 
-    printCabHead(cab->id);
-    printf("taking rider %d\n", rider->id + 1);
+    cabPrintMsg(cab->id, "taking rider %d\n", rider->id + 1);
 
     sleep(rider->rideTime);
 

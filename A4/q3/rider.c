@@ -14,9 +14,11 @@ struct timespec* getTimeStructSinceEpoch(int extraTime) {
     return st;
 }
 
-void printRiderHead(int id) {
-    printTimestamp();
-    printf(KMAGENTA "Rider %d\t\t" KNRM, id + 1);
+void riderPrintMsg(int id, char* fmt, ...) {
+    va_list argptr;
+    va_start(argptr, fmt);
+    printMsg(RIDER_TYPE, id, fmt, argptr);
+    va_end(argptr);
 }
 
 void* initRider(void* riderTemp) {
@@ -26,12 +28,11 @@ void* initRider(void* riderTemp) {
     myrider->cabType = rand() % 2;
     myrider->rideTime = rand() % MAX_RIDE_TIME;
 
-    printRiderHead(myrider->id);
-    printf(
-        "initialized with rideTime %d, max wait time %d, "
-        "cabType %s and arrival time %d\n",
-        myrider->rideTime, myrider->maxWaitTime, CAB_STRING[myrider->cabType],
-        myrider->arrivalTime);
+    riderPrintMsg(myrider->id,
+                  "initialized with rideTime %d, max wait time %d, "
+                  "cabType %s and arrival time %d\n",
+                  myrider->rideTime, myrider->maxWaitTime,
+                  CAB_STRING[myrider->cabType], myrider->arrivalTime);
     fflush(stdout);
 
     sleep(myrider->arrivalTime);
@@ -68,9 +69,8 @@ start:
             usedCab->state = onRidePremier;
         }
 
-        printRiderHead(rider->id);
-        printf("acquired cab %d of type %s\n", usedCab->id + 1,
-               CAB_STRING[rider->cabType]);
+        riderPrintMsg(rider->id, "acquired cab %d of type %s\n",
+                      usedCab->id + 1, CAB_STRING[rider->cabType]);
     }
 
     int res = !!usedCab;
@@ -86,16 +86,16 @@ start:
 
     if (res == ETIMEDOUT) {
         riderWaiting[rider->id] = -1;
-        printRiderHead(rider->id);
-        printf(KRED "timed out waiting for a cab (maxwaittime: %d)\n" KNRM,
-               rider->maxWaitTime);
+        riderPrintMsg(rider->id,
+                      KRED
+                      "timed out waiting for a cab (maxwaittime: %d)\n" KNRM,
+                      rider->maxWaitTime);
         return;
     }
 
     startAndEndRide(usedCab, rider);
 
-    printRiderHead(rider->id);
-    printf("has left the cab\n");
+    riderPrintMsg(rider->id, "has left the cab\n");
 
     pthread_mutex_lock(&checkPayment);
     ridersPaying[ridersPayingCount++] = rider;
@@ -104,8 +104,8 @@ start:
 }
 
 void madePayment(rider* rider) {
-    printRiderHead(rider->id);
-    printf("has made payment, and will now exit the system\n");
+    riderPrintMsg(rider->id,
+                  "has made payment, and will now exit the system\n");
 
     // probably there is race condition in trying to
     // modify this variable; so it does not get decremented

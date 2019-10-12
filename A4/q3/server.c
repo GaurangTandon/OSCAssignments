@@ -1,18 +1,26 @@
 #include "server.h"
 #include "rider.h"
 
-void printServerHead(int id) {
-    printTimestamp();
-    printf(KBLUE "Server %d\t" KNRM, id + 1);
+void serverPrintMsg(int id, char* fmt, ...) {
+    va_list argptr;
+    va_start(argptr, fmt);
+    printMsg(SERVER_TYPE, id, fmt, argptr);
+    va_end(argptr);
 }
 
 void* initServer(void* serverTemp) {
     server* myserver = (server*)serverTemp;
-    printServerHead(myserver->id);
-    printf("initialized\n");
+    serverPrintMsg(myserver->id, "initialized\n");
 
     while (ridersLeftToExit) {
-        sem_wait(&serversOpen);
+        int x = sem_wait(&serversOpen);
+        if (x < 0) {
+            perror("Couldn't sem wait in server");
+            break;
+        }
+
+        if (!ridersLeftToExit)
+            break;
 
         pthread_mutex_lock(&checkPayment);
         if (!ridersPaying[0]) {
@@ -23,18 +31,15 @@ void* initServer(void* serverTemp) {
         ridersPaying[ridersPayingCount - 1] = NULL;
         ridersPayingCount -= 1;
         pthread_mutex_unlock(&checkPayment);
-        printServerHead(myserver->id);
-        printf("accepting payment from %d\n", r->id + 1);
+        serverPrintMsg(myserver->id, "accepting payment from %d\n", r->id + 1);
 
         sleep(2);
 
-        printServerHead(myserver->id);
-        printf("received payment from %d\n", r->id + 1);
+        serverPrintMsg(myserver->id, "received payment from %d\n", r->id + 1);
         madePayment(r);
     }
 
-    printServerHead(myserver->id);
-    printf("All riders left, so closing down\n");
+    serverPrintMsg(myserver->id, "All riders left, so closing down\n");
 
     return NULL;
 }
