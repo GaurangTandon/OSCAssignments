@@ -2,7 +2,7 @@
 #include "robot.h"
 #include "student.h"
 
-#define min(x, y) ((x) >= (y) ? (x) : (y))
+#define min(x, y) ((x) <= (y) ? (x) : (y))
 
 void tablePrintMsg(int id, char* fmt, ...) {
     va_list argptr;
@@ -15,12 +15,12 @@ void ready_to_serve_table(table* table) {
     pthread_mutex_lock(&tableMutexes[table->id]);
     for (int i = 0; i < 10; i++)
         table->studentsEatingHere[i] = -1;
-    pthread_mutex_unlock(&tableMutexes[table->id]);
 
     int slots;
     table->slotsLeft =
         (slots = genRandomInRange(1, min(10, table->biryaniAmountRemaining)));
     table->readyToServe = 1;
+    pthread_mutex_unlock(&tableMutexes[table->id]);
 
     tablePrintMsg(table->id, "is ready to serve with %d slots\n",
                   table->slotsLeft);

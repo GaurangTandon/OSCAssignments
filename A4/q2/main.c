@@ -91,11 +91,11 @@ int main() {
         (pthread_mutex_t *)shareMem(sizeof(pthread_mutex_t) * robotCount);
 
     pthread_t *tableThreads =
-        (pthread_t *)malloc(sizeof(pthread_t) * tableCount);
+        (pthread_t *)shareMem(sizeof(pthread_t) * tableCount);
     pthread_t *studentThreads =
-        (pthread_t *)malloc(sizeof(pthread_t) * studentCount);
+        (pthread_t *)shareMem(sizeof(pthread_t) * studentCount);
     pthread_t *robotThreads =
-        (pthread_t *)malloc(sizeof(pthread_t) * robotCount);
+        (pthread_t *)shareMem(sizeof(pthread_t) * robotCount);
 
     for (int i = 0; i < tableCount; i++) {
         tables[i] = (table *)shareMem(sizeof(table));

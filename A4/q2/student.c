@@ -26,7 +26,7 @@ void wait_for_slot(student* myStud) {
             pthread_mutex_lock(&tableMutexes[i]);
             int flag = 0;
 
-            if (tables[i]->slotsLeft > 0) {
+            if (tables[i]->readyToServe && tables[i]->slotsLeft > 0) {
                 tables[i]->slotsLeft--;
 
                 flag = 1;
