@@ -84,10 +84,6 @@ int main() {
 
     printf("Enter cab count, rider count, server count:\n");
     scanf("%d%d%d", &cabsCount, &ridersCount, &serversCount);
-    // cabsCount = 10;
-    // ridersCount = 100;
-    // serversCount = 5;
-    // TODO this test fails :( also this 5 5 5
     assert(cabsCount <= MAX_CABS);
     assert(ridersCount <= MAX_RIDERS);
     assert(serversCount <= MAX_SERVERS);
@@ -134,8 +130,7 @@ int main() {
         riders[i]->id = i;
         riders[i]->isWaiting = -1;
 
-        pthread_cond_t x = PTHREAD_COND_INITIALIZER;
-        riders[i]->cond = x;
+        pthread_cond_init(&riders[i]->cond, NULL);
         riderThreads[i] = (pthread_t *)shareMem(sizeof(pthread_t));
     }
 
@@ -169,6 +164,10 @@ int main() {
         if (x == -1)
             perror("a");
         pthread_join(*serverThreads[i], NULL);
+    }
+
+    for (int i = 0; i < ridersCount; i++) {
+        pthread_cond_destroy(&riders[i]->cond);
     }
 
     sem_destroy(&serversOpen);
