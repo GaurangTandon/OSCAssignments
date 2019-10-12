@@ -142,7 +142,7 @@ int main() {
     }
 
     for (int i = 0; i < robotCount; i++) {
-        pthread_mutex_unlock(&robotMutexes[i]);
+        pthread_mutex_lock(&robotMutexes[i]);
         if (robots[i]->biryaniVesselsRemaining > 0) {
             robots[i]->biryaniVesselsRemaining = 0;
         }
@@ -162,6 +162,9 @@ int main() {
     }
 
     for (int i = 0; i < robotCount; i++) {
+        if (robots[i]->biryaniVesselsRemaining > 0) {
+            robots[i]->biryaniVesselsRemaining = 0;
+        }
         pthread_join(robotThreads[i], NULL);
     }
 

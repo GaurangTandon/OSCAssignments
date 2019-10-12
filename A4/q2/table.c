@@ -63,7 +63,7 @@ void* initTable(void* tableTemp) {
         int flag = 0;
         for (int i = 0; i < robotCount; i++) {
             if (gameOver) {
-                return NULL;
+                goto end;
             }
 
             pthread_mutex_lock(&robotMutexes[i]);
@@ -93,7 +93,7 @@ void* initTable(void* tableTemp) {
         }
 
         if (gameOver) {
-            return NULL;
+            break;
         }
 
         if (flag) {
@@ -113,7 +113,7 @@ void* initTable(void* tableTemp) {
                 break;
         }
     }
-
+end:
     tablePrintMsg(mytable->id, "has left the system\n");
 
     return NULL;

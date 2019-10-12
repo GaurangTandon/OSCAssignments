@@ -37,15 +37,15 @@ void prepBiryani(robot* robot) {
         return;
     }
 
-    biryani_ready(robot);
-}
-
-void biryani_ready(robot* robot) {
     robotPrintMsg(robot->id,
                   "has prepared %d vessels of biryani. Waiting for vesels to "
                   "be emptied to resume cooking\n",
                   robot->biryaniVesselsRemaining);
 
+    biryani_ready(robot);
+}
+
+void biryani_ready(robot* robot) {
     while (1) {
         pthread_mutex_lock(&robotMutexes[robot->id]);
 
@@ -64,7 +64,6 @@ void biryani_ready(robot* robot) {
 
     robotPrintMsg(robot->id,
                   "all my vessels have been emptied. Resuming cooking now\n");
-    prepBiryani(robot);
 }
 
 void* initRobot(void* rTemp) {
