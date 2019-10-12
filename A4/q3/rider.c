@@ -40,8 +40,11 @@ void* initRider(void* riderTemp) {
     return NULL;
 }
 
-void makePayment() {
+void makePayment(rider* rider) {
     sem_post(&serversOpen);
+    pthread_mutex_lock(&checkPayment);
+    ridersPaying[ridersPayingCount++] = rider;
+    pthread_mutex_unlock(&checkPayment);
 }
 
 cab* findCab(rider* rider) {
@@ -140,9 +143,6 @@ void bookCab(rider* rider) {
 
     riderPrintMsg(rider->id, "has left cab %d\n", usedCab->id + 1);
 
-    pthread_mutex_lock(&checkPayment);
-    ridersPaying[ridersPayingCount++] = rider;
-    pthread_mutex_unlock(&checkPayment);
     makePayment(rider);
 }
 
