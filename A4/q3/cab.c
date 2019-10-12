@@ -1,5 +1,5 @@
 #include "cab.h"
-#include "robot.h"
+#include "rider.h"
 
 void cabPrintMsg(int id, char* fmt, ...) {
     va_list argptr;
@@ -60,15 +60,15 @@ void endRide(cab* cab, rider* rider) {
         waitingCabs[i] = cab;
     }
 
-    int j = rider->id + 1;
-    while (j != rider->id && !usefulCab(riderWaiting[j], cab->state)) {
-        j = (j + 1) % MAX_RIDERS;
+    int j = (rider->id + 1) % ridersCount;
+    while (j != rider->id && !usefulCab(riders[j]->isWaiting, cab->state)) {
+        j = (j + 1) % ridersCount;
     }
 
     if (j == rider->id) {
         pthread_mutex_unlock(&checkCab);
     } else {
-        pthread_cond_signal(&riderConditions[j]);
+        pthread_cond_signal(&riders[j]->cond);
         pthread_mutex_unlock(&checkCab);
     }
 }

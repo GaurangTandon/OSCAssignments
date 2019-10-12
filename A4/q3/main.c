@@ -82,7 +82,6 @@ void printMsg(int type, int id, char *fmt, va_list arg) {
 int main() {
     srand(time(0));
 
-    int cabsCount, ridersCount, serversCount;
     printf("Enter cab count, rider count, server count:\n");
     scanf("%d%d%d", &cabsCount, &ridersCount, &serversCount);
     // cabsCount = 10;
@@ -134,6 +133,7 @@ int main() {
         ridersPaying[i] = NULL;
         riders[i]->id = i;
         riders[i]->isWaiting = -1;
+
         pthread_cond_t x = PTHREAD_COND_INITIALIZER;
         riders[i]->cond = x;
         riderThreads[i] = (pthread_t *)shareMem(sizeof(pthread_t));

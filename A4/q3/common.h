@@ -30,13 +30,14 @@
 #define PREMIER_CAB 1
 char** CAB_STRING;
 
+int cabsCount, ridersCount, serversCount;
+
 sem_t serversOpen;
 int serversOpenCount;
 int totalCabsOpen;
 
 pthread_mutex_t checkCab;
 pthread_mutex_t checkPayment;
-short* riderWaiting;
 int ridersLeftToExit;
 int ridersPayingCount;
 

@@ -77,8 +77,7 @@ start:
 
     if (!res) {
         rider->isWaiting = rider->cabType;
-        res =
-            pthread_cond_timedwait(&riderConditions[rider->id], &checkCab, st);
+        res = pthread_cond_timedwait(&rider->cond, &checkCab, st);
         if (res != ETIMEDOUT) {
             goto start;
         }
