@@ -4,15 +4,15 @@
 
 void bookCab(rider* rider);
 
-// struct timespec* getTimeStructSinceEpoch(int extraTime) {
-//     struct timespec* st = (struct timespec*)malloc(sizeof(struct timespec*));
+struct timespec* getTimeStructSinceEpoch(int extraTime) {
+    struct timespec* st = (struct timespec*)malloc(sizeof(struct timespec*));
 
-//     // https://stackoverflow.com/q/46018295/
-//     clock_gettime(CLOCK_REALTIME, st);
-//     st->tv_sec += extraTime;
+    // https://stackoverflow.com/q/46018295/
+    clock_gettime(CLOCK_REALTIME, st);
+    st->tv_sec += extraTime;
 
-//     return st;
-// }
+    return st;
+}
 
 void riderPrintMsg(int id, char* fmt, ...) {
     va_list argptr;
@@ -51,12 +51,7 @@ void bookCab(rider* rider) {
     // will do busy waiting (a lot of it), so this is better
 
     cab* usedCab = NULL;
-    struct timespec ts;
-    time_t t;
-    time(&t);
-    ts.tv_sec = t + rider->maxWaitTime;
-    ts.tv_nsec = 0;
-    // struct timespec st = getTimeStructSinceEpoch(rider->maxWaitTime);
+    struct timespec* st = getTimeStructSinceEpoch(rider->maxWaitTime);
 
     pthread_mutex_lock(&checkCab);
 start:
@@ -115,7 +110,7 @@ start:
     if (usedCab == NULL) {
         riderPrintMsg(rider->id, "did not find any cab. Waiting.\n");
         rider->isWaiting = rider->cabType;
-        int res = pthread_cond_timedwait(&rider->cond, &checkCab, &ts);
+        int res = pthread_cond_timedwait(&rider->cond, &checkCab, st);
 
         rider->isWaiting = -1;
         if (res == 0) {
