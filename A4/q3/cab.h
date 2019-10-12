@@ -5,8 +5,8 @@
 // the order matters here, see acceptRide function in cab.c
 enum cabStates { waitState, onRidePoolOne, onRidePoolFull, onRidePremier };
 
-// keep track of usable cabs
-cab** cabs;
+// keep track of usable taxis
+cab** taxis;
 
 void* initCab(void* cab);
 

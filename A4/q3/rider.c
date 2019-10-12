@@ -60,15 +60,15 @@ start:
             int flag = 0;
 
             for (int i = 0; i < cabsCount; i++) {
-                if (cabs[i]->state == onRidePoolOne) {
-                    usedCab = cabs[i];
+                if (taxis[i]->state == onRidePoolOne) {
+                    usedCab = taxis[i];
                     usedCab->state = onRidePoolFull;
                     usedCab->rider2 = rider->id;
                     riderPrintMsg(
                         rider->id,
                         "acquired cab %d of type %s, shared with %d\n",
                         usedCab->id + 1, CAB_STRING[rider->cabType],
-                        usedCab->rider1);
+                        usedCab->rider1 + 1);
                     flag = 1;
                     break;
                 }
@@ -76,8 +76,8 @@ start:
 
             if (flag != 1) {
                 for (int i = 0; i < cabsCount; i++) {
-                    if (cabs[i]->state == waitState) {
-                        usedCab = cabs[i];
+                    if (taxis[i]->state == waitState) {
+                        usedCab = taxis[i];
                         usedCab->state = onRidePoolOne;
                         usedCab->rider1 = rider->id;
                         riderPrintMsg(rider->id, "acquired cab %d of type %s\n",
@@ -93,8 +93,8 @@ start:
         } else {
             int flag = 0;
             for (int i = 0; i < cabsCount; i++) {
-                if (cabs[i]->state == waitState) {
-                    usedCab = cabs[i];
+                if (taxis[i]->state == waitState) {
+                    usedCab = taxis[i];
                     usedCab->rider1 = rider->id;
                     usedCab->state = onRidePremier;
                     riderPrintMsg(rider->id, "acquired cab %d of type %s\n",
