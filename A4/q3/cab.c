@@ -1,4 +1,5 @@
 #include "cab.h"
+#include "robot.h"
 
 void cabPrintMsg(int id, char* fmt, ...) {
     va_list argptr;

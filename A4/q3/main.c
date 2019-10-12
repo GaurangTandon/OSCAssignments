@@ -97,16 +97,6 @@ int main() {
     CAB_STRING[0] = "POOL";
     CAB_STRING[1] = "PREMIER";
 
-    riderConditions =
-        (pthread_cond_t *)shareMem(sizeof(pthread_cond_t) * MAX_RIDERS);
-    riderWaiting = (short *)shareMem(sizeof(short) * MAX_RIDERS);
-
-    for (int i = 0; i < MAX_RIDERS; i++) {
-        pthread_cond_t x = PTHREAD_COND_INITIALIZER;
-        riderConditions[i] = x;
-        riderWaiting[i] = -1;
-    }
-
     serversOpenCount = serversCount;
 
     waitingCabs = (cab **)shareMem(sizeof(cab *) * MAX_CABS);
@@ -132,15 +122,20 @@ int main() {
 
     // second argument = 0 => initialize semaphores shared between threads
     sem_init(&serversOpen, 0, 0);
+
     pthread_t **riderThreads =
         (pthread_t **)shareMem(sizeof(pthread_t *) * ridersCount);
     riders = (rider **)shareMem(sizeof(rider *) * MAX_RIDERS);
     ridersPaying = (rider **)shareMem(sizeof(rider *) * MAX_RIDERS);
     ridersPayingCount = 0;
+
     for (int i = 0; i < ridersCount; i++) {
         riders[i] = (rider *)shareMem(sizeof(rider));
         ridersPaying[i] = NULL;
         riders[i]->id = i;
+        riders[i]->isWaiting = -1;
+        pthread_cond_t x = PTHREAD_COND_INITIALIZER;
+        riders[i]->cond = x;
         riderThreads[i] = (pthread_t *)shareMem(sizeof(pthread_t));
     }
 

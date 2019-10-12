@@ -37,7 +37,6 @@ int totalCabsOpen;
 pthread_mutex_t checkCab;
 pthread_mutex_t checkPayment;
 short* riderWaiting;
-pthread_cond_t* riderConditions;
 int ridersLeftToExit;
 int ridersPayingCount;
 
@@ -47,6 +46,8 @@ typedef struct rider {
     int rideTime;
     int id;
     int arrivalTime;
+    pthread_cond_t cond;
+    short isWaiting;
 } rider;
 
 typedef struct cab {

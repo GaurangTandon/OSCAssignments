@@ -76,7 +76,7 @@ start:
     int res = !!usedCab;
 
     if (!res) {
-        riderWaiting[rider->id] = rider->cabType;
+        rider->isWaiting = rider->cabType;
         res =
             pthread_cond_timedwait(&riderConditions[rider->id], &checkCab, st);
         if (res != ETIMEDOUT) {
@@ -85,7 +85,7 @@ start:
     }
 
     if (res == ETIMEDOUT) {
-        riderWaiting[rider->id] = -1;
+        rider->isWaiting = -1;
         riderPrintMsg(rider->id,
                       KRED
                       "timed out waiting for a cab (maxwaittime: %d)\n" KNRM,

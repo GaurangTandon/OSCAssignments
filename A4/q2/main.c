@@ -67,10 +67,8 @@ int main() {
     srand(time(0));
 
     printf("Enter robot count, student count, and table count:\n");
-    // scanf("%d%d%d", &robotCount, &studentCount, &tableCount);
-    robotCount = 5;
-    studentCount = 5;
-    tableCount = 5;
+    scanf("%d%d%d", &robotCount, &studentCount, &tableCount);
+
     assert(robotCount <= MAX_ROBOTS);
     assert(studentCount <= MAX_STUDENTS);
     assert(tableCount <= MAX_TABLES);
