@@ -23,10 +23,10 @@ void riderPrintMsg(int id, char* fmt, ...) {
 
 void* initRider(void* riderTemp) {
     rider* myrider = (rider*)riderTemp;
-    myrider->maxWaitTime = rand() % MAX_WAIT_TIME;
-    myrider->arrivalTime = rand() % MAX_ARRIVAL_TIME;
+    myrider->maxWaitTime = rand() % MAX_WAIT_TIME + 1;
+    myrider->arrivalTime = rand() % MAX_ARRIVAL_TIME + 1;
     myrider->cabType = rand() % 2;
-    myrider->rideTime = rand() % MAX_RIDE_TIME;
+    myrider->rideTime = rand() % MAX_RIDE_TIME + 1;
 
     riderPrintMsg(myrider->id,
                   "initialized with rideTime %d, max wait time %d, "
@@ -107,23 +107,24 @@ start:
         }
     }
 
-    int res = !!usedCab;
-
-    if (!res) {
+    if (usedCab == NULL) {
+        riderPrintMsg(rider->id, "did not find any cab. Waiting.\n");
         rider->isWaiting = rider->cabType;
-        res = pthread_cond_timedwait(&rider->cond, &checkCab, st);
-        if (res != ETIMEDOUT) {
-            goto start;
-        }
-    }
+        int res = pthread_cond_timedwait(&rider->cond, &checkCab, st);
 
-    if (res == ETIMEDOUT) {
-        rider->isWaiting = -1;
-        riderPrintMsg(rider->id,
-                      KRED
-                      "timed out waiting for a cab (maxwaittime: %d)\n" KNRM,
-                      rider->maxWaitTime);
-        return;
+        if (res == 0) {
+            goto start;
+        } else if (res == ETIMEDOUT) {
+            rider->isWaiting = -1;
+            riderPrintMsg(
+                rider->id,
+                KRED "timed out waiting for a cab (maxwaittime: %d)\n" KNRM,
+                rider->maxWaitTime);
+            return;
+        } else {
+            perror("DEBUG: ");
+            return;
+        }
     }
 
     totalCabsOpen--;
