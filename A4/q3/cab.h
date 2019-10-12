@@ -3,11 +3,10 @@
 #include "common.h"
 
 // the order matters here, see acceptRide function in cab.c
-enum cabStates { waitState, onRidePoolOne, oneRidePoolFull, onRidePremier };
+enum cabStates { waitState, onRidePoolOne, onRidePoolFull, onRidePremier };
 
 // keep track of usable cabs
-cab** poolOneCabs;
-cab** waitingCabs;
+cab** cabs;
 
 void* initCab(void* cab);
 

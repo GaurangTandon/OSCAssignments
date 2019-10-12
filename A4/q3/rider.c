@@ -57,20 +57,54 @@ void bookCab(rider* rider) {
 start:
     if (totalCabsOpen > 0) {
         if (rider->cabType == POOL_CAB) {
-            if (poolOneCabs[0]) {
-                usedCab = poolOneCabs[0];
-                usedCab->state = onRidePoolOne;
-            } else {
-                usedCab = waitingCabs[0];
-                usedCab->state = onRidePremier;
-            }
-        } else if (waitingCabs[0]) {
-            usedCab = waitingCabs[0];
-            usedCab->state = onRidePremier;
-        }
+            int flag = 0;
 
-        riderPrintMsg(rider->id, "acquired cab %d of type %s\n",
-                      usedCab->id + 1, CAB_STRING[rider->cabType]);
+            for (int i = 0; i < cabsCount; i++) {
+                if (cabs[i]->state == onRidePoolOne) {
+                    usedCab = cabs[i];
+                    usedCab->state = onRidePoolFull;
+                    usedCab->rider2 = rider->id;
+                    riderPrintMsg(
+                        rider->id,
+                        "acquired cab %d of type %s, shared with %d\n",
+                        usedCab->id + 1, CAB_STRING[rider->cabType],
+                        usedCab->rider1);
+                    flag = 1;
+                    break;
+                }
+            }
+
+            if (flag != 1) {
+                for (int i = 0; i < cabsCount; i++) {
+                    if (cabs[i]->state == waitState) {
+                        usedCab = cabs[i];
+                        usedCab->state = onRidePoolOne;
+                        usedCab->rider1 = rider->id;
+                        riderPrintMsg(rider->id, "acquired cab %d of type %s\n",
+                                      usedCab->id + 1,
+                                      CAB_STRING[rider->cabType]);
+                        flag = 1;
+                        break;
+                    }
+                }
+            }
+
+            assert(flag == 1);
+        } else {
+            int flag = 0;
+            for (int i = 0; i < cabsCount; i++) {
+                if (cabs[i]->state == waitState) {
+                    usedCab = cabs[i];
+                    usedCab->rider1 = rider->id;
+                    usedCab->state = onRidePremier;
+                    riderPrintMsg(rider->id, "acquired cab %d of type %s\n",
+                                  usedCab->id + 1, CAB_STRING[rider->cabType]);
+                    flag = 1;
+                    break;
+                }
+            }
+            assert(flag == 1);
+        }
     }
 
     int res = !!usedCab;
@@ -92,9 +126,12 @@ start:
         return;
     }
 
+    totalCabsOpen--;
+    pthread_mutex_unlock(&checkCab);
+
     startAndEndRide(usedCab, rider);
 
-    riderPrintMsg(rider->id, "has left the cab\n");
+    riderPrintMsg(rider->id, "has left cab %d\n", usedCab->id + 1);
 
     pthread_mutex_lock(&checkPayment);
     ridersPaying[ridersPayingCount++] = rider;

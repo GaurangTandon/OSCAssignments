@@ -98,14 +98,14 @@ int main() {
 
     serversOpenCount = serversCount;
 
-    waitingCabs = (cab **)shareMem(sizeof(cab *) * cabsCount);
-    poolOneCabs = (cab **)shareMem(sizeof(cab *) * cabsCount);
+    cabs = (cab **)shareMem(sizeof(cab *) * cabsCount);
     for (int i = 0; i < cabsCount; i++) {
-        waitingCabs[i] = (cab *)shareMem(sizeof(cab));
-        waitingCabs[i]->id = i;
-        waitingCabs[i]->state = waitState;
+        cabs[i] = (cab *)shareMem(sizeof(cab));
+        cabs[i]->id = i;
+        cabs[i]->state = waitState;
+        cabs[i]->rider1 = cabs[i]->rider2 = -1;
 
-        cabPrintMsg(waitingCabs[i]->id, "initialized in wait state\n");
+        cabPrintMsg(cabs[i]->id, "initialized in wait state\n");
     }
     totalCabsOpen = cabsCount;
     ridersLeftToExit = ridersCount;

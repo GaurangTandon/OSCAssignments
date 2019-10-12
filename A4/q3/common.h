@@ -53,6 +53,7 @@ typedef struct rider {
 
 typedef struct cab {
     int state, id;
+    int rider1, rider2;
 } cab;
 
 typedef struct server {

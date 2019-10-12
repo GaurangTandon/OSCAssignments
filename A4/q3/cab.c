@@ -10,7 +10,7 @@ void cabPrintMsg(int id, char* fmt, ...) {
 
 void acceptRide(cab* cab, int rideType, int rideTime) {
     if (rideType == POOL_CAB) {
-        assert(cab->state != oneRidePoolFull);
+        assert(cab->state != onRidePoolFull);
         cab->state++;
     } else {
         assert(cab->state == waitState);
@@ -42,22 +42,12 @@ void endRide(cab* cab, rider* rider) {
     pthread_mutex_lock(&checkCab);
 
     totalCabsOpen++;
-    if (cab->state == onRidePremier) {
+    if (cab->state == onRidePremier || cab->state == onRidePoolOne) {
         cab->state = waitState;
-    } else {
-        cab->state--;
-    }
-
-    if (cab->state == onRidePoolOne) {
-        int i = 0;
-        while (poolOneCabs[i])
-            i++;
-        poolOneCabs[i] = cab;
-    } else {
-        int i = 0;
-        while (waitingCabs[i])
-            i++;
-        waitingCabs[i] = cab;
+        cab->rider1 = cab->rider2 = -1;
+    } else if (cab->state == onRidePoolFull) {
+        cab->state = onRidePoolOne;
+        cab->rider2 = -1;
     }
 
     int j = (rider->id + 1) % ridersCount;
@@ -73,43 +63,10 @@ void endRide(cab* cab, rider* rider) {
     }
 }
 
-void shiftCabsAround(cab* cab) {
-    // delete this cab from the array
-    // it will always be at the 0th index
-    for (int i = 0; i < cabsCount - 1; i++) {
-        if (cab->state == onRidePremier) {
-            waitingCabs[i] = waitingCabs[i + 1];
-        } else {
-            poolOneCabs[i] = poolOneCabs[i + 1];
-        }
-    }
-    waitingCabs[cabsCount - 1] = NULL;
-    poolOneCabs[cabsCount - 1] = NULL;
-
-    if (cab->state == onRidePoolOne) {
-        int i = 0;
-        while (poolOneCabs[i])
-            i++;
-        poolOneCabs[i] = cab;
-    }
-    totalCabsOpen--;
-    pthread_mutex_unlock(&checkCab);
-}
-
 void startAndEndRide(cab* cab, rider* rider) {
-    shiftCabsAround(cab);
-
     cabPrintMsg(cab->id, "taking rider %d\n", rider->id + 1);
 
     sleep(rider->rideTime);
 
     endRide(cab, rider);
-}
-
-cab* getFreeCab(int cabType) {
-    if (cabType == POOL_CAB) {
-        return poolOneCabs[0];
-    } else {
-        return waitingCabs[0];
-    }
 }
