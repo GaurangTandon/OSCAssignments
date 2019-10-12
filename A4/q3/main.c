@@ -116,7 +116,6 @@ int main() {
     for (int i = 0; i < serversCount; i++) {
         servers[i] = (server *)shareMem(sizeof(server));
         servers[i]->id = i;
-        pthread_create(&serverThreads[i], NULL, initServer, servers[i]);
     }
 
     // second argument = 0 => initialize semaphores shared between threads
@@ -130,6 +129,13 @@ int main() {
         riders[i] = (rider *)shareMem(sizeof(rider));
         ridersPaying[i] = NULL;
         riders[i]->id = i;
+    }
+
+    for (int i = 0; i < serversCount; i++) {
+        pthread_create(&serverThreads[i], NULL, initServer, servers[i]);
+    }
+
+    for (int i = 0; i < ridersCount; i++) {
         pthread_create(&riderThreads[i], NULL, initRider, riders[i]);
     }
 
