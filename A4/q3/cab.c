@@ -47,7 +47,12 @@ void endRide(cab* cab, rider* rider) {
         cab->rider1 = cab->rider2 = -1;
     } else if (cab->state == onRidePoolFull) {
         cab->state = onRidePoolOne;
-        cab->rider2 = -1;
+        if (cab->rider1 == rider->id) {
+            cab->rider1 = cab->rider2;
+            cab->rider2 = -1;
+        } else {
+            cab->rider2 = -1;
+        }
     }
 
     int j = (rider->id + 1) % ridersCount;
