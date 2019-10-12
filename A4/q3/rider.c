@@ -117,10 +117,12 @@ start:
         rider->isWaiting = rider->cabType;
         int res = pthread_cond_timedwait(&rider->cond, &checkCab, &ts);
 
+        rider->isWaiting = -1;
         if (res == 0) {
+            riderPrintMsg(rider->id,
+                          "got signal that suitable cab is available\n");
             goto start;
         } else if (res == ETIMEDOUT) {
-            rider->isWaiting = -1;
             riderPrintMsg(
                 rider->id,
                 KRED "timed out waiting for a cab (maxwaittime: %d)\n" KNRM,
@@ -130,10 +132,10 @@ start:
             perror("DEBUG: ");
             return;
         }
+    } else {
+        totalCabsOpen--;
+        pthread_mutex_unlock(&checkCab);
     }
-
-    totalCabsOpen--;
-    pthread_mutex_unlock(&checkCab);
 
     startAndEndRide(usedCab, rider);
 
