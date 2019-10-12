@@ -44,67 +44,59 @@ void makePayment() {
     sem_post(&serversOpen);
 }
 
-void bookCab(rider* rider) {
-    // do we really need this semaphore?
-    // this has the issue of repeatedly acquiring and releasing the
-    // semaphore which is a type of busy waiting :/ answer: without this we
-    // will do busy waiting (a lot of it), so this is better
-
+cab* findCab(rider* rider) {
     cab* usedCab = NULL;
+
+    if (rider->cabType == POOL_CAB) {
+        for (int i = 0; i < cabsCount; i++) {
+            if (taxis[i]->state == onRidePoolOne) {
+                usedCab = taxis[i];
+                usedCab->state = onRidePoolFull;
+                usedCab->rider2 = rider->id;
+                riderPrintMsg(rider->id,
+                              "acquired cab %d of type %s, shared with %d\n",
+                              usedCab->id + 1, CAB_STRING[rider->cabType],
+                              usedCab->rider1 + 1);
+                return usedCab;
+            }
+        }
+
+        for (int i = 0; i < cabsCount; i++) {
+            if (taxis[i]->state == waitState) {
+                usedCab = taxis[i];
+                usedCab->state = onRidePoolOne;
+                usedCab->rider1 = rider->id;
+                riderPrintMsg(rider->id, "acquired cab %d of type %s\n",
+                              usedCab->id + 1, CAB_STRING[rider->cabType]);
+                return usedCab;
+            }
+        }
+
+        assert(0);
+    } else {
+        for (int i = 0; i < cabsCount; i++) {
+            if (taxis[i]->state == waitState) {
+                usedCab = taxis[i];
+                usedCab->rider1 = rider->id;
+                usedCab->state = onRidePremier;
+                riderPrintMsg(rider->id, "acquired cab %d of type %s\n",
+                              usedCab->id + 1, CAB_STRING[rider->cabType]);
+                return usedCab;
+            }
+        }
+        assert(0);
+    }
+}
+
+void bookCab(rider* rider) {
     struct timespec* st = getTimeStructSinceEpoch(rider->maxWaitTime);
 
+    cab* usedCab = NULL;
+
     pthread_mutex_lock(&checkCab);
-start:
+
     if (totalCabsOpen > 0) {
-        if (rider->cabType == POOL_CAB) {
-            int flag = 0;
-
-            for (int i = 0; i < cabsCount; i++) {
-                if (taxis[i]->state == onRidePoolOne) {
-                    usedCab = taxis[i];
-                    usedCab->state = onRidePoolFull;
-                    usedCab->rider2 = rider->id;
-                    riderPrintMsg(
-                        rider->id,
-                        "acquired cab %d of type %s, shared with %d\n",
-                        usedCab->id + 1, CAB_STRING[rider->cabType],
-                        usedCab->rider1 + 1);
-                    flag = 1;
-                    break;
-                }
-            }
-
-            if (flag != 1) {
-                for (int i = 0; i < cabsCount; i++) {
-                    if (taxis[i]->state == waitState) {
-                        usedCab = taxis[i];
-                        usedCab->state = onRidePoolOne;
-                        usedCab->rider1 = rider->id;
-                        riderPrintMsg(rider->id, "acquired cab %d of type %s\n",
-                                      usedCab->id + 1,
-                                      CAB_STRING[rider->cabType]);
-                        flag = 1;
-                        break;
-                    }
-                }
-            }
-
-            assert(flag == 1);
-        } else {
-            int flag = 0;
-            for (int i = 0; i < cabsCount; i++) {
-                if (taxis[i]->state == waitState) {
-                    usedCab = taxis[i];
-                    usedCab->rider1 = rider->id;
-                    usedCab->state = onRidePremier;
-                    riderPrintMsg(rider->id, "acquired cab %d of type %s\n",
-                                  usedCab->id + 1, CAB_STRING[rider->cabType]);
-                    flag = 1;
-                    break;
-                }
-            }
-            assert(flag == 1);
-        }
+        usedCab = findCab(rider);
     }
 
     if (usedCab == NULL) {
@@ -113,10 +105,20 @@ start:
         int res = pthread_cond_timedwait(&rider->cond, &checkCab, st);
 
         rider->isWaiting = -1;
+
         if (res == 0) {
             riderPrintMsg(rider->id,
                           "got signal that suitable cab is available\n");
-            goto start;
+
+            if (totalCabsOpen > 0) {
+                usedCab = findCab(rider);
+            }
+
+            if (totalCabsOpen <= 0 || !usedCab) {
+                riderPrintMsg(rider->id,
+                              "didn't find any cab even after the signal\n");
+                return;
+            }
         } else if (res == ETIMEDOUT) {
             riderPrintMsg(
                 rider->id,
@@ -127,10 +129,10 @@ start:
             perror("DEBUG: ");
             return;
         }
-    } else {
-        totalCabsOpen--;
-        pthread_mutex_unlock(&checkCab);
     }
+
+    totalCabsOpen--;
+    pthread_mutex_unlock(&checkCab);
 
     startAndEndRide(usedCab, rider);
 
