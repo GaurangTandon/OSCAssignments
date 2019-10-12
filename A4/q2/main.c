@@ -76,8 +76,7 @@ int main() {
     tables = (table **)shareMem(MAX_TABLES * sizeof(table *));
     robots = (robot **)shareMem(MAX_ROBOTS * sizeof(robot *));
     students = (student **)shareMem(MAX_STUDENTS * sizeof(student *));
-    pthread_mutex_t xx = PTHREAD_MUTEX_INITIALIZER;
-    updateMutex = xx;
+    pthread_mutex_init(&updateMutex, NULL);
 
     checkTable = (pthread_mutex_t *)shareMem(sizeof(pthread_mutex_t));
     checkRobot = (pthread_mutex_t *)shareMem(sizeof(pthread_mutex_t));
@@ -100,20 +99,16 @@ int main() {
     for (int i = 0; i < tableCount; i++) {
         tables[i] = (table *)shareMem(sizeof(table));
         tables[i]->id = i;
-        pthread_cond_t x = PTHREAD_COND_INITIALIZER;
-        tableConditions[i] = x;
-        pthread_mutex_t x2 = PTHREAD_MUTEX_INITIALIZER;
-        tableMutexes[i] = x2;
+        pthread_cond_init(&tableConditions[i], NULL);
+        pthread_mutex_init(&tableMutexes[i], NULL);
     }
 
     for (int i = 0; i < robotCount; i++) {
         robots[i] = (robot *)shareMem(sizeof(robot));
         robots[i]->id = i;
         robots[i]->biryaniVesselsRemaining = 0;
-        pthread_cond_t x = PTHREAD_COND_INITIALIZER;
-        robotConditions[i] = x;
-        pthread_mutex_t x2 = PTHREAD_MUTEX_INITIALIZER;
-        robotMutexes[i] = x2;
+        pthread_cond_init(&robotConditions[i], NULL);
+        pthread_mutex_init(&robotMutexes[i], NULL);
     }
 
     gameOver = 0;
@@ -139,28 +134,36 @@ int main() {
     gameOver = 1;
 
     for (int i = 0; i < tableCount; i++) {
+        pthread_mutex_lock(&tableMutexes[i]);
+        if (tables[i]->slotsLeft > 0) {
+            tables[i]->slotsLeft = 0;
+        }
+        pthread_mutex_unlock(&tableMutexes[i]);
+    }
+
+    for (int i = 0; i < robotCount; i++) {
+        pthread_mutex_unlock(&robotMutexes[i]);
+        if (robots[i]->biryaniVesselsRemaining > 0) {
+            robots[i]->biryaniVesselsRemaining = 0;
+        }
+        pthread_mutex_unlock(&robotMutexes[i]);
+    }
+
+    for (int i = 0; i < tableCount; i++) {
+        pthread_mutex_lock(&tableMutexes[i]);
+        if (tables[i]->studentsEatingHere[0] > 0) {
+            printf("DEBUG: nullified table %d\n", i);
+            tables[i]->slotsLeft = 0;
+        }
+        pthread_mutex_unlock(&tableMutexes[i]);
+    }
+
+    for (int i = 0; i < tableCount; i++) {
         pthread_join(tableThreads[i], NULL);
     }
 
     for (int i = 0; i < robotCount; i++) {
         pthread_join(robotThreads[i], NULL);
-    }
-
-    for (int i = 0; i < tableCount; i++) {
-        if (tables[i]->studentsEatingHere[0] != -1) {
-            table *table = tables[i];
-
-            tablePrintMsg(table->id, "entering serving phase\n");
-            table->readyToServe = 0;
-            for (int j = 0; j < 10; j++) {
-                if (table->studentsEatingHere[j] == -1)
-                    break;
-
-                studentPrintMsg(table->studentsEatingHere[j],
-                                "on serving table %d has been served.\n",
-                                table->id + 1);
-            }
-        }
     }
 
     printf("Simulation over\n");

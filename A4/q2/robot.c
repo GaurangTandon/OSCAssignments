@@ -22,8 +22,20 @@ void prepBiryani(robot* robot) {
 
     sleep(timeTaken);
 
+    if (gameOver) {
+        return;
+    }
+
+    pthread_mutex_lock(&robotMutexes[robot->id]);
     robot->biryaniVesselsRemaining = numOfVessels;
+    pthread_mutex_unlock(&robotMutexes[robot->id]);
+    if (gameOver) {
+        return;
+    }
     robot->vesselSize = capacityStudents;
+    if (gameOver) {
+        return;
+    }
 
     biryani_ready(robot);
 }
@@ -34,7 +46,7 @@ void biryani_ready(robot* robot) {
                   "be emptied to resume cooking\n",
                   robot->biryaniVesselsRemaining);
 
-    while (!gameOver) {
+    while (1) {
         pthread_mutex_lock(&robotMutexes[robot->id]);
 
         if (robot->biryaniVesselsRemaining == 0)

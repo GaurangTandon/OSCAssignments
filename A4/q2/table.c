@@ -13,6 +13,8 @@ void tablePrintMsg(int id, char* fmt, ...) {
 
 void ready_to_serve_table(table* table) {
     pthread_mutex_lock(&tableMutexes[table->id]);
+    if (gameOver)
+        return;
     for (int i = 0; i < 10; i++)
         table->studentsEatingHere[i] = -1;
 
@@ -25,16 +27,11 @@ void ready_to_serve_table(table* table) {
     tablePrintMsg(table->id, "is ready to serve with %d slots\n",
                   table->slotsLeft);
 
-    while (!gameOver) {
+    while (1) {
         pthread_mutex_lock(&tableMutexes[table->id]);
         if (table->slotsLeft == 0)
             break;
         pthread_mutex_unlock(&tableMutexes[table->id]);
-    }
-
-    if (gameOver) {
-        pthread_mutex_unlock(&tableMutexes[table->id]);
-        return;
     }
 
     table->readyToServe = 0;
@@ -62,9 +59,13 @@ void* initTable(void* tableTemp) {
     mytable->biryaniAmountRemaining = 0;
     mytable->needVessel = 1;
 
-    while (!gameOver) {
+    while (1) {
         int flag = 0;
         for (int i = 0; i < robotCount; i++) {
+            if (gameOver) {
+                return NULL;
+            }
+
             pthread_mutex_lock(&robotMutexes[i]);
 
             if (robots[i]->biryaniVesselsRemaining > 0) {
@@ -89,6 +90,10 @@ void* initTable(void* tableTemp) {
 
             if (flag)
                 break;
+        }
+
+        if (gameOver) {
+            return NULL;
         }
 
         if (flag) {
