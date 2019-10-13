@@ -58,10 +58,11 @@ cab* findCab(rider* rider) {
                 usedCab = taxis[i];
                 usedCab->state = onRidePoolFull;
                 usedCab->rider2 = rider->id;
-                riderPrintMsg(rider->id,
-                              "acquired cab %d of type %s, shared with %d\n",
-                              usedCab->id + 1, CAB_STRING[rider->cabType],
-                              usedCab->rider1 + 1);
+                riderPrintMsg(
+                    rider->id,
+                    "acquired cab %d of type %s, shared with rider %d\n",
+                    usedCab->id + 1, CAB_STRING[rider->cabType],
+                    usedCab->rider1 + 1);
                 return usedCab;
             }
         }
