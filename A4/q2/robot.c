@@ -27,12 +27,12 @@ void prepBiryani(robot* robot) {
     }
 
     pthread_mutex_lock(&robotMutexes[robot->id]);
+    robot->biryaniVesselsRemaining = numOfVessels;
+    robot->vesselSize = capacityStudents;
     robotPrintMsg(robot->id,
                   "has prepared %d vessels of biryani. Waiting for vesels to "
                   "be emptied to resume cooking\n",
                   robot->biryaniVesselsRemaining);
-    robot->vesselSize = capacityStudents;
-    robot->biryaniVesselsRemaining = numOfVessels;
     pthread_mutex_unlock(&robotMutexes[robot->id]);
 
     if (gameOver) {
