@@ -107,8 +107,8 @@ found:
 
     // ASSIGNMENT
     p->ctime = time(0);
-    p->etime = 0;
     p->rtime = 0;
+    p->etime = -1;
 
     return p;
 }
