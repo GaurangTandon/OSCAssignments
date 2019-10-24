@@ -8,6 +8,8 @@
 #include "spinlock.h"
 #include <time.h>
 
+#define FCFS
+
 struct {
     struct spinlock lock;
     struct proc proc[NPROC];
@@ -194,6 +196,7 @@ int fork(void) {
 
     // Clear %eax so that fork returns 0 in the child.
     np->tf->eax = 0;
+    np->ctime = ticks;
 
     for (i = 0; i < NOFILE; i++)
         if (curproc->ofile[i])
@@ -317,6 +320,37 @@ void scheduler(void) {
         // Enable interrupts on this processor.
         sti();
 
+#ifdef FCFS
+        struct proc *minP = NULL;
+        for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+            if (p->state == RUNNABLE) {
+                if (minP != NULL) {
+                    if (p->ctime < minP->ctime)
+                        minP = p;
+                } else
+                    minP = p;
+            }
+        }
+
+        if (minP != NULL) {
+            p = minP;  // the process with the smallest creation time
+            proc = p;
+            switchuvm(p);
+            p->state = RUNNING;
+            swtch(&cpu->scheduler, proc->context);
+            switchkvm();
+            // Process is done running for now.
+            // It should have changed its p->state before coming back.
+            proc = 0;
+        }
+#else
+#ifdef MLFQ
+        // do something
+#else
+#ifdef PBS
+        // do something
+#else
+#ifdef DEFAULT
         // Loop over process table looking for process to run.
         acquire(&ptable.lock);
         for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
@@ -337,6 +371,10 @@ void scheduler(void) {
             // It should have changed its p->state before coming back.
             c->proc = 0;
         }
+#endif
+#endif
+#endif
+#endif
         release(&ptable.lock);
     }
 }
