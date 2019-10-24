@@ -236,6 +236,8 @@ void exit(void) {
     iput(curproc->cwd);
     end_op();
     curproc->cwd = 0;
+    curproc->etime = time(0);
+    curproc->rtime = curproc->etime - curproc->ctime;
 
     acquire(&ptable.lock);
 
