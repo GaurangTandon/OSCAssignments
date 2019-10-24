@@ -6,6 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include <time.h>
 
 struct {
     struct spinlock lock;
@@ -103,6 +104,11 @@ found:
     p->context = (struct context *)sp;
     memset(p->context, 0, sizeof *p->context);
     p->context->eip = (uint)forkret;
+
+    // ASSIGNMENT
+    p->ctime = time(0);
+    p->etime = 0;
+    p->rtime = 0;
 
     return p;
 }
