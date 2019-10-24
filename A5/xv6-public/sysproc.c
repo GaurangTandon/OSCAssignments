@@ -20,6 +20,11 @@ int sys_wait(void) {
     return wait();
 }
 
+int waitx(int *wtime, int *rtime) {
+    // do something here?
+    return sys_wait();
+}
+
 int sys_kill(void) {
     int pid;
 
@@ -30,6 +35,9 @@ int sys_kill(void) {
 
 int sys_getpid(void) {
     return myproc()->pid;
+}
+
+int sys_getpinfo(struct proc_stat *ps) {
 }
 
 int sys_sbrk(void) {
