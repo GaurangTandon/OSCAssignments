@@ -23,7 +23,7 @@ int sys_wait(void) {
 int waitx(int *wtime, int *rtime) {
     struct proc *p = myproc();
     *rtime = p->rtime;
-    *wtime = time(0) - p->ctime - p->rtime;
+    *wtime = ticks - p->ctime - p->rtime;
     return sys_wait();
 }
 
@@ -40,6 +40,9 @@ int sys_getpid(void) {
 }
 
 int sys_getpinfo(struct proc_stat *ps) {
+    struct proc *p = myproc();
+
+    //???
 }
 
 int sys_sbrk(void) {

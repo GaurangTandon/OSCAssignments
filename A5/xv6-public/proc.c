@@ -106,7 +106,7 @@ found:
     p->context->eip = (uint)forkret;
 
     // ASSIGNMENT
-    p->ctime = time(0);
+    p->ctime = ticks;
     p->rtime = 0;
     p->etime = -1;
 
