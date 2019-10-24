@@ -21,7 +21,9 @@ int sys_wait(void) {
 }
 
 int waitx(int *wtime, int *rtime) {
-    // do something here?
+    struct proc *p = myproc();
+    *rtime = p->rtime;
+    *wtime = time(0) - p->ctime - p->rtime;
     return sys_wait();
 }
 
