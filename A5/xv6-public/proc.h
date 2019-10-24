@@ -69,3 +69,5 @@ struct proc_stat {
     int ticks[5];  // number of ticks each process has received at each of the 5
                    // priority queue
 };
+
+void updateStats();

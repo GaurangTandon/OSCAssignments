@@ -497,3 +497,17 @@ void procdump(void) {
         cprintf("\n");
     }
 }
+
+void updateStats() {
+    struct proc *p;
+    acquire(&ptable.lock);
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        switch (p->state) {
+            case RUNNING:
+                p->rtime++;
+                break;
+            default:;
+        }
+    }
+    release(&ptable.lock);
+}

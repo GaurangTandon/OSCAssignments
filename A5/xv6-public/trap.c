@@ -30,9 +30,6 @@ void idtinit(void) {
 
 // PAGEBREAK: 41
 void trap(struct trapframe *tf) {
-    if (myproc()->state == RUNNING)
-        myproc()->rtime = time(0) - myproc()->ctime;
-
     if (tf->trapno == T_SYSCALL) {
         if (myproc()->killed)
             exit();
@@ -48,6 +45,7 @@ void trap(struct trapframe *tf) {
             if (cpuid() == 0) {
                 acquire(&tickslock);
                 ticks++;
+                updateStats();
                 wakeup(&ticks);
                 release(&tickslock);
             }
