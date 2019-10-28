@@ -313,15 +313,18 @@ int wait(void) {
 //      via swtch back to the scheduler.
 void scheduler(void) {
     struct cpu *c = mycpu();
+    struct proc *p;
     c->proc = 0;
 
     for (;;) {
         // Enable interrupts on this processor.
         sti();
+        // Loop over process table looking for process to run.
+        acquire(&ptable.lock);
 
 #ifdef FCFS
         struct proc *minctimeProc = NULL;
-        for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state == RUNNABLE) {
                 if (minctimeProc) {
                     if (p->ctime < minctimeProc->ctime)
@@ -332,6 +335,7 @@ void scheduler(void) {
         }
 
         if (minctimeProc) {
+            c->proc = minctimeProc;
             switchuvm(minctimeProc);
             minctimeProc->state = RUNNING;
             swtch(&c->scheduler, minctimeProc->context);
@@ -347,10 +351,7 @@ void scheduler(void) {
 #ifdef PBS
 
 #else
-#ifdef DEFAULT
         // **this is the original xv6 code, unchanged**
-        // Loop over process table looking for process to run.
-        acquire(&ptable.lock);
         for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state != RUNNABLE)
                 continue;
@@ -369,7 +370,6 @@ void scheduler(void) {
             // It should have changed its p->state before coming back.
             c->proc = 0;
         }
-#endif
 #endif
 #endif
 #endif
