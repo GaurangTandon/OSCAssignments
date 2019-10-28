@@ -93,23 +93,35 @@ extern int sys_unlink(void);
 extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
-extern int waitx(int *, int *);
-extern int getpinfo(struct proc *);
-extern int set_priority(int);
+extern int sys_waitx(int *, int *);
+// extern int sys_getpinfo(struct proc *);
+extern int sys_set_priority(int);
 
 static int (*syscalls[])(void) = {
-    [SYS_fork] sys_fork,     [SYS_exit] sys_exit,
-    [SYS_wait] sys_wait,     [SYS_pipe] sys_pipe,
-    [SYS_read] sys_read,     [SYS_kill] sys_kill,
-    [SYS_exec] sys_exec,     [SYS_fstat] sys_fstat,
-    [SYS_chdir] sys_chdir,   [SYS_dup] sys_dup,
-    [SYS_getpid] sys_getpid, [SYS_sbrk] sys_sbrk,
-    [SYS_sleep] sys_sleep,   [SYS_uptime] sys_uptime,
-    [SYS_open] sys_open,     [SYS_write] sys_write,
-    [SYS_mknod] sys_mknod,   [SYS_unlink] sys_unlink,
-    [SYS_link] sys_link,     [SYS_mkdir] sys_mkdir,
-    [SYS_close] sys_close,   [SYS_waitx] waitx,
-    [SYS_getpinfo] getpinfo, [SYS_set_priority] set_priority,
+    [SYS_fork] sys_fork,
+    [SYS_exit] sys_exit,
+    [SYS_wait] sys_wait,
+    [SYS_pipe] sys_pipe,
+    [SYS_read] sys_read,
+    [SYS_kill] sys_kill,
+    [SYS_exec] sys_exec,
+    [SYS_fstat] sys_fstat,
+    [SYS_chdir] sys_chdir,
+    [SYS_dup] sys_dup,
+    [SYS_getpid] sys_getpid,
+    [SYS_sbrk] sys_sbrk,
+    [SYS_sleep] sys_sleep,
+    [SYS_uptime] sys_uptime,
+    [SYS_open] sys_open,
+    [SYS_write] sys_write,
+    [SYS_mknod] sys_mknod,
+    [SYS_unlink] sys_unlink,
+    [SYS_link] sys_link,
+    [SYS_mkdir] sys_mkdir,
+    [SYS_close] sys_close,
+    [SYS_waitx] sys_waitx,
+    [SYS_set_priority] sys_set_priority,
+    /*[SYS_getpinfo] getpinfo,*/
 };
 
 void syscall(void) {
