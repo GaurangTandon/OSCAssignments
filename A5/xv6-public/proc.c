@@ -8,7 +8,7 @@
 #include "spinlock.h"
 #include <time.h>
 
-#define FCFS
+// #define PBS
 
 struct {
     struct spinlock lock;
@@ -313,10 +313,11 @@ int wait(void) {
 //      via swtch back to the scheduler.
 void scheduler(void) {
     struct cpu *c = mycpu();
-    struct proc *p;
     c->proc = 0;
 
     for (;;) {
+        struct proc *alottedP = 0, *p;
+
         // Enable interrupts on this processor.
         sti();
         // Loop over process table looking for process to run.
@@ -335,44 +336,54 @@ void scheduler(void) {
         }
 
         if (minctimeProc) {
-            c->proc = minctimeProc;
-            switchuvm(minctimeProc);
-            minctimeProc->state = RUNNING;
-            swtch(&c->scheduler, minctimeProc->context);
-            switchkvm();
-            // Process is done running for now.
-            // It should have changed its p->state before coming back.
-            c->proc = 0;
+            alottedP = minctimeProc;
         }
 #else
 #ifdef MLFQ
         // do something
 #else
 #ifdef PBS
+        struct proc *minPrioProc = NULL;
+        for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+            if (p->state == RUNNABLE) {
+                if (minPrioProc) {
+                    if (p->priority < minPrioProc->priority)
+                        minPrioProc = p;
+                } else
+                    minPrioProc = p;
+            }
+        }
 
+        if (minPrioProc) {
+            alottedP = minPrioProc;
+        }
 #else
-        // **this is the original xv6 code, unchanged**
         for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state != RUNNABLE)
                 continue;
 
+            alottedP = p;
+            break;
+        }
+#endif
+#endif
+#endif
+        if (alottedP) {
             // Switch to chosen process.  It is the process's job
             // to release ptable.lock and then reacquire it
             // before jumping back to us.
-            c->proc = p;
-            switchuvm(p);
-            p->state = RUNNING;
+            c->proc = alottedP;
+            switchuvm(alottedP);
+            alottedP->state = RUNNING;
 
-            swtch(&(c->scheduler), p->context);
+            swtch(&(c->scheduler), alottedP->context);
             switchkvm();
 
             // Process is done running for now.
             // It should have changed its p->state before coming back.
             c->proc = 0;
         }
-#endif
-#endif
-#endif
+
         release(&ptable.lock);
     }
 }
