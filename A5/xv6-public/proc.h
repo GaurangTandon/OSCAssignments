@@ -34,6 +34,8 @@ struct context {
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
+#define DEFAULT_PRIORITY 60
+
 // Per-process state
 struct proc {
     uint sz;                     // Size of process memory (bytes)
@@ -52,7 +54,7 @@ struct proc {
     int ctime;                   // process ka creation time
     int etime;                   // process ka end time
     int rtime;                   // process ka total time
-    int priority;
+    int priority;                // process priority
 };
 
 // Process memory is laid out contiguously, low addresses first:

@@ -111,6 +111,7 @@ found:
     p->ctime = ticks;
     p->rtime = 0;
     p->etime = -1;
+    p->priority = DEFAULT_PRIORITY;
 
     return p;
 }
@@ -197,6 +198,7 @@ int fork(void) {
     // Clear %eax so that fork returns 0 in the child.
     np->tf->eax = 0;
     np->ctime = ticks;
+    np->priority = DEFAULT_PRIORITY;
 
     for (i = 0; i < NOFILE; i++)
         if (curproc->ofile[i])
