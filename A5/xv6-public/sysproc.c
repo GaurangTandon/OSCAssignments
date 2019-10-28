@@ -20,7 +20,12 @@ int sys_wait(void) {
     return wait();
 }
 
-int sys_waitx(int *wtime, int *rtime) {
+int sys_waitx(void) {
+    int *wtime, *rtime;
+
+    if (argptr(0, &wtime, 4) < 0 || argptr(1, &rtime, 4) < 0)
+        return -1;
+
     struct proc *p = myproc();
     *rtime = p->rtime;
     *wtime = ticks - p->ctime - p->rtime;
@@ -39,7 +44,12 @@ int sys_getpid(void) {
     return myproc()->pid;
 }
 
-int getpinfo(struct proc_stat *ps) {
+int getpinfo(void) {
+    struct proc_stat *ps;
+
+    if (argptr(0, &ps, 4) < 0)
+        return -1;
+
     struct proc *p = myproc();
 
     //???
@@ -89,7 +99,12 @@ int sys_uptime(void) {
 
 // change priority of current running process to newPriority
 // and return old priority
-int sys_set_priority(int newPriority) {
+int sys_set_priority(void) {
+    int newPriority;
+
+    if (argint(0, &newPriority) < 0)
+        return -1;
+
     if (newPriority < -1 || newPriority > 100)
         return -1;
     acquire(&ptable.lock);
