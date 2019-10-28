@@ -23,7 +23,7 @@ int sys_wait(void) {
 int sys_waitx(void) {
     int *wtime, *rtime;
 
-    if (argptr(0, &wtime, 4) < 0 || argptr(1, &rtime, 4) < 0)
+    if (argptr(0, (void *)&wtime, 4) < 0 || argptr(1, (void *)&rtime, 4) < 0)
         return -1;
 
     struct proc *p = myproc();
@@ -47,12 +47,13 @@ int sys_getpid(void) {
 int getpinfo(void) {
     struct proc_stat *ps;
 
-    if (argptr(0, &ps, 4) < 0)
+    if (argptr(0, (void *)&ps, 4) < 0)
         return -1;
 
-    struct proc *p = myproc();
+    // struct proc *p = myproc();
 
     //???
+    return 0;
 }
 
 int sys_sbrk(void) {
@@ -105,11 +106,5 @@ int sys_set_priority(void) {
     if (argint(0, &newPriority) < 0)
         return -1;
 
-    if (newPriority < -1 || newPriority > 100)
-        return -1;
-    acquire(&ptable.lock);
-    int prio = proc->priority;
-    proc->priority = priority;
-    release(&ptable.lock);
-    return prio;
+    return set_prio(newPriority);
 }

@@ -239,7 +239,7 @@ void exit(void) {
     iput(curproc->cwd);
     end_op();
     curproc->cwd = 0;
-    curproc->etime = time(0);
+    curproc->etime = ticks;
 
     acquire(&ptable.lock);
 
@@ -546,4 +546,15 @@ void updateStats() {
         }
     }
     release(&ptable.lock);
+}
+
+int set_prio(int newPriority) {
+    if (newPriority < -1 || newPriority > 100)
+        return -1;
+    acquire(&ptable.lock);
+    struct proc *p = myproc();
+    int prio = p->priority;
+    p->priority = newPriority;
+    release(&ptable.lock);
+    return prio;
 }
