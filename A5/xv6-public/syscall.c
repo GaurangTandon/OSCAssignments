@@ -109,7 +109,7 @@ static int (*syscalls[])(void) = {
     [SYS_mknod] sys_mknod,   [SYS_unlink] sys_unlink,
     [SYS_link] sys_link,     [SYS_mkdir] sys_mkdir,
     [SYS_close] sys_close,   [SYS_waitx] waitx,
-    [SYS_getpinfo] getpinfo, [SYS_setpriority] set_priority,
+    [SYS_getpinfo] getpinfo, [SYS_set_priority] set_priority,
 };
 
 void syscall(void) {
