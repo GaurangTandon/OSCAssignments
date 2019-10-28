@@ -39,7 +39,7 @@ int sys_getpid(void) {
     return myproc()->pid;
 }
 
-int sys_getpinfo(struct proc_stat *ps) {
+int getpinfo(struct proc_stat *ps) {
     struct proc *p = myproc();
 
     //???
@@ -85,4 +85,16 @@ int sys_uptime(void) {
     xticks = ticks;
     release(&tickslock);
     return xticks;
+}
+
+// change priority of current running process to newPriority
+// and return old priority
+int set_priority(int newPriority) {
+    if (newPriority < -1 || newPriority > 100)
+        return -1;
+    acquire(&ptable.lock);
+    int prio = proc->priority;
+    proc->priority = priority;
+    release(&ptable.lock);
+    return prio;
 }

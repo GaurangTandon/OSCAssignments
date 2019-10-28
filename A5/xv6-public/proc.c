@@ -345,9 +345,10 @@ void scheduler(void) {
         // do something
 #else
 #ifdef PBS
-        // do something
+
 #else
 #ifdef DEFAULT
+        // **this is the original xv6 code, unchanged**
         // Loop over process table looking for process to run.
         acquire(&ptable.lock);
         for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
