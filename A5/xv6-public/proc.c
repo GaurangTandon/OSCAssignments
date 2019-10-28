@@ -312,7 +312,6 @@ int wait(void) {
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
 void scheduler(void) {
-    struct proc *p;
     struct cpu *c = mycpu();
     c->proc = 0;
 
@@ -321,27 +320,25 @@ void scheduler(void) {
         sti();
 
 #ifdef FCFS
-        struct proc *minP = NULL;
-        for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        struct proc *minctimeProc = NULL;
+        for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state == RUNNABLE) {
-                if (minP != NULL) {
-                    if (p->ctime < minP->ctime)
-                        minP = p;
+                if (minctimeProc) {
+                    if (p->ctime < minctimeProc->ctime)
+                        minctimeProc = p;
                 } else
-                    minP = p;
+                    minctimeProc = p;
             }
         }
 
-        if (minP != NULL) {
-            p = minP;  // the process with the smallest creation time
-            proc = p;
-            switchuvm(p);
-            p->state = RUNNING;
-            swtch(&cpu->scheduler, proc->context);
+        if (minctimeProc) {
+            switchuvm(minctimeProc);
+            minctimeProc->state = RUNNING;
+            swtch(&c->scheduler, minctimeProc->context);
             switchkvm();
             // Process is done running for now.
             // It should have changed its p->state before coming back.
-            proc = 0;
+            c->proc = 0;
         }
 #else
 #ifdef MLFQ
