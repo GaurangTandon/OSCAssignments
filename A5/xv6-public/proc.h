@@ -65,6 +65,7 @@ struct proc {
 
 void updateStats();
 
+#ifdef MLFQ
 // statistics for each process, from assignment
 struct proc_stat {
     int pid;            // PID of each process
@@ -74,3 +75,4 @@ struct proc_stat {
     int ticks[5];  // number of ticks each process has received at each of the 5
                    // priority queue
 };
+#endif

@@ -94,7 +94,9 @@ extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_waitx(void);
-// extern int sys_getpinfo(struct proc *);
+#ifdef MLFQ
+extern int sys_getpinfo(void);
+#endif
 extern int sys_set_priority(void);
 
 static int (*syscalls[])(void) = {
@@ -121,7 +123,9 @@ static int (*syscalls[])(void) = {
     [SYS_close] sys_close,
     [SYS_waitx] sys_waitx,
     [SYS_set_priority] sys_set_priority,
-    /*[SYS_getpinfo] getpinfo,*/
+#ifdef MLFQ
+    [SYS_getpinfo] getpinfo,
+#endif
 };
 
 void syscall(void) {

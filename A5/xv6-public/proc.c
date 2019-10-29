@@ -6,9 +6,6 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
-#include <time.h>
-
-#define MLFQ
 
 struct {
     struct spinlock lock;
@@ -620,14 +617,11 @@ void procdump(void) {
 }
 
 void updateStats() {
-    struct proc *p;
     acquire(&ptable.lock);
-    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-        switch (p->state) {
-            case RUNNING:
-                p->rtime++;
-                break;
-            default:;
+
+    for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if (p->state == RUNNING) {
+            p->rtime++;
         }
     }
     release(&ptable.lock);

@@ -21,5 +21,7 @@
 #define SYS_mkdir 20
 #define SYS_close 21
 #define SYS_waitx 22
+#ifdef MLFQ
 #define SYS_getpinfo 23
+#endif
 #define SYS_set_priority 24

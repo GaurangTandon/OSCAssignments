@@ -41,17 +41,19 @@ int sys_getpid(void) {
     return myproc()->pid;
 }
 
+#ifdef MLFQ
 int getpinfo(void) {
     struct proc_stat *ps;
 
     if (argptr(0, (void *)&ps, 4) < 0)
         return -1;
 
-    // struct proc *p = myproc();
+    struct proc *p = myproc();
 
     //???
     return 0;
 }
+#endif
 
 int sys_sbrk(void) {
     int addr;

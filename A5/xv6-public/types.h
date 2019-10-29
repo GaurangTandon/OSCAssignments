@@ -1,4 +1,6 @@
-typedef unsigned int   uint;
+#define MLFQ
+
+typedef unsigned int uint;
 typedef unsigned short ushort;
-typedef unsigned char  uchar;
+typedef unsigned char uchar;
 typedef uint pde_t;

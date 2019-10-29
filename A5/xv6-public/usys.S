@@ -29,6 +29,8 @@ SYSCALL(getpid)
 SYSCALL(sbrk)
 SYSCALL(sleep)
 SYSCALL(uptime)
+#ifdef MLFQ
 SYSCALL(getpinfo)
+#endif
 SYSCALL(waitx)
 SYSCALL(set_priority)
