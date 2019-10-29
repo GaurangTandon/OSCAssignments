@@ -1,8 +1,9 @@
 #include "types.h"
 #include "user.h"
 
-#include <sys/types.h>
-#include <unistd.h>
+#define CPU_BOUND 0
+#define SCPU_BOUND 1
+#define IO_BOUND 2
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
@@ -13,34 +14,34 @@ int main(int argc, char* argv[]) {
     int n = atoi(argv[1]);
     const int LARGE_INT = 1000000;
     const int SMALL_INT = 100;
-    int procs = 3 * n;
+    int procsCount = 3 * n;
 
-    long double sums[3][3];
+    int sums[3][3];
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)
             sums[i][j] = 0;
 
-    for (int i = 0; i < procs; i++) {
+    for (int i = 0; i < procsCount; i++) {
         int pid = fork();
 
         if (pid == 0) {
             int rem = getpid() % 3;
             switch (rem) {
-                case 0:  // CPU‐bound process (CPU):
+                case CPU_BOUND:
                     for (int k = 0; k < SMALL_INT; k++) {
                         for (int j = 0; j < LARGE_INT; j++) {
                         }
                     }
                     break;
-                case 1:  // short tasks based CPU‐bound process (S‐CPU):
+                case SCPU_BOUND:
                     for (int k = 0; k < SMALL_INT; k++) {
                         for (int j = 0; j < LARGE_INT; j++) {
                         }
                         yield();
                     }
                     break;
-                case 2:  // simulate I/O bound process (IO)
-                    for (int k = 0; k < 100; k++) {
+                case IO_BOUND:
+                    for (int k = 0; k < SMALL_INT; k++) {
                         sleep(1);
                     }
                     break;
@@ -49,14 +50,13 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    for (int i = 0; i < procs; i++) {
+    for (int i = 0; i < procsCount; i++) {
         int retime, rutime, stime;
         int pid = wait2(&retime, &rutime, &stime);
         int rem = pid % 3;
 
         switch (rem) {
-            // CPU bound processes
-            case 0:
+            case CPU_BOUND:
                 printf(1,
                        "CPU-bound, pid: %d, ready: %d, running: %d, sleeping: "
                        "%d, turnaround: %d\n",
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
                 sums[0][1] += rutime;
                 sums[0][2] += stime;
                 break;
-            case 1:  // CPU bound processes, short tasks
+            case SCPU_BOUND:
                 printf(1,
                        "CPU-S bound, pid: %d, ready: %d, running: %d, "
                        "sleeping: %d, turnaround: %d\n",
@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
                 sums[1][1] += rutime;
                 sums[1][2] += stime;
                 break;
-            case 2:  // simulating I/O bound processes
+            case IO_BOUND
                 printf(1,
                        "I/O bound, pid: %d, ready: %d, running: %d, sleeping: "
                        "%d, turnaround: %d\n",
@@ -97,14 +97,14 @@ int main(int argc, char* argv[]) {
         sums[0][0] + sums[0][1] + sums[0][2]);
     printf(
         1,
-        "CPU-S bound:\nAverage ready time: %lf\nAverage running time: "
-        "%lf\nAverage sleeping time: %lf\nAverage turnaround time: %lf\n\n\n",
+        "CPU-S bound:\nAverage ready time: %d\nAverage running time: "
+        "%d\nAverage sleeping time: %d\nAverage turnaround time: %d\n\n\n",
         sums[1][0], sums[1][1], sums[1][2],
         sums[1][0] + sums[1][1] + sums[1][2]);
     printf(
         1,
-        "I/O bound:\nAverage ready time: %lf\nAverage running time: "
-        "%lf\nAverage sleeping time: %lf\nAverage turnaround time: %lf\n\n\n",
+        "I/O bound:\nAverage ready time: %d\nAverage running time: "
+        "%d\nAverage sleeping time: %d\nAverage turnaround time: %d\n\n\n",
         sums[2][0], sums[2][1], sums[2][2],
         sums[2][0] + sums[2][1] + sums[2][2]);
 }
