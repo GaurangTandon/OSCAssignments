@@ -23,13 +23,10 @@ int sys_wait(void) {
 int sys_waitx(void) {
     int *wtime, *rtime;
 
-    if (argptr(0, (void *)&wtime, 4) < 0 || argptr(1, (void *)&rtime, 4) < 0)
+    if (argptr(0, (void **)&wtime, 4) < 0 || argptr(1, (void **)&rtime, 4) < 0)
         return -1;
 
-    struct proc *p = myproc();
-    *rtime = p->rtime;
-    *wtime = ticks - p->ctime - p->rtime;
-    return sys_wait();
+    return waitx(wtime, rtime);
 }
 
 int sys_kill(void) {
