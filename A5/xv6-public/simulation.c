@@ -51,9 +51,8 @@ int main(int argc, char* argv[]) {
     }
 
     for (int i = 0; i < procsCount; i++) {
-        int retime, rutime, stime;
-        int pid = wait2(&retime, &rutime, &stime);
-        int rem = pid % 3;
+        int retime, rutime, stime, pid = wait2(&retime, &rutime, &stime),
+                                   rem = pid % 3;
 
         switch (rem) {
             case CPU_BOUND:
