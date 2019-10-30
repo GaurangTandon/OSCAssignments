@@ -41,6 +41,7 @@ int sys_getpid(void) {
     return myproc()->pid;
 }
 
+// TODO incomplete
 #ifdef MLFQ
 int getpinfo(void) {
     struct proc_stat *ps;
@@ -50,7 +51,9 @@ int getpinfo(void) {
 
     struct proc *p = myproc();
 
-    //???
+    ps->pid = p->pid;
+    ps->runtime = p->rtime;
+
     return 0;
 }
 #endif
