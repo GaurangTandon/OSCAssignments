@@ -57,6 +57,12 @@ struct proc {
     int priority;                // process priority
 };
 
+#ifdef MLFQ
+#define PQ_COUNT 5
+#define MAX_PROC_COUNT 100
+struct proc *prioQ[PQ_COUNT][MAX_PROC_COUNT];
+#endif
+
 // Process memory is laid out contiguously, low addresses first:
 //   text
 //   original data and bss

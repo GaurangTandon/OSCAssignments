@@ -100,7 +100,29 @@ void trap(struct trapframe *tf) {
         // no yielding here, let the previously running process prevail
 #else
 #ifdef MLFQ
-        // ??
+    struct proc* prevProc = 0;
+
+    for (int i = 0, timeSlice = 1; i < PQ_COUNT; i++, timeSlice *= 2) {
+        struct proc* pp2 = 0;
+        if (ticks % timeSlice == 0) {
+            // if non empty queue
+            //  pp2 = front of the queue i
+            //  pop front
+        }
+
+        if (prevProc) {
+            // push prevproc at back of this queue
+        }
+
+        prevProc = pp2;
+    }
+
+    if (prevProc) {
+        // push prevproc at back of queue lowest prio
+    }
+
+    // always yield in any case?
+    yield();
 #else
     // abhi ke liye pbs mein bhi context switches ho rahe hain
     // Force process to give up CPU on clock tick.

@@ -43,7 +43,7 @@ int sys_getpid(void) {
 
 // TODO incomplete
 #ifdef MLFQ
-int getpinfo(void) {
+int sys_getpinfo(void) {
     struct proc_stat *ps;
 
     if (argptr(0, (void *)&ps, 4) < 0)
