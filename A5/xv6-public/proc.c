@@ -386,7 +386,7 @@ void scheduler(void) {
     c->proc = 0;
 
     for (;;) {
-        struct proc *alottedP = 0, *p;
+        struct proc *alottedP = 0;
 
         // Enable interrupts on this processor.
         sti();
@@ -395,7 +395,7 @@ void scheduler(void) {
 
 #ifdef FCFS
         struct proc *minctimeProc = NULL;
-        for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state == RUNNABLE) {
                 if (minctimeProc) {
                     if (p->ctime < minctimeProc->ctime)
@@ -415,7 +415,7 @@ void scheduler(void) {
 #ifdef PBS
         // and what about all that round robin thing??
         struct proc *minPrioProc = NULL;
-        for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state == RUNNABLE) {
                 if (minPrioProc) {
                     if (p->priority < minPrioProc->priority)
@@ -429,7 +429,7 @@ void scheduler(void) {
             alottedP = minPrioProc;
         }
 #else
-        for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state != RUNNABLE)
                 continue;
 
