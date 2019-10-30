@@ -34,7 +34,9 @@ struct context {
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
+#ifdef PBS
 #define DEFAULT_PRIORITY 60
+#endif
 
 // Per-process state
 struct proc {
@@ -57,12 +59,6 @@ struct proc {
     int priority;                // process priority
 };
 
-#ifdef MLFQ
-#define PQ_COUNT 5
-#define MAX_PROC_COUNT 100
-struct proc *prioQ[PQ_COUNT][MAX_PROC_COUNT];
-#endif
-
 // Process memory is laid out contiguously, low addresses first:
 //   text
 //   original data and bss
@@ -81,4 +77,12 @@ struct proc_stat {
     int ticks[5];  // number of ticks each process has received at each of the 5
                    // priority queue
 };
+#define PQ_COUNT 5
+#define MAX_PROC_COUNT 100
+struct proc *prioQ[PQ_COUNT][MAX_PROC_COUNT];
+int prioQSize[PQ_COUNT];
+struct proc *getFront(int qIdx);
+struct proc *popFront(int qIdx);
+void pushBack(int qIdx, struct proc *p);
+void deleteIdx(int qIdx, int idx);
 #endif

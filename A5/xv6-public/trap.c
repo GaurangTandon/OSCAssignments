@@ -104,21 +104,19 @@ void trap(struct trapframe *tf) {
 
     for (int i = 0, timeSlice = 1; i < PQ_COUNT; i++, timeSlice *= 2) {
         struct proc* pp2 = 0;
-        if (ticks % timeSlice == 0) {
-            // if non empty queue
-            //  pp2 = front of the queue i
-            //  pop front
+        if (ticks % timeSlice == 0 && prioQ[i][0]) {
+            pp2 = popFront(i);
         }
 
         if (prevProc) {
-            // push prevproc at back of this queue
+            pushBack(i, prevProc);
         }
 
         prevProc = pp2;
     }
 
     if (prevProc) {
-        // push prevproc at back of queue lowest prio
+        pushBack(PQ_COUNT - 1, prevProc);
     }
 
     // always yield in any case?

@@ -108,7 +108,9 @@ found:
     p->ctime = ticks;
     p->rtime = 0;
     p->etime = -1;
+#ifdef PBS
     p->priority = DEFAULT_PRIORITY;
+#endif
 
     return p;
 }
@@ -195,7 +197,11 @@ int fork(void) {
     // Clear %eax so that fork returns 0 in the child.
     np->tf->eax = 0;
     np->ctime = ticks;
+    np->rtime = 0;
+    np->etime = -1;
+#ifdef PBS
     np->priority = DEFAULT_PRIORITY;
+#endif
 
     for (i = 0; i < NOFILE; i++)
         if (curproc->ofile[i])
@@ -286,6 +292,7 @@ int wait(void) {
                 p->name[0] = 0;
                 p->killed = 0;
                 p->state = UNUSED;
+                p->etime = ticks;
                 release(&ptable.lock);
                 return pid;
             }
@@ -410,7 +417,18 @@ void scheduler(void) {
         }
 #else
 #ifdef MLFQ
-        // do something
+        for (int i = 0; i < PQ_COUNT; i++) {
+            while (prioQSize[i]) {
+                if (getFront(i)->killed || getFront(i)->pid == 0) {
+                    popFront(i);
+                    continue;
+                }
+
+                alottedP = getFront(i);
+                goto end;
+            }
+        }
+    end:;
 #else
 #ifdef PBS
         // and what about all that round robin thing??
@@ -639,3 +657,28 @@ int set_prio(int newPriority) {
     release(&ptable.lock);
     return prio;
 }
+
+#ifdef MLFQ
+struct proc *getFront(int qIdx) {
+    return prioQ[qIdx][0];
+}
+struct proc *popFront(int qIdx) {
+    if (!prioQSize[qIdx]) {
+        panic("empty stack");
+    }
+    struct proc *p = getFront(qIdx);
+    deleteIdx(qIdx, 0);
+    return p;
+}
+void pushBack(int qIdx, struct proc *p) {
+    ++prioQSize[qIdx];
+    prioQ[qIdx][prioQSize[qIdx]] = p;
+}
+void deleteIdx(int qIdx, int idx) {
+    prioQSize[qIdx]--;
+    prioQ[qIdx][idx] = 0;
+    for (int i = idx; i < prioQSize[qIdx]; i++) {
+        prioQ[qIdx][i] = prioQ[qIdx][i + 1];
+    }
+}
+#endif
