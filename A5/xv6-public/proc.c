@@ -445,9 +445,10 @@ void scheduler(void) {
             // before jumping back to us.
             c->proc = alottedP;
             switchuvm(alottedP);
-            alottedP->state = RUNNING;
 
+            alottedP->state = RUNNING;
             swtch(&(c->scheduler), alottedP->context);
+
             switchkvm();
 
             // Process is done running for now.
@@ -624,6 +625,7 @@ void updateStats() {
             p->rtime++;
         }
     }
+
     release(&ptable.lock);
 }
 

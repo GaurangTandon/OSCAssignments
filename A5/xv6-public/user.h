@@ -1,3 +1,4 @@
+struct proc_stat;
 struct stat;
 struct rtcdate;
 
@@ -24,7 +25,7 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 #ifdef MLFQ
-// int getpinfo(struct proc_stat*);
+int getpinfo(struct proc_stat*);
 #endif
 int waitx(int*, int*);
 int set_priority(int);

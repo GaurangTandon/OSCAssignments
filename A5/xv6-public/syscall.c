@@ -124,7 +124,7 @@ static int (*syscalls[])(void) = {
     [SYS_waitx] sys_waitx,
     [SYS_set_priority] sys_set_priority,
 #ifdef MLFQ
-    [SYS_getpinfo] getpinfo,
+    [SYS_getpinfo] sys_getpinfo,
 #endif
 };
 
