@@ -139,7 +139,6 @@ int getcmd(char *buf, int nbuf) {
 
 int main(void) {
     printf(1, "Scheduling policy: ");
-    printf(1, "default\n");
 #ifdef FCFS
     printf(1, "FCFS\n");
 #else
@@ -149,7 +148,7 @@ int main(void) {
 #ifdef MLFQ
     printf(1, "MLFQ\n");
 #else
-    printf(1, "Default\n");
+    printf(1, "default\n");
 #endif
 #endif
 #endif

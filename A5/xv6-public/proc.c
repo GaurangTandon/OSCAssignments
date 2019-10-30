@@ -414,7 +414,7 @@ void scheduler(void) {
 #else
 #ifdef PBS
         // and what about all that round robin thing??
-        struct proc *minPrioProc = NULL;
+        struct proc *minPrioProc = 0;
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state == RUNNABLE) {
                 if (minPrioProc) {

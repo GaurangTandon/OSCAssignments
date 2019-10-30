@@ -1,4 +1,4 @@
-// #define MLFQ
+#define PBS
 
 typedef unsigned int uint;
 typedef unsigned short ushort;

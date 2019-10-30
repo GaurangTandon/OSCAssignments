@@ -97,14 +97,12 @@ void trap(struct trapframe *tf) {
         exit();
 
 #ifdef FCFS
-// no yielding here
-#else
-#ifdef PBS
-
+        // no yielding here, let the previously running process prevail
 #else
 #ifdef MLFQ
-
+        // ??
 #else
+    // abhi ke liye pbs mein bhi context switches ho rahe hain
     // Force process to give up CPU on clock tick.
     // If interrupts were on while locks held, would need to check nlock.
     if (myproc() && myproc()->state == RUNNING &&
@@ -112,7 +110,7 @@ void trap(struct trapframe *tf) {
         yield();
 #endif
 #endif
-#endif
+
     // Check if the process has been killed since we yielded
     if (myproc() && myproc()->killed && (tf->cs & 3) == DPL_USER)
         exit();
