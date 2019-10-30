@@ -15,10 +15,12 @@ extern char end[];  // first address after kernel loaded from ELF file
 // Allocate a real stack and switch to it, first
 // doing some setup required for memory allocator to work.
 int main(void) {
-    // initialize the empty prioq array
+// initialize the empty prioq array
+#ifdef MLFQ
     for (int i = 0; i < PQ_COUNT; i++) {
         prioQSize[i] = 0;
     }
+#endif
 
     kinit1(end, P2V(4 * 1024 * 1024));  // phys page allocator
     kvmalloc();                         // kernel page table
