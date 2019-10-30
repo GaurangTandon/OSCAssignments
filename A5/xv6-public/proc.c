@@ -458,6 +458,8 @@ void scheduler(void) {
 #endif
 #endif
         if (alottedP) {
+            printf(1, "[SCHEDULER] scheduling process with pid %d on cpu %d\n",
+                   alottedP->pid, c->apicid);
             // Switch to chosen process.  It is the process's job
             // to release ptable.lock and then reacquire it
             // before jumping back to us.
