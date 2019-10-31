@@ -53,6 +53,7 @@ int sys_getpinfo(void) {
 
     ps->pid = p->pid;
     ps->runtime = p->rtime;
+    cprintf("called getpinfo?\n");
 
     return 0;
 }

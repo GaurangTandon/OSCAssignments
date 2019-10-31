@@ -360,30 +360,6 @@ int waitx(int *wtime, int *rtime) {
     }
 }
 
-// TODO, fix this?
-#ifdef MLFQ
-struct proc *findreadyprocess(int *index, uint *priority) {
-    int i;
-notfound:
-    for (i = 0; i < NPROC; i++) {
-        struct proc *proc2 = &ptable.proc[(*index + i) % NPROC];
-        if (proc2->state == RUNNABLE && proc2->priority == *priority) {
-            *index = (*index + 1 + i) % NPROC;
-            return proc2;  // found a runnable process with appropriate priority
-        }
-    }
-
-    if (*priority == 1) {  // did not find any process on any of the prorities
-        *priority = 3;
-        return 0;
-    } else {
-        *priority -= 1;  // will try to find a process at a lower priority
-        goto notfound;
-    }
-    return 0;
-}
-#endif
-
 // PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -446,6 +422,7 @@ void scheduler(void) {
                 alottedP = getFront(i);
                 break;
             }
+
             if (alottedP)
                 break;
         }
