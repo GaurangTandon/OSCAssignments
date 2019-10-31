@@ -360,6 +360,10 @@ int waitx(int *wtime, int *rtime) {
     }
 }
 
+int procIsDead(struct proc *p) {
+    return (p->killed || !p->pid);
+}
+
 // PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -414,9 +418,9 @@ void scheduler(void) {
 
         for (int i = 0; i < PQ_COUNT; i++) {
             while (prioQSize[i]) {
-                struct proc *p = popFront(i);
+                struct proc *p = getFront(i);
 
-                if (p->killed || !p->pid || p->state != RUNNABLE) {
+                if (procIsDead(p) || p->state != RUNNABLE) {
                     popFront(i);
                     continue;
                 }

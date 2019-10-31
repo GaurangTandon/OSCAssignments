@@ -106,8 +106,12 @@ void trap(struct trapframe *tf) {
 
     for (int i = 0, timeSlice = 1; i < PQ_COUNT; i++, timeSlice *= 2) {
         struct proc* pp2 = 0;
-        if (ticks % timeSlice == 0 && prioQ[i][0]) {
-            pp2 = popFront(i);
+
+        if (ticks % timeSlice == 0 && prioQSize[i]) {
+            struct proc* p = getFront(i);
+            if (!procIsDead(p) && p->state == RUNNING) {
+                pp2 = popFront(i);
+            }
         }
 
         if (prevProc) {
@@ -121,8 +125,9 @@ void trap(struct trapframe *tf) {
         pushBack(PQ_COUNT - 1, prevProc);
     }
 
-    // always yield in any case?
-    yield();
+// when am i supposed to yield?
+// always yield in any case creates trap 14 segfault
+//    yield();
 #else
     // abhi ke liye pbs mein bhi context switches ho rahe hain
     // Force process to give up CPU on clock tick.
