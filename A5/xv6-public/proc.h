@@ -58,8 +58,8 @@ struct proc {
     int rtime;                   // process ka total time
     int priority;                // process priority
 #ifdef MLFQ
-    int allotedQ;  // boolean denoting whether this proc was added to any queue
-                   // or not
+    int allotedQ;  // one indexed number of the queue where this process lies
+                   // right now
 #endif
 };
 

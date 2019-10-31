@@ -401,26 +401,27 @@ void scheduler(void) {
         }
 #else
 #ifdef MLFQ
-        cprintf("[SCHEDULER] lookng for processes\n");
+        // cprintf("[SCHEDULER] lookng for processes\n");
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state == RUNNABLE) {
                 if (!p->allotedQ) {
                     // put in highest prio q
                     p->allotedQ = 1;
                     pushBack(0, p);
-                    cprintf("seen proc %d ", p->pid);
+                    // cprintf("seen proc %d ", p->pid);
                 }
 
-                cprintf(" (%s)", p->name);
+                // cprintf(" (%s)", p->name);
             }
         }
-        cprintf("\n");
+        // cprintf("\n");
 
         for (int i = 0; i < PQ_COUNT; i++) {
             while (prioQSize[i]) {
                 struct proc *p = getFront(i);
 
                 if (procIsDead(p) || p->state != RUNNABLE) {
+                    p->allotedQ = 0;
                     popFront(i);
                     continue;
                 }
@@ -434,7 +435,7 @@ void scheduler(void) {
         }
 
         if (alottedP) {
-            cprintf("alotted proc %d\n", alottedP->pid);
+            cprintf("alotted proc %d (%s)\n", alottedP->pid, alottedP->name);
         }
 #else
 #ifdef PBS

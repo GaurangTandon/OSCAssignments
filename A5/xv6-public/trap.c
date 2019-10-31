@@ -102,32 +102,27 @@ void trap(struct trapframe *tf) {
         // no yielding here, let the previously running process prevail
 #else
 #ifdef MLFQ
-    struct proc* prevProc = 0;
+    struct proc* currp = myproc();
 
-    for (int i = 0, timeSlice = 1; i < PQ_COUNT; i++, timeSlice *= 2) {
-        struct proc* pp2 = 0;
+    int queueIdx = currp->allotedQ - 1;
 
-        if (ticks % timeSlice == 0 && prioQSize[i]) {
-            struct proc* p = getFront(i);
-            if (!procIsDead(p) && p->state == RUNNING) {
-                pp2 = popFront(i);
+    if (currp && currp->state == RUNNING && tf->trapno == T_IRQ0 + IRQ_TIMER) {
+        // do a round robin, my time slice is over
+        if (ticks % (1 << queueIdx) == 0) {
+            popFront(queueIdx);
+
+            if (queueIdx == PQ_COUNT - 1) {
+                pushBack(queueIdx, currp);
+            } else {
+                currp->allotedQ++;
+                pushBack(queueIdx + 1, currp);
             }
+
+            // this yield is creating a pagefault, need to figure out when to
+            // call this
+            yield();
         }
-
-        if (prevProc) {
-            pushBack(i, prevProc);
-        }
-
-        prevProc = pp2;
     }
-
-    if (prevProc) {
-        pushBack(PQ_COUNT - 1, prevProc);
-    }
-
-// when am i supposed to yield?
-// always yield in any case creates trap 14 segfault
-//    yield();
 #else
     // abhi ke liye pbs mein bhi context switches ho rahe hain
     // Force process to give up CPU on clock tick.
