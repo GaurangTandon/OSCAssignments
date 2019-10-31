@@ -151,7 +151,8 @@ void iderw(struct buf *b) {
 
     // Wait for request to finish.
     while ((b->flags & (B_VALID | B_DIRTY)) != B_VALID) {
-        cprintf("[IDERW] sleeping\n");
+        if (DEBUG)
+            cprintf("[IDERW] sleeping\n");
         sleep(b, &idelock);
     }
 

@@ -270,7 +270,8 @@ void exit(void) {
 
     // Jump into the scheduler, never to return.
     curproc->state = ZOMBIE;
-    cprintf("[EXIT] exited proc %d\n", curproc->pid);
+    if (DEBUG)
+        cprintf("[EXIT] exited proc %d\n", curproc->pid);
     sched();
     panic("zombie exit");
 }
@@ -313,7 +314,8 @@ int wait(void) {
             return -1;
         }
 
-        cprintf("[WAIT]ing for children to exit\n");
+        if (DEBUG)
+            cprintf("[WAIT]ing for children to exit\n");
         // Wait for children to exit.  (See wakeup1 call in proc_exit.)
         sleep(curproc, &ptable.lock);  // DOC: wait-sleep
     }
@@ -427,6 +429,7 @@ void scheduler(void) {
         }
 #else
 #ifdef MLFQ
+        cprintf("[SCHEDULER] lookng for processes\n");
         for (int i = 0; i < PQ_COUNT; i++) {
             while (prioQSize[i]) {
                 if (getFront(i)->killed || getFront(i)->pid == 0) {
@@ -468,8 +471,9 @@ void scheduler(void) {
 #endif
 #endif
         if (alottedP) {
-            cprintf("[SCHEDULER] process with pid %d on cpu %d\n",
-                    alottedP->pid, c->apicid);
+            if (DEBUG)
+                cprintf("[SCHEDULER] process with pid %d on cpu %d\n",
+                        alottedP->pid, c->apicid);
             // Switch to chosen process.  It is the process's job
             // to release ptable.lock and then reacquire it
             // before jumping back to us.
@@ -511,9 +515,11 @@ void sched(void) {
         panic("sched interruptible");
     intena = mycpu()->intena;
     struct cpu *c = mycpu();
-    cprintf(
-        "[SCHED] Switching from context of proc %d (%s) to cpu scheduler %d\n",
-        p->pid, p->name, c->apicid);
+    if (DEBUG)
+        cprintf(
+            "[SCHED] Switching from context of proc %d (%s) to cpu scheduler "
+            "%d\n",
+            p->pid, p->name, c->apicid);
     swtch(&p->context, c->scheduler);
     mycpu()->intena = intena;
 }
@@ -573,7 +579,8 @@ void sleep(void *chan, struct spinlock *lk) {
     p->chan = chan;
     p->state = SLEEPING;
 
-    cprintf("[SLEEP] sleeping on proc %d\n", p->pid);
+    if (DEBUG)
+        cprintf("[SLEEP] sleeping on proc %d\n", p->pid);
     sched();
 
     // Tidy up.
