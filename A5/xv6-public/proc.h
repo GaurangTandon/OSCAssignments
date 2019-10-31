@@ -83,6 +83,8 @@ struct proc_stat {
 };
 #define PQ_COUNT 5
 #define MAX_PROC_COUNT 100
+// this priority queue holds all runnable process
+// it is changed every time scheduler runs
 struct proc *prioQ[PQ_COUNT][MAX_PROC_COUNT];
 int prioQSize[PQ_COUNT];
 struct proc *getFront(int qIdx);

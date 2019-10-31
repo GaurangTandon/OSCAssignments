@@ -414,18 +414,21 @@ void scheduler(void) {
 
         for (int i = 0; i < PQ_COUNT; i++) {
             while (prioQSize[i]) {
-                if (getFront(i)->killed || getFront(i)->pid == 0) {
+                struct proc *p = popFront(i);
+
+                if (p->killed || !p->pid || p->state != RUNNABLE) {
                     popFront(i);
                     continue;
                 }
 
-                alottedP = getFront(i);
+                alottedP = p;
                 break;
             }
 
             if (alottedP)
                 break;
         }
+
         if (alottedP) {
             cprintf("alotted proc %d\n", alottedP->pid);
         }
