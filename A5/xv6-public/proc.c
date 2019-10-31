@@ -423,12 +423,18 @@ void scheduler(void) {
 #ifdef MLFQ
         cprintf("[SCHEDULER] lookng for processes\n");
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-            if (!p->allotedQ) {
-                // put in highest prio q
-                p->allotedQ = 1;
-                pushBack(0, p);
+            if (p->state == RUNNABLE) {
+                if (!p->allotedQ) {
+                    // put in highest prio q
+                    p->allotedQ = 1;
+                    pushBack(0, p);
+                    cprintf("seen proc %d ", p->pid);
+                }
+
+                cprintf(" (%s)", p->name);
             }
         }
+        cprintf("\n");
 
         for (int i = 0; i < PQ_COUNT; i++) {
             while (prioQSize[i]) {
@@ -438,10 +444,14 @@ void scheduler(void) {
                 }
 
                 alottedP = getFront(i);
-                goto end;
+                break;
             }
+            if (alottedP)
+                break;
         }
-    end:;
+        if (alottedP) {
+            cprintf("alotted proc %d\n", alottedP->pid);
+        }
 #else
 #ifdef PBS
         // and what about all that round robin thing??
