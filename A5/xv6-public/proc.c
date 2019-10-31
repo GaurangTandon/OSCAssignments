@@ -110,10 +110,6 @@ found:
     p->etime = -1;
 #ifdef PBS
     p->priority = DEFAULT_PRIORITY;
-#else
-#ifdef MLFQ
-    pushBack(0, p);
-#endif
 #endif
 
     return p;
@@ -205,10 +201,6 @@ int fork(void) {
     np->etime = -1;
 #ifdef PBS
     np->priority = DEFAULT_PRIORITY;
-#else
-#ifdef MLFQ
-    pushBack(0, np);
-#endif
 #endif
 
     for (i = 0; i < NOFILE; i++)
@@ -430,6 +422,14 @@ void scheduler(void) {
 #else
 #ifdef MLFQ
         cprintf("[SCHEDULER] lookng for processes\n");
+        for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+            if (!p->allotedQ) {
+                // put in highest prio q
+                p->allotedQ = 1;
+                pushBack(0, p);
+            }
+        }
+
         for (int i = 0; i < PQ_COUNT; i++) {
             while (prioQSize[i]) {
                 if (getFront(i)->killed || getFront(i)->pid == 0) {
@@ -693,14 +693,17 @@ struct proc *popFront(int qIdx) {
     if (!prioQSize[qIdx]) {
         panic("empty stack");
     }
+
     struct proc *p = getFront(qIdx);
     deleteIdx(qIdx, 0);
     return p;
 }
+
 void pushBack(int qIdx, struct proc *p) {
-    ++prioQSize[qIdx];
     prioQ[qIdx][prioQSize[qIdx]] = p;
+    ++prioQSize[qIdx];
 }
+
 void deleteIdx(int qIdx, int idx) {
     prioQSize[qIdx]--;
     prioQ[qIdx][idx] = 0;

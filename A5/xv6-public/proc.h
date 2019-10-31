@@ -57,6 +57,10 @@ struct proc {
     int etime;                   // process ka end time
     int rtime;                   // process ka total time
     int priority;                // process priority
+#ifdef MLFQ
+    int allotedQ;  // boolean denoting whether this proc was added to any queue
+                   // or not
+#endif
 };
 
 // Process memory is laid out contiguously, low addresses first:

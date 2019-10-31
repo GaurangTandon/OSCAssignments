@@ -1,4 +1,4 @@
-#define FCFS
+#define MLFQ
 #define DEBUG 0
 
 typedef unsigned int uint;
