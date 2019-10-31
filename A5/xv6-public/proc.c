@@ -110,6 +110,10 @@ found:
     p->etime = -1;
 #ifdef PBS
     p->priority = DEFAULT_PRIORITY;
+#else
+#ifdef MLFQ
+    pushBack(0, p);
+#endif
 #endif
 
     return p;
@@ -201,6 +205,10 @@ int fork(void) {
     np->etime = -1;
 #ifdef PBS
     np->priority = DEFAULT_PRIORITY;
+#else
+#ifdef MLFQ
+    pushBack(0, np);
+#endif
 #endif
 
     for (i = 0; i < NOFILE; i++)
@@ -460,7 +468,7 @@ void scheduler(void) {
 #endif
 #endif
         if (alottedP) {
-            cprintf("[SCHEDULER] scheduling process with pid %d on cpu %d\n",
+            cprintf("[SCHEDULER] process with pid %d on cpu %d\n",
                     alottedP->pid, c->apicid);
             // Switch to chosen process.  It is the process's job
             // to release ptable.lock and then reacquire it
@@ -502,9 +510,11 @@ void sched(void) {
     if (readeflags() & FL_IF)
         panic("sched interruptible");
     intena = mycpu()->intena;
-    cprintf("[SCHED] Switching from context of proc %d (%s) to cpu scheduler\n",
-            p->pid, p->name);
-    swtch(&p->context, mycpu()->scheduler);
+    struct cpu *c = mycpu();
+    cprintf(
+        "[SCHED] Switching from context of proc %d (%s) to cpu scheduler %d\n",
+        p->pid, p->name, c->apicid);
+    swtch(&p->context, c->scheduler);
     mycpu()->intena = intena;
 }
 
