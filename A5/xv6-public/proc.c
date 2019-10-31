@@ -262,6 +262,7 @@ void exit(void) {
 
     // Jump into the scheduler, never to return.
     curproc->state = ZOMBIE;
+    cprintf("[EXIT] exited proc %d\n", curproc->pid);
     sched();
     panic("zombie exit");
 }
@@ -304,6 +305,7 @@ int wait(void) {
             return -1;
         }
 
+        cprintf("[WAIT]ing for children to exit\n");
         // Wait for children to exit.  (See wakeup1 call in proc_exit.)
         sleep(curproc, &ptable.lock);  // DOC: wait-sleep
     }
@@ -458,8 +460,8 @@ void scheduler(void) {
 #endif
 #endif
         if (alottedP) {
-            printf(1, "[SCHEDULER] scheduling process with pid %d on cpu %d\n",
-                   alottedP->pid, c->apicid);
+            cprintf("[SCHEDULER] scheduling process with pid %d on cpu %d\n",
+                    alottedP->pid, c->apicid);
             // Switch to chosen process.  It is the process's job
             // to release ptable.lock and then reacquire it
             // before jumping back to us.
@@ -500,6 +502,8 @@ void sched(void) {
     if (readeflags() & FL_IF)
         panic("sched interruptible");
     intena = mycpu()->intena;
+    cprintf("[SCHED] Switching from context of proc %d (%s) to cpu scheduler\n",
+            p->pid, p->name);
     swtch(&p->context, mycpu()->scheduler);
     mycpu()->intena = intena;
 }
@@ -507,7 +511,9 @@ void sched(void) {
 // Give up the CPU for one scheduling round.
 void yield(void) {
     acquire(&ptable.lock);  // DOC: yieldlock
-    myproc()->state = RUNNABLE;
+    struct proc *p = myproc();
+    cprintf("[YIELD] proc %d yielded\n", p->pid);
+    p->state = RUNNABLE;
     sched();
     release(&ptable.lock);
 }
@@ -552,10 +558,12 @@ void sleep(void *chan, struct spinlock *lk) {
         acquire(&ptable.lock);  // DOC: sleeplock1
         release(lk);
     }
+
     // Go to sleep.
     p->chan = chan;
     p->state = SLEEPING;
 
+    cprintf("[SLEEP] sleeping on proc %d\n", p->pid);
     sched();
 
     // Tidy up.
