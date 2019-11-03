@@ -384,6 +384,8 @@ void scheduler(void) {
         // Loop over process table looking for process to run.
         acquire(&ptable.lock);
 
+        // cprintf("[SCHEDULER] lookng for processes\n");
+
 #ifdef FCFS
         struct proc *minctimeProc = 0;
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
@@ -391,8 +393,9 @@ void scheduler(void) {
                 if (minctimeProc) {
                     if (p->ctime < minctimeProc->ctime)
                         minctimeProc = p;
-                } else
+                } else {
                     minctimeProc = p;
+                }
             }
         }
 
@@ -401,7 +404,6 @@ void scheduler(void) {
         }
 #else
 #ifdef MLFQ
-        // cprintf("[SCHEDULER] lookng for processes\n");
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state == RUNNABLE) {
                 if (!p->allotedQ) {
@@ -411,10 +413,11 @@ void scheduler(void) {
                     // cprintf("seen proc %d ", p->pid);
                 }
 
-                // cprintf(" (%s)", p->name);
+                cprintf(" (%s)", p->name);
             }
         }
-        // cprintf("\n");
+
+        cprintf("\n");
 
         for (int i = 0; i < PQ_COUNT; i++) {
             while (prioQSize[i]) {
@@ -423,26 +426,26 @@ void scheduler(void) {
                 if (procIsDead(p) || p->state != RUNNABLE) {
                     p->allotedQ = 0;
                     popFront(i);
-                    continue;
+                } else {
+                    alottedP = p;
+                    break;
                 }
-
-                alottedP = p;
-                break;
             }
 
             if (alottedP)
                 break;
         }
-
-        if (alottedP) {
-            cprintf("alotted proc %d (%s)\n", alottedP->pid, alottedP->name);
-        }
 #else
 #ifdef PBS
         // and what about all that round robin thing??
         struct proc *minPrioProc = 0;
+
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state == RUNNABLE) {
+                if (p->pid == 3) {
+                    p->priority = 0;
+                }
+
                 if (minPrioProc) {
                     if (p->priority < minPrioProc->priority)
                         minPrioProc = p;
@@ -466,9 +469,6 @@ void scheduler(void) {
 #endif
 #endif
         if (alottedP) {
-            if (DEBUG)
-                cprintf("[SCHEDULER] process with pid %d on cpu %d\n",
-                        alottedP->pid, c->apicid);
             // Switch to chosen process.  It is the process's job
             // to release ptable.lock and then reacquire it
             // before jumping back to us.
@@ -477,6 +477,11 @@ void scheduler(void) {
 
             alottedP->state = RUNNING;
             swtch(&(c->scheduler), alottedP->context);
+            cprintf("[SCHEDULER] process %s pid %d on cpu %d\n", alottedP->name,
+                    alottedP->pid, c->apicid);
+
+            if (DEBUG)
+                cprintf("Back :)");
 
             switchkvm();
 
@@ -523,7 +528,7 @@ void sched(void) {
 void yield(void) {
     acquire(&ptable.lock);  // DOC: yieldlock
     struct proc *p = myproc();
-    cprintf("[YIELD] proc %d yielded\n", p->pid);
+    // cprintf("[YIELD] proc %d yielded\n", p->pid);
     p->state = RUNNABLE;
     sched();
     release(&ptable.lock);

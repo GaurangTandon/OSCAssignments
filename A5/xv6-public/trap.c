@@ -97,7 +97,6 @@ void trap(struct trapframe *tf) {
     // until it gets to the regular system call return.)
     if (myproc() && myproc()->killed && (tf->cs & 3) == DPL_USER)
         exit();
-
 #ifdef FCFS
         // no yielding here, let the previously running process prevail
 #else
@@ -107,6 +106,7 @@ void trap(struct trapframe *tf) {
     int queueIdx = currp->allotedQ - 1;
 
     if (currp && currp->state == RUNNING && tf->trapno == T_IRQ0 + IRQ_TIMER) {
+        cprintf("[TRAP] %d %s\n", currp->pid, currp->name);
         // do a round robin, my time slice is over
         if (ticks % (1 << queueIdx) == 0) {
             popFront(queueIdx);
