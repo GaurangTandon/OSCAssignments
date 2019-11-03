@@ -6,7 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
-
+static unsigned long X = 0;
 struct {
     struct spinlock lock;
     struct proc proc[NPROC];
@@ -59,6 +59,16 @@ struct proc *myproc(void) {
     return p;
 }
 
+int random(int M) {
+    unsigned long a = 1103515245, c = 12345;
+    X = a * X + c;
+    return (((unsigned int)(X / 65536)) % 32768) % M + 1;
+}
+
+int ifMeraProc(struct proc *p) {
+    return p->pid > 2;
+}
+
 // PAGEBREAK: 32
 // Look in the process table for an UNUSED proc.
 // If found, change state to EMBRYO and initialize
@@ -109,7 +119,11 @@ found:
     p->rtime = 0;
     p->etime = -1;
 #ifdef PBS
-    p->priority = DEFAULT_PRIORITY;
+    if (ifMeraProc(p)) {
+        p->priority = ticks % 100;
+    } else {
+        p->priority = DEFAULT_PRIORITY;
+    }
 #endif
 
     return p;
@@ -177,12 +191,15 @@ int timeToPreempt(int prio) {
         if (p->state != RUNNABLE)
             continue;
         if (p->priority < prio) {
+            release(&ptable.lock);
             return 1;
         }
         if (p->priority == prio) {
             c++;
-            if (c == 2)
+            if (c == 2) {
+                release(&ptable.lock);
                 return 1;
+            }
         }
     }
     release(&ptable.lock);
@@ -219,7 +236,10 @@ int fork(void) {
     np->rtime = 0;
     np->etime = -1;
 #ifdef PBS
-    np->priority = DEFAULT_PRIORITY;
+    if (ifMeraProc(np)) {
+        np->priority = random(ticks) % 101;
+    } else
+        np->priority = DEFAULT_PRIORITY;
 #endif
 
     for (i = 0; i < NOFILE; i++)
@@ -459,12 +479,13 @@ void scheduler(void) {
         // and what about all that round robin thing??
         struct proc *minPrioProc = 0;
 
+        int a = 0;
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state == RUNNABLE) {
-                if (p->pid == 3) {
-                    p->priority = 0;
+                if (ifMeraProc(myproc())) {
+                    a = 1;
+                    cprintf("%d (%d) ", p->pid, p->priority);
                 }
-
                 if (minPrioProc) {
                     if (p->priority < minPrioProc->priority)
                         minPrioProc = p;
@@ -472,6 +493,9 @@ void scheduler(void) {
                     minPrioProc = p;
             }
         }
+
+        if (a)
+            cprintf("\n");
 
         if (minPrioProc) {
             alottedP = minPrioProc;

@@ -12,6 +12,9 @@ int sys_fork(void) {
 }
 
 int sys_exit(void) {
+#ifdef PBS
+    cprintf("exit %d\n", myproc()->pid);
+#endif
     exit();
     return 0;  // not reached
 }
