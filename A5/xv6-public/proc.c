@@ -170,6 +170,25 @@ int growproc(int n) {
     return 0;
 }
 
+int timeToPreempt(int prio) {
+    int c = 0;
+    acquire(&ptable.lock);
+    for (struct proc *p = ptable.proc; p <= &ptable.proc[NPROC]; p++) {
+        if (p->state != RUNNABLE)
+            continue;
+        if (p->priority < prio) {
+            return 1;
+        }
+        if (p->priority == prio) {
+            c++;
+            if (c == 2)
+                return 1;
+        }
+    }
+    release(&ptable.lock);
+    return 0;
+}
+
 // Create a new process copying p as the parent.
 // Sets up stack to return as if from system call.
 // Caller must set state of returned proc to RUNNABLE.
@@ -477,8 +496,9 @@ void scheduler(void) {
 
             alottedP->state = RUNNING;
             swtch(&(c->scheduler), alottedP->context);
-            cprintf("[SCHEDULER] process %s pid %d on cpu %d\n", alottedP->name,
-                    alottedP->pid, c->apicid);
+            cprintf("[SCHEDULER] process %s pid %d on cpu %d and prio %d\n",
+                    alottedP->name, alottedP->pid, c->apicid,
+                    alottedP->priority);
 
             if (DEBUG)
                 cprintf("Back :)");

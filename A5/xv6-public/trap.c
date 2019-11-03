@@ -124,12 +124,21 @@ void trap(struct trapframe *tf) {
         }
     }
 #else
+#ifdef PBS
+    if (myproc() && myproc()->state == RUNNING &&
+        tf->trapno == T_IRQ0 + IRQ_TIMER) {
+        if (timeToPreempt(myproc()->priority)) {
+            yield();
+        }
+    }
+#else
     // abhi ke liye pbs mein bhi context switches ho rahe hain
     // Force process to give up CPU on clock tick.
     // If interrupts were on while locks held, would need to check nlock.
     if (myproc() && myproc()->state == RUNNING &&
         tf->trapno == T_IRQ0 + IRQ_TIMER)
         yield();
+#endif
 #endif
 #endif
 

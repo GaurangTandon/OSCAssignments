@@ -1,4 +1,4 @@
-#define MLFQ
+#define PBS
 #define DEBUG 0
 
 typedef unsigned int uint;
