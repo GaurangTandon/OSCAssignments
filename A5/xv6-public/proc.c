@@ -66,7 +66,7 @@ int random(int M) {
 }
 
 int ifMeraProc(struct proc *p) {
-    return p->pid > 2;
+    return p && p->pid > 2;
 }
 
 // PAGEBREAK: 32
