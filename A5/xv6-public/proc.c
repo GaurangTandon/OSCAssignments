@@ -735,8 +735,9 @@ int set_prio(int newPriority) {
 
 #ifdef MLFQ
 struct proc *getFront(int qIdx) {
-    return prioQ[qIdx][0];
+    return prioQ[qIdx][prioQStart[qIdx]];
 }
+
 struct proc *popFront(int qIdx) {
     if (!prioQSize[qIdx]) {
         cprintf("%d\n", qIdx);
@@ -745,7 +746,7 @@ struct proc *popFront(int qIdx) {
 
     struct proc *p = getFront(qIdx);
     cprintf("Removed process %s %d from queue %d\n", p->name, p->pid, qIdx);
-    deleteIdx(qIdx, 0);
+    prioQStart[qIdx]++;
     return p;
 }
 
@@ -767,7 +768,7 @@ void incPrio(int queueIdx, int qPos) {
     struct proc *currp = prioQ[queueIdx][qPos];
     deleteIdx(queueIdx, qPos);
 
-    if (queueIdx == 0) {
+    if (queueIdx == HIGHEST_PRIO_Q) {
         currp->allotedQ[1] = prioQSize[queueIdx];
         pushBack(queueIdx, currp);
     } else {

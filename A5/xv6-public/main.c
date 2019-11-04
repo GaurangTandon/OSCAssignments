@@ -19,6 +19,7 @@ int main(void) {
 #ifdef MLFQ
     for (int i = 0; i < PQ_COUNT; i++) {
         prioQSize[i] = 0;
+        prioQStart[i] = 0;
     }
 #endif
 
