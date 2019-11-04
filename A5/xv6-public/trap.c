@@ -29,9 +29,10 @@ void idtinit(void) {
 }
 
 // PAGEBREAK: 41
+// anywhere before dereferencing myproc(), check if it is not null
 void trap(struct trapframe *tf) {
     if (tf->trapno == T_SYSCALL) {
-        if (myproc()->killed)
+        if (!myproc() || myproc()->killed)
             exit();
         myproc()->tf = tf;
         syscall();
@@ -103,7 +104,7 @@ void trap(struct trapframe *tf) {
 #ifdef MLFQ
     struct proc* currp = myproc();
 
-    int queueIdx = currp->allotedQ - 1;
+    int queueIdx = currp->allotedQ[0] - 1;
 
     if (currp && currp->state == RUNNING && tf->trapno == T_IRQ0 + IRQ_TIMER) {
         cprintf("[TRAP] %d %s\n", currp->pid, currp->name);
@@ -112,9 +113,11 @@ void trap(struct trapframe *tf) {
             popFront(queueIdx);
 
             if (queueIdx == PQ_COUNT - 1) {
+                currp->allotedQ[1] = prioQSize[queueIdx];
                 pushBack(queueIdx, currp);
             } else {
-                currp->allotedQ++;
+                currp->allotedQ[0]++;
+                currp->allotedQ[1] = prioQSize[queueIdx + 1];
                 pushBack(queueIdx + 1, currp);
             }
 

@@ -418,8 +418,11 @@ void scheduler(void) {
     for (;;) {
         struct proc *alottedP = 0;
 
+        cprintf("Enabling interrupts on this cpu\n");
         // Enable interrupts on this processor.
-        sti();
+        if (myproc() && myproc()->pid != 0) {
+            sti();
+        }
         // Loop over process table looking for process to run.
         acquire(&ptable.lock);
 
@@ -445,9 +448,10 @@ void scheduler(void) {
 #ifdef MLFQ
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state == RUNNABLE) {
-                if (!p->allotedQ) {
+                if (!p->allotedQ[0]) {
                     // put in highest prio q
-                    p->allotedQ = 1;
+                    p->allotedQ[0] = 1;
+                    p->allotedQ[1] = prioQSize[0];
                     pushBack(0, p);
                     // cprintf("seen proc %d ", p->pid);
                 }
@@ -463,7 +467,7 @@ void scheduler(void) {
                 struct proc *p = getFront(i);
 
                 if (procIsDead(p) || p->state != RUNNABLE) {
-                    p->allotedQ = 0;
+                    p->allotedQ[0] = 0;
                     popFront(i);
                 } else {
                     alottedP = p;
