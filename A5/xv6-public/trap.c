@@ -17,8 +17,7 @@ uint ticks;
 void tvinit(void) {
     int i;
 
-    for (i = 0; i < 256; i++)
-        SETGATE(idt[i], 0, SEG_KCODE << 3, vectors[i], 0);
+    for (i = 0; i < 256; i++) SETGATE(idt[i], 0, SEG_KCODE << 3, vectors[i], 0);
     SETGATE(idt[T_SYSCALL], 1, SEG_KCODE << 3, vectors[T_SYSCALL], DPL_USER);
 
     initlock(&tickslock, "time");
@@ -74,7 +73,7 @@ void trap(struct trapframe *tf) {
             lapiceoi();
             break;
 
-        // PAGEBREAK: 13
+            // PAGEBREAK: 13
         default:
             if (myproc() == 0 || (tf->cs & 3) == 0) {
                 if (myproc() == 0)
@@ -86,10 +85,10 @@ void trap(struct trapframe *tf) {
             }
             // In user space, assume process misbehaved.
             cprintf(
-                "pid %d %s: trap %d err %d on cpu %d "
-                "eip 0x%x addr 0x%x--kill proc\n",
-                myproc()->pid, myproc()->name, tf->trapno, tf->err, cpuid(),
-                tf->eip, rcr2());
+                    "pid %d %s: trap %d err %d on cpu %d "
+                    "eip 0x%x addr 0x%x--kill proc\n",
+                    myproc()->pid, myproc()->name, tf->trapno, tf->err, cpuid(),
+                    tf->eip, rcr2());
             myproc()->killed = 1;
     }
 
@@ -99,7 +98,7 @@ void trap(struct trapframe *tf) {
     if (myproc() && myproc()->killed && (tf->cs & 3) == DPL_USER)
         exit();
 #ifdef FCFS
-        // no yielding here, let the previously running process prevail
+    // no yielding here, let the previously running process prevail
 #else
 #ifdef MLFQ
     struct proc* currp = myproc();

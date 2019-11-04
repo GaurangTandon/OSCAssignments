@@ -418,11 +418,8 @@ void scheduler(void) {
     for (;;) {
         struct proc *alottedP = 0;
 
-        cprintf("Enabling interrupts on this cpu\n");
         // Enable interrupts on this processor.
-        if (myproc() && myproc()->pid != 0) {
-            sti();
-        }
+        sti();
         // Loop over process table looking for process to run.
         acquire(&ptable.lock);
 
