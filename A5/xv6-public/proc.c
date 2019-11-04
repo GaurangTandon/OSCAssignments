@@ -400,7 +400,7 @@ int waitx(int *wtime, int *rtime) {
 }
 
 int procIsDead(struct proc *p) {
-    return (p->killed || !p->pid);
+    return (!p || p->killed || !p->pid);
 }
 
 // PAGEBREAK: 42
@@ -467,8 +467,9 @@ void scheduler(void) {
             while (prioQSize[i]) {
                 struct proc *p = getFront(i);
 
-                if (procIsDead(p) || p->state != RUNNABLE) {
+                if (procIsDead(p)) {
                     p->allotedQ[0] = 0;
+                    p->allotedQ[1] = 0;
                     popFront(i);
                 } else {
                     alottedP = p;
@@ -525,9 +526,10 @@ void scheduler(void) {
 
             alottedP->state = RUNNING;
             swtch(&(c->scheduler), alottedP->context);
-            cprintf("[SCHEDULER] process %s pid %d on cpu %d and prio %d\n",
-                    alottedP->name, alottedP->pid, c->apicid,
-                    alottedP->priority);
+            if (ifMeraProc(alottedP))
+                cprintf("[SCHEDULER] process %s pid %d on cpu %d and prio %d\n",
+                        alottedP->name, alottedP->pid, c->apicid,
+                        alottedP->priority);
 
             switchkvm();
 
@@ -737,6 +739,7 @@ struct proc *getFront(int qIdx) {
 }
 struct proc *popFront(int qIdx) {
     if (!prioQSize[qIdx]) {
+        cprintf("%d\n", qIdx);
         panic("empty stack");
     }
 
@@ -757,6 +760,34 @@ void deleteIdx(int qIdx, int idx) {
     prioQ[qIdx][idx] = 0;
     for (int i = idx; i < prioQSize[qIdx]; i++) {
         prioQ[qIdx][i] = prioQ[qIdx][i + 1];
+    }
+}
+
+void incPrio(int queueIdx, int qPos) {
+    struct proc *currp = prioQ[queueIdx][qPos];
+    deleteIdx(queueIdx, qPos);
+
+    if (queueIdx == 0) {
+        currp->allotedQ[1] = prioQSize[queueIdx];
+        pushBack(queueIdx, currp);
+    } else {
+        currp->allotedQ[0]--;
+        currp->allotedQ[1] = prioQSize[queueIdx - 1];
+        pushBack(queueIdx - 1, currp);
+    }
+}
+void decPrio(int queueIdx) {
+    popFront(queueIdx);
+
+    struct proc *currp = getFront(queueIdx);
+
+    if (queueIdx == PQ_COUNT - 1) {
+        currp->allotedQ[1] = prioQSize[queueIdx];
+        pushBack(queueIdx, currp);
+    } else {
+        currp->allotedQ[0]++;
+        currp->allotedQ[1] = prioQSize[queueIdx + 1];
+        pushBack(queueIdx + 1, currp);
     }
 }
 #endif

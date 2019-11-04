@@ -105,23 +105,13 @@ void trap(struct trapframe *tf) {
     struct proc* currp = myproc();
 
     if (currp && tf->trapno == T_IRQ0 + IRQ_TIMER) {
-        int queueIdx = currp->allotedQ[0];
+        int queueIdx = currp->allotedQ[0] - 1;
 
         switch (currp->state) {
             case RUNNING:
                 // do a round robin, my time slice is over
                 if (ticks % (1 << queueIdx) == 0) {
-                    popFront(queueIdx);
-
-                    if (queueIdx == PQ_COUNT - 1) {
-                        currp->allotedQ[1] = prioQSize[queueIdx];
-                        pushBack(queueIdx, currp);
-                    } else {
-                        currp->allotedQ[0]++;
-                        currp->allotedQ[1] = prioQSize[queueIdx + 1];
-                        pushBack(queueIdx + 1, currp);
-                    }
-
+                    decPrio(queueIdx);
                     // this yield is creating a pagefault, need to figure out
                     // when to call this
                     yield();
@@ -129,7 +119,8 @@ void trap(struct trapframe *tf) {
                 break;
             case RUNNABLE:
                 if (ticks - currp->prevTime > WAIT_LIMIT) {
-                    // increment queue
+                    currp->prevTime = ticks;
+                    incPrio(queueIdx, currp->allotedQ[1]);
                 }
                 break;
             case UNUSED:

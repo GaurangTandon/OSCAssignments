@@ -94,6 +94,8 @@ struct proc *getFront(int qIdx);
 struct proc *popFront(int qIdx);
 void pushBack(int qIdx, struct proc *p);
 void deleteIdx(int qIdx, int idx);
+void decPrio(int queueIdx);
+void incPrio(int queueIdx, int qPos);
 #endif
 
 int procIsDead(struct proc *p);
