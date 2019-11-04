@@ -448,8 +448,6 @@ void scheduler(void) {
             if (p->state == RUNNABLE) {
                 if (!p->allotedQ[0]) {
                     // put in highest priority queue
-                    p->allotedQ[0] = 1;
-                    p->allotedQ[1] = prioQSize[0];
                     pushBack(0, p);
                 }
 
@@ -735,33 +733,50 @@ int set_prio(int newPriority) {
 
 #ifdef MLFQ
 struct proc *getFront(int qIdx) {
+    if (!prioQSize[qIdx]) {
+        cprintf("queue %d\n", qIdx);
+        panic("Getting front of empty queue");
+    }
     return prioQ[qIdx][prioQStart[qIdx]];
 }
 
 struct proc *popFront(int qIdx) {
     if (!prioQSize[qIdx]) {
-        cprintf("%d\n", qIdx);
-        panic("empty stack");
+        cprintf("queue %d\n", qIdx);
+        panic("Empty stack, cannot pop");
     }
 
     struct proc *p = getFront(qIdx);
     cprintf("Removed process %s %d from queue %d\n", p->name, p->pid, qIdx);
     prioQStart[qIdx]++;
+    prioQSize[qIdx]--;
     return p;
+}
+
+// index used to insert new elements into the queue
+int backIndex(int qIdx) {
+    return prioQStart[qIdx] + prioQSize[qIdx];
 }
 
 void pushBack(int qIdx, struct proc *p) {
     cprintf("Added process %s %d to queue %d\n", p->name, p->pid, qIdx);
-    prioQ[qIdx][prioQSize[qIdx]] = p;
+    p->allotedQ[0] = qIdx + 1;  // one-indexed
+    p->allotedQ[1] = backIndex(qIdx);
+    prioQ[qIdx][p->allotedQ[1]] = p;
     ++prioQSize[qIdx];
 }
 
 void deleteIdx(int qIdx, int idx) {
-    prioQSize[qIdx]--;
+    if (!prioQ[qIdx][idx]) {
+        cprintf("queue %d idx %d\n", qIdx, idx);
+        panic("Already deleted index");
+    }
+
     prioQ[qIdx][idx] = 0;
-    for (int i = idx; i < prioQSize[qIdx]; i++) {
+    for (int i = idx; i < backIndex(qIdx); i++) {
         prioQ[qIdx][i] = prioQ[qIdx][i + 1];
     }
+    prioQSize[qIdx]--;
 }
 
 void incPrio(int queueIdx, int qPos) {
@@ -769,26 +784,19 @@ void incPrio(int queueIdx, int qPos) {
     deleteIdx(queueIdx, qPos);
 
     if (queueIdx == HIGHEST_PRIO_Q) {
-        currp->allotedQ[1] = prioQSize[queueIdx];
         pushBack(queueIdx, currp);
     } else {
-        currp->allotedQ[0]--;
-        currp->allotedQ[1] = prioQSize[queueIdx - 1];
         pushBack(queueIdx - 1, currp);
     }
 }
 
 void decPrio(int queueIdx) {
     struct proc *currp = getFront(queueIdx);
-
     popFront(queueIdx);
 
     if (queueIdx == PQ_COUNT - 1) {
-        currp->allotedQ[1] = prioQSize[queueIdx];
         pushBack(queueIdx, currp);
     } else {
-        currp->allotedQ[0]++;
-        currp->allotedQ[1] = prioQSize[queueIdx + 1];
         pushBack(queueIdx + 1, currp);
     }
 }
