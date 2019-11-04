@@ -526,7 +526,7 @@ void scheduler(void) {
 
             alottedP->state = RUNNING;
             swtch(&(c->scheduler), alottedP->context);
-            if (ifMeraProc(alottedP))
+            if ((alottedP->pid > 1))
                 cprintf("[SCHEDULER] process %s pid %d on cpu %d and prio %d\n",
                         alottedP->name, alottedP->pid, c->apicid,
                         alottedP->priority);
@@ -776,10 +776,11 @@ void incPrio(int queueIdx, int qPos) {
         pushBack(queueIdx - 1, currp);
     }
 }
-void decPrio(int queueIdx) {
-    popFront(queueIdx);
 
+void decPrio(int queueIdx) {
     struct proc *currp = getFront(queueIdx);
+
+    popFront(queueIdx);
 
     if (queueIdx == PQ_COUNT - 1) {
         currp->allotedQ[1] = prioQSize[queueIdx];

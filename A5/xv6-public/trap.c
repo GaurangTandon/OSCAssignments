@@ -107,6 +107,11 @@ void trap(struct trapframe *tf) {
     if (currp && tf->trapno == T_IRQ0 + IRQ_TIMER) {
         int queueIdx = currp->allotedQ[0] - 1;
 
+        if (queueIdx < 0) {
+            cprintf("%d %d\n", queueIdx, currp->pid);
+            panic("Invalid queue allotment");
+        }
+
         switch (currp->state) {
             case RUNNING:
                 // do a round robin, my time slice is over
