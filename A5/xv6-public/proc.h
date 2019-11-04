@@ -83,7 +83,9 @@ struct proc_stat {
                    // priority queue
 };
 #define PQ_COUNT 5
-#define MAX_PROC_COUNT 1000
+#define MAX_PROC_COUNT (int)1e4
+// after 10 ticks, process priority is going to increase
+#define WAIT_LIMIT 10
 // this priority queue holds all runnable process
 // it is changed every time scheduler runs
 struct proc *prioQ[PQ_COUNT][MAX_PROC_COUNT];

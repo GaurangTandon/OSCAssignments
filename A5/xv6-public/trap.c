@@ -104,29 +104,36 @@ void trap(struct trapframe *tf) {
 #ifdef MLFQ
     struct proc* currp = myproc();
 
-    int queueIdx = currp ? currp->allotedQ[0] - 1 : 0;
+    if (currp && tf->trapno == T_IRQ0 + IRQ_TIMER) {
+        int queueIdx = currp->allotedQ[0];
 
-    if (currp && currp->state == RUNNING && tf->trapno == T_IRQ0 + IRQ_TIMER) {
-        if (ifMeraProc(currp))
-            cprintf("[TRAP] %d %s\n", currp->pid, currp->name);
-        // do a round robin, my time slice is over
-        if (ticks % (1 << queueIdx) == 0) {
-            popFront(queueIdx);
+        switch (currp->state) {
+            case RUNNING:
+                // do a round robin, my time slice is over
+                if (ticks % (1 << queueIdx) == 0) {
+                    popFront(queueIdx);
 
-            if (queueIdx == PQ_COUNT - 1) {
-                currp->allotedQ[1] = prioQSize[queueIdx];
-                pushBack(queueIdx, currp);
-            } else {
-                currp->allotedQ[0]++;
-                currp->allotedQ[1] = prioQSize[queueIdx + 1];
-                pushBack(queueIdx + 1, currp);
-            }
+                    if (queueIdx == PQ_COUNT - 1) {
+                        currp->allotedQ[1] = prioQSize[queueIdx];
+                        pushBack(queueIdx, currp);
+                    } else {
+                        currp->allotedQ[0]++;
+                        currp->allotedQ[1] = prioQSize[queueIdx + 1];
+                        pushBack(queueIdx + 1, currp);
+                    }
 
-            // this yield is creating a pagefault, need to figure out when to
-            // call this
-            yield();
+                    // this yield is creating a pagefault, need to figure out
+                    // when to call this
+                    yield();
+                }
+                break;
+            case RUNNABLE:
+                if (ticks - currp->prevTime > WAIT_LIMIT) {
+                    // increment queue
+                }
+                break;
         }
-    }
+
 #else
 #ifdef PBS
     if (myproc() && myproc()->state == RUNNING &&
