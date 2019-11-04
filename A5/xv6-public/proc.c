@@ -423,8 +423,6 @@ void scheduler(void) {
         // Loop over process table looking for process to run.
         acquire(&ptable.lock);
 
-        // cprintf("[SCHEDULER] lookng for processes\n");
-
 #ifdef FCFS
         struct proc *minctimeProc = 0;
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
@@ -448,11 +446,8 @@ void scheduler(void) {
             if (p->state == RUNNABLE) {
                 if (!p->allotedQ[0]) {
                     // put in highest priority queue
-                    pushBack(0, p);
-                }
-
-                if (ifMeraProc(p)) {
-                    cprintf(" (%s)", p->name);
+                    pushBack(HIGHEST_PRIO_Q, p);
+                    cprintf(" (%s %d)", p->name, p->pid);
                     a = 1;
                 }
             }
@@ -524,10 +519,8 @@ void scheduler(void) {
 
             alottedP->state = RUNNING;
             swtch(&(c->scheduler), alottedP->context);
-            if ((alottedP->pid > 1))
-                cprintf("[SCHEDULER] process %s pid %d on cpu %d and prio %d\n",
-                        alottedP->name, alottedP->pid, c->apicid,
-                        alottedP->priority);
+            cprintf("[SCHEDULER] process %s pid %d on cpu %d\n", alottedP->name,
+                    alottedP->pid, c->apicid);
 
             switchkvm();
 

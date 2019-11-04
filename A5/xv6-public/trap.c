@@ -117,13 +117,12 @@ void trap(struct trapframe *tf) {
                 // do a round robin, my time slice is over
                 if (ticks % (1 << queueIdx) == 0) {
                     decPrio(queueIdx);
-                    // this yield is creating a pagefault, need to figure out
-                    // when to call this
+                    cprintf("Proc %d preempted\n", currp->pid);
                     yield();
                 }
                 break;
             case RUNNABLE:
-                if (ticks - currp->prevTime > WAIT_LIMIT) {
+                if (ticks - currp->prevTime >= WAIT_LIMIT) {
                     currp->prevTime = ticks;
                     incPrio(queueIdx, currp->allotedQ[1]);
                 }
