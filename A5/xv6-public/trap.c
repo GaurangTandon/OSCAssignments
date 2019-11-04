@@ -132,7 +132,13 @@ void trap(struct trapframe *tf) {
                     // increment queue
                 }
                 break;
+            case UNUSED:
+            case EMBRYO:
+            case SLEEPING:
+            case ZOMBIE:
+                break;
         }
+    }
 
 #else
 #ifdef PBS

@@ -447,11 +447,10 @@ void scheduler(void) {
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state == RUNNABLE) {
                 if (!p->allotedQ[0]) {
-                    // put in highest prio q
+                    // put in highest priority queue
                     p->allotedQ[0] = 1;
                     p->allotedQ[1] = prioQSize[0];
                     pushBack(0, p);
-                    // cprintf("seen proc %d ", p->pid);
                 }
 
                 if (ifMeraProc(p)) {
@@ -529,9 +528,6 @@ void scheduler(void) {
             cprintf("[SCHEDULER] process %s pid %d on cpu %d and prio %d\n",
                     alottedP->name, alottedP->pid, c->apicid,
                     alottedP->priority);
-
-            if (DEBUG)
-                cprintf("Back :)");
 
             switchkvm();
 
@@ -745,11 +741,13 @@ struct proc *popFront(int qIdx) {
     }
 
     struct proc *p = getFront(qIdx);
+    cprintf("Removed process %s %d from queue %d\n", p->name, p->pid, qIdx);
     deleteIdx(qIdx, 0);
     return p;
 }
 
 void pushBack(int qIdx, struct proc *p) {
+    cprintf("Added process %s %d to queue %d\n", p->name, p->pid, qIdx);
     prioQ[qIdx][prioQSize[qIdx]] = p;
     ++prioQSize[qIdx];
 }
