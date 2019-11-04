@@ -475,7 +475,6 @@ void scheduler(void) {
         }
 #else
 #ifdef PBS
-        // and what about all that round robin thing??
         struct proc *minPrioProc = 0;
 
         int a = 0;
