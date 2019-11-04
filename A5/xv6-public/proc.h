@@ -96,3 +96,4 @@ void deleteIdx(int qIdx, int idx);
 
 int procIsDead(struct proc *p);
 int timeToPreempt(int prio);
+int ifMeraProc(struct proc *p);

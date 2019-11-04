@@ -443,6 +443,7 @@ void scheduler(void) {
         }
 #else
 #ifdef MLFQ
+        int a = 0;
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state == RUNNABLE) {
                 if (!p->allotedQ[0]) {
@@ -453,11 +454,15 @@ void scheduler(void) {
                     // cprintf("seen proc %d ", p->pid);
                 }
 
-                cprintf(" (%s)", p->name);
+                if (ifMeraProc(p)) {
+                    cprintf(" (%s)", p->name);
+                    a = 1;
+                }
             }
         }
 
-        cprintf("\n");
+        if (a)
+            cprintf("\n");
 
         for (int i = 0; i < PQ_COUNT; i++) {
             while (prioQSize[i]) {
