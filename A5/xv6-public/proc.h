@@ -80,9 +80,7 @@ struct proc {
     int etime;                   // process ka end time
     int rtime;                   // process ka total time
     int priority;                // process priority
-#ifdef MLFQ
     struct proc_stat stat;
-#endif
 };
 
 // Process memory is laid out contiguously, low addresses first:

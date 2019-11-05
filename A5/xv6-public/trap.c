@@ -125,12 +125,12 @@ void trap(struct trapframe *tf) {
             case RUNNING:
                 // do a round robin, my time slice is over
                 if (tcks && tcks % (1 << queueIdx) == 0) {
-                    if (currp->pid > 2)
+                    if (DEBUG && currp->pid > 2)
                         cprintf(
                             "[MLFQ] Proc %d preempted (ticks: %d, queue: %d)\n",
                             currp->pid, tcks, getQIdx(currp));
                     yield();
-                } else if (timeToPreempt(currp->pid, 0)) {
+                } else if (DEBUG && timeToPreempt(currp->pid, 0)) {
                     cprintf(
                         "[MLFQ] Proc %d preempted (ticks: %d) due to higher "
                         "prio process incoming\n",
@@ -139,7 +139,7 @@ void trap(struct trapframe *tf) {
                 }
                 break;
             case RUNNABLE:
-                if (tcks >= WAIT_LIMIT) {
+                if (DEBUG && tcks >= WAIT_LIMIT) {
                     currp->stat.ticks[queueIdx] = 0;
                     cprintf("[MLFQ] Process %d aged\n", currp->pid);
                     incPrio(currp, currp->stat.allotedQ[1]);

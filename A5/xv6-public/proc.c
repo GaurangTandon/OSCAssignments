@@ -523,6 +523,7 @@ void scheduler(void) {
 #ifdef MLFQ
             // removing running process from queue
             popFront(getQIdx(alottedP));
+            alottedP->stat.num_run++;
 #endif
 
             alottedP->state = RUNNING;
@@ -532,8 +533,9 @@ void scheduler(void) {
                         c->apicid);
 #endif
 #ifdef MLFQ
-                cprintf("[SCHEDULER] process %d, cpu %d, queue %d\n",
-                        alottedP->pid, c->apicid, getQIdx(alottedP));
+                if (DEBUG)
+                    cprintf("[SCHEDULER] process %d, cpu %d, queue %d\n",
+                            alottedP->pid, c->apicid, getQIdx(alottedP));
 #endif
             }
             swtch(&(c->scheduler), alottedP->context);
@@ -553,9 +555,12 @@ void scheduler(void) {
             if (alottedP->state == SLEEPING ||
                 (procTcks > 0 &&
                  procTcks < (1 << alottedP->stat.allotedQ[0]))) {
-                if (alottedP->pid > 2 && procTcks > 0)
-                    cprintf("Process preempted in lesser ticks %d, queue %d\n",
+                if (alottedP->pid > 2 && procTcks > 0) {
+                    if (DEBUG)
+                        cprintf(
+                            "Process preempted in lesser ticks %d, queue %d\n",
                             procTcks, alottedP->stat.allotedQ[0]);
+                }
                 decPrio(alottedP, 1);
             } else {
                 decPrio(alottedP, 0);
@@ -822,7 +827,7 @@ void incPrio(struct proc *currp, int qPos) {
 
     if (!currp)
         panic("b");
-    if (currp->pid > 2)
+    if (DEBUG && currp->pid > 2)
         cprintf("[MLFQ] Incremented queue of %d\n", currp->pid);
     if (queueIdx == HIGHEST_PRIO_Q) {
         pushBack(queueIdx, currp);
@@ -841,12 +846,12 @@ void decPrio(struct proc *currp, int retain) {
 
     if (queueIdx == PQ_COUNT - 1 || retain) {
         pushBack(queueIdx, currp);
-        if (currp->pid > 2)
+        if (DEBUG && currp->pid > 2)
             cprintf("[MLFQ] Queue of %d remains same as %d\n", currp->pid,
                     queueIdx);
     } else {
         pushBack(queueIdx + 1, currp);
-        if (currp->pid > 2)
+        if (DEBUG && currp->pid > 2)
             cprintf("[MLFQ] Decremented queue of %d to %d\n", currp->pid,
                     queueIdx + 1);
     }
@@ -854,7 +859,12 @@ void decPrio(struct proc *currp, int retain) {
 #endif
 
 int getpinfo(struct proc_stat *ps, int pid) {
-    // lol
     ps->pid = myproc()->pid;
+    ps->runtime = myproc()->rtime;
+    for (int i = 0; i < 2; i++)
+        ps->allotedQ[i] = myproc()->stat.allotedQ[1];
+    ps->num_run = myproc()->stat.num_run;
+    for (int i = 0; i < PQ_COUNT; i++)
+        ps->ticks[i] = myproc()->stat.ticks[i];
     return 0;
 }

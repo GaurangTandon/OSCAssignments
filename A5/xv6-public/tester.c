@@ -51,8 +51,27 @@ int main(int argc, char* argv[]) {
 #endif
 #ifdef MLFQ
     struct proc_stat* ps = (struct proc_stat*)malloc(sizeof(struct proc_stat));
-    int pid = 3;
-    getpinfo(ps, pid);
-    printf(1, "%d\n", ps->pid);
+
+    int count = 5, lim = 1e7, halfLim = lim / 2;
+    for (int j = 0; j < count; j++) {
+        if (fork() == 0) {
+            volatile int a = 0;
+            for (volatile int i = 0; i <= lim; i++) {
+                if (i == halfLim) {
+                    getpinfo(ps, getpid());
+                    printf(1, "Status of %d: in %d\n", ps->pid, getpid());
+                } else {
+                    a += 3;
+                }
+            }
+            exit();
+        }
+    }
+
+    for (int i = 0; i < count; i++) {
+        wait();
+    }
+
+    exit();
 #endif
 }
