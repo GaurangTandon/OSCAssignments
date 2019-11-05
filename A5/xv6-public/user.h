@@ -24,9 +24,7 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
-#ifdef MLFQ
 int getpinfo(struct proc_stat*, int);
-#endif
 int waitx(int*, int*);
 int set_priority(int);
 

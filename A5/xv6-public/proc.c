@@ -851,10 +851,10 @@ void decPrio(struct proc *currp, int retain) {
                     queueIdx + 1);
     }
 }
+#endif
 
 int getpinfo(struct proc_stat *ps, int pid) {
     // lol
     ps->pid = myproc()->pid;
     return 0;
 }
-#endif

@@ -45,18 +45,15 @@ int sys_getpid(void) {
     return myproc()->pid;
 }
 
-// TODO incomplete
-#ifdef MLFQ
 int sys_getpinfo(void) {
     struct proc_stat *ps;
     int pid;
 
-    if (argptr(0, (void *)&ps, 4) < 0 || argint(0, &ps) < 0)
+    if (argptr(0, (void *)&ps, 4) < 0 || argint(1, &pid) < 0)
         return -1;
 
     return getpinfo(ps, pid);
 }
-#endif
 
 int sys_sbrk(void) {
     int addr;

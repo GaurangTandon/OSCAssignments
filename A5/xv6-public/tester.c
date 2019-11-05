@@ -4,7 +4,7 @@
 #include "procstat.h"
 
 // Parent forks two children, waits for them to exit and then finally exits
-int main(void) {
+int main(int argc, char* argv[]) {
 #ifdef FCFS
     int count = 10, lim = 1e7;
     for (int j = 0; j < count; j++) {
@@ -50,10 +50,9 @@ int main(void) {
     exit();
 #endif
 #ifdef MLFQ
-    // doesn't work
-    struct proc_stat ps;
+    struct proc_stat* ps = (struct proc_stat*)malloc(sizeof(struct proc_stat));
     int pid = 3;
-    getpinfo(&ps, pid);
-    printf(1, "%d\n", ps.pid);
+    getpinfo(ps, pid);
+    printf(1, "%d\n", ps->pid);
 #endif
 }
