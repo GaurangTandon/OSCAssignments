@@ -454,8 +454,10 @@ void scheduler(void) {
                 struct proc *p = getFront(i);
 
                 if (procIsDead(p)) {
-                    p->stat.allotedQ[0] = NO_Q_ALLOT;
-                    p->stat.allotedQ[1] = NO_Q_ALLOT;
+                    if (p) {
+                        p->stat.allotedQ[0] = NO_Q_ALLOT;
+                        p->stat.allotedQ[1] = NO_Q_ALLOT;
+                    }
                     popFront(i);
                 } else {
                     if (p->state == RUNNING) {
@@ -529,6 +531,10 @@ void scheduler(void) {
 #ifdef MLFQ
             // technically it should be pushing at the back of the same queue if
             // it had not yield
+            if (!alottedP)
+                panic("Returning from swtch; alloted process is blank");
+            // cprintf("Deprioting %d %d\n", alottedP->stat.allotedQ[0],
+            //         prioQSize[alottedP->stat.allotedQ[0]]);
             decPrio(alottedP->stat.allotedQ[0], 0);
 #endif
             switchkvm();
@@ -743,13 +749,15 @@ struct proc *popFront(int qIdx) {
 
     struct proc *p = getFront(qIdx);
     prioQStart[qIdx]++;
+    if (prioQStart[qIdx] == MAX_PROC_COUNT)
+        prioQStart[qIdx] = 0;
     prioQSize[qIdx]--;
     return p;
 }
 
 // index used to insert new elements into the queue
 int backIndex(int qIdx) {
-    return prioQStart[qIdx] + prioQSize[qIdx];
+    return (prioQStart[qIdx] + prioQSize[qIdx]) % MAX_PROC_COUNT;
 }
 
 void pushBack(int qIdx, struct proc *p) {
@@ -769,7 +777,8 @@ void deleteIdx(int qIdx, int idx) {
     }
 
     prioQ[qIdx][idx] = 0;
-    for (int i = idx; i < backIndex(qIdx); i++) {
+    int bi = backIndex(qIdx);
+    for (int i = idx; i != bi; i++, i %= MAX_PROC_COUNT) {
         prioQ[qIdx][i] = prioQ[qIdx][i + 1];
     }
     prioQSize[qIdx]--;
