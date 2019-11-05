@@ -63,7 +63,7 @@ struct proc *getFront(int qIdx);
 struct proc *popFront(int qIdx);
 void pushBack(int qIdx, struct proc *p);
 void deleteIdx(int qIdx, int idx);
-void decPrio(int queueIdx);
+void decPrio(int queueIdx, int retain);
 void incPrio(int queueIdx, int qPos);
 #endif
 
@@ -100,3 +100,4 @@ struct proc {
 int procIsDead(struct proc *p);
 int timeToPreempt(int prio);
 int ifMeraProc(struct proc *p);
+int backIndex(int qIdx);

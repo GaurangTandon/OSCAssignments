@@ -70,11 +70,10 @@ int ifMeraProc(struct proc *p) {
 }
 
 void initmeraproc(struct proc *p) {
-    if (!p)
+    if (!p || p->pid == 0)
         return;
 #ifdef MLFQ
-    p->stat.allotedQ[0] = NO_Q_ALLOT;
-    p->stat.allotedQ[1] = NO_Q_ALLOT;
+    pushBack(HIGHEST_PRIO_Q, p);
     for (int i = 0; i < PQ_COUNT; i++) {
         p->stat.ticks[i] = 0;
     }
@@ -442,12 +441,9 @@ void scheduler(void) {
 #else
 #ifdef MLFQ
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-            if (p->state == RUNNABLE) {
+            if (p && p->state == RUNNABLE) {
                 if (p->stat.allotedQ[0] == NO_Q_ALLOT) {
-                    // put in highest priority queue
-                    cprintf("[MLFQ] New proc %d added to queue 0\n", p->pid,
-                            HIGHEST_PRIO_Q);
-                    pushBack(HIGHEST_PRIO_Q, p);
+                    panic("Should have been alloted in allocproc");
                 }
             }
         }
@@ -455,11 +451,15 @@ void scheduler(void) {
         for (int i = 0; i < PQ_COUNT; i++) {
             while (prioQSize[i]) {
                 struct proc *p = getFront(i);
-
                 if (procIsDead(p)) {
-                    initmeraproc(p);
+                    p->stat.allotedQ[0] = NO_Q_ALLOT;
+                    p->stat.allotedQ[1] = NO_Q_ALLOT;
                     popFront(i);
                 } else {
+                    if (p->state == RUNNING) {
+                        panic("aaa");
+                    }
+
                     alottedP = p;
                     break;
                 }
@@ -524,8 +524,15 @@ void scheduler(void) {
                         alottedP->pid, c->apicid, alottedP->priority);
             swtch(&(c->scheduler), alottedP->context);
 
+#ifdef MLFQ
+            // technically it should be pushing at the back of the same queue if
+            // it had not yield
+            decPrio(alottedP->stat.allotedQ[0], 0);
+#endif
             switchkvm();
 
+            // cprintf("Exited: %d %d %d\n", alottedP->pid, alottedP->state,
+            // alottedP->stat.allotedQ[0]);
             // Processis done running for now.
             // It should have changed its p->state before coming back.
             c->proc = 0;
@@ -722,7 +729,11 @@ struct proc *getFront(int qIdx) {
         cprintf("queue %d\n", qIdx);
         panic("Getting front of empty queue");
     }
-    return prioQ[qIdx][prioQStart[qIdx]];
+    struct proc *p = prioQ[qIdx][prioQStart[qIdx]];
+    if (p)
+        return p;
+    else
+        panic("Empty front");
 }
 
 struct proc *popFront(int qIdx) {
@@ -766,7 +777,8 @@ void incPrio(int queueIdx, int qPos) {
     struct proc *currp = prioQ[queueIdx][qPos];
     deleteIdx(queueIdx, qPos);
 
-    cprintf("[MLFQ] Incremented queue of %d\n", currp->pid);
+    if (currp->pid > 2)
+        cprintf("[MLFQ] Incremented queue of %d\n", currp->pid);
     if (queueIdx == HIGHEST_PRIO_Q) {
         pushBack(queueIdx, currp);
     } else {
@@ -774,12 +786,13 @@ void incPrio(int queueIdx, int qPos) {
     }
 }
 
-void decPrio(int queueIdx) {
+void decPrio(int queueIdx, int retain) {
     struct proc *currp = getFront(queueIdx);
     popFront(queueIdx);
 
-    cprintf("[MLFQ] Decremented queue of %d\n", currp->pid);
-    if (queueIdx == PQ_COUNT - 1) {
+    if (currp->pid > 2)
+        cprintf("[MLFQ] Decremented queue of %d\n", currp->pid);
+    if (queueIdx == PQ_COUNT - 1 || retain) {
         pushBack(queueIdx, currp);
     } else {
         pushBack(queueIdx + 1, currp);

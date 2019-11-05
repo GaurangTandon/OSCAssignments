@@ -126,7 +126,6 @@ void trap(struct trapframe *tf) {
                 if (tcks && tcks % (1 << queueIdx) == 0) {
                     cprintf("[MLFQ] Proc %d preempted (ticks got: %d)\n",
                             currp->pid, tcks);
-                    decPrio(queueIdx);
                     currp->stat.ticks[currp->stat.allotedQ[0]] = 0;
                     yield();
                 }
