@@ -72,6 +72,7 @@ int ifMeraProc(struct proc *p) {
 void initmeraproc(struct proc *p) {
     if (!p || p->pid == 0)
         return;
+
 #ifdef MLFQ
     pushBack(HIGHEST_PRIO_Q, p);
     for (int i = 0; i < PQ_COUNT; i++) {
@@ -451,6 +452,7 @@ void scheduler(void) {
         for (int i = 0; i < PQ_COUNT; i++) {
             while (prioQSize[i]) {
                 struct proc *p = getFront(i);
+
                 if (procIsDead(p)) {
                     p->stat.allotedQ[0] = NO_Q_ALLOT;
                     p->stat.allotedQ[1] = NO_Q_ALLOT;
@@ -730,10 +732,7 @@ struct proc *getFront(int qIdx) {
         panic("Getting front of empty queue");
     }
     struct proc *p = prioQ[qIdx][prioQStart[qIdx]];
-    if (p)
-        return p;
-    else
-        panic("Empty front");
+    return p;
 }
 
 struct proc *popFront(int qIdx) {
@@ -754,6 +753,9 @@ int backIndex(int qIdx) {
 }
 
 void pushBack(int qIdx, struct proc *p) {
+    if (!p) {
+        panic("Cannot push back empty proc");
+    }
     p->stat.allotedQ[0] = qIdx;
     p->stat.allotedQ[1] = backIndex(qIdx);
     prioQ[qIdx][p->stat.allotedQ[1]] = p;
@@ -774,9 +776,13 @@ void deleteIdx(int qIdx, int idx) {
 }
 
 void incPrio(int queueIdx, int qPos) {
+    if (queueIdx < 0)
+        panic("Invalid qi");
     struct proc *currp = prioQ[queueIdx][qPos];
     deleteIdx(queueIdx, qPos);
 
+    if (!currp)
+        panic("b");
     if (currp->pid > 2)
         cprintf("[MLFQ] Incremented queue of %d\n", currp->pid);
     if (queueIdx == HIGHEST_PRIO_Q) {
@@ -787,9 +793,13 @@ void incPrio(int queueIdx, int qPos) {
 }
 
 void decPrio(int queueIdx, int retain) {
+    if (queueIdx < 0)
+        panic("Invalid q");
     struct proc *currp = getFront(queueIdx);
     popFront(queueIdx);
 
+    if (!currp)
+        panic("a");
     if (currp->pid > 2)
         cprintf("[MLFQ] Decremented queue of %d\n", currp->pid);
     if (queueIdx == PQ_COUNT - 1 || retain) {
