@@ -72,12 +72,13 @@ int ifMeraProc(struct proc *p) {
 void initmeraproc(struct proc *p) {
     if (!p)
         return;
+#ifdef MLFQ
     p->stat.allotedQ[0] = NO_Q_ALLOT;
     p->stat.allotedQ[1] = NO_Q_ALLOT;
-
     for (int i = 0; i < PQ_COUNT; i++) {
         p->stat.ticks[i] = 0;
     }
+#endif
     p->ctime = ticks;
     p->rtime = 0;
     p->etime = -1;
@@ -444,6 +445,8 @@ void scheduler(void) {
             if (p->state == RUNNABLE) {
                 if (p->stat.allotedQ[0] == NO_Q_ALLOT) {
                     // put in highest priority queue
+                    cprintf("[MLFQ] New proc %d added to queue 0\n", p->pid,
+                            HIGHEST_PRIO_Q);
                     pushBack(HIGHEST_PRIO_Q, p);
                 }
             }
@@ -729,7 +732,6 @@ struct proc *popFront(int qIdx) {
     }
 
     struct proc *p = getFront(qIdx);
-    cprintf("[MLFQ] Removed process %d from queue %d\n", p->pid, qIdx);
     prioQStart[qIdx]++;
     prioQSize[qIdx]--;
     return p;
@@ -741,7 +743,6 @@ int backIndex(int qIdx) {
 }
 
 void pushBack(int qIdx, struct proc *p) {
-    cprintf("[MLFQ] Added process %d to queue %d\n", p->pid, qIdx);
     p->stat.allotedQ[0] = qIdx;
     p->stat.allotedQ[1] = backIndex(qIdx);
     prioQ[qIdx][p->stat.allotedQ[1]] = p;
@@ -765,6 +766,7 @@ void incPrio(int queueIdx, int qPos) {
     struct proc *currp = prioQ[queueIdx][qPos];
     deleteIdx(queueIdx, qPos);
 
+    cprintf("[MLFQ] Incremented queue of %d\n", currp->pid);
     if (queueIdx == HIGHEST_PRIO_Q) {
         pushBack(queueIdx, currp);
     } else {
@@ -776,6 +778,7 @@ void decPrio(int queueIdx) {
     struct proc *currp = getFront(queueIdx);
     popFront(queueIdx);
 
+    cprintf("[MLFQ] Decremented queue of %d\n", currp->pid);
     if (queueIdx == PQ_COUNT - 1) {
         pushBack(queueIdx, currp);
     } else {

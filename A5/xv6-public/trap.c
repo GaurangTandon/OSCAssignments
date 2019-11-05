@@ -50,9 +50,10 @@ void trap(struct trapframe *tf) {
                     myproc()->rtime++;
                 }
 
+#ifdef MLFQ
                 if (myproc())
                     myproc()->stat.ticks[myproc()->stat.allotedQ[0]]++;
-
+#endif
                 wakeup(&ticks);
                 release(&tickslock);
             }
@@ -123,9 +124,9 @@ void trap(struct trapframe *tf) {
             case RUNNING:
                 // do a round robin, my time slice is over
                 if (tcks && tcks % (1 << queueIdx) == 0) {
+                    cprintf("[MLFQ] Proc %d preempted (ticks got: %d)\n",
+                            currp->pid, tcks);
                     decPrio(queueIdx);
-                    cprintf("Proc %d preempted(ticks got: %d)\n", currp->pid,
-                            tcks);
                     currp->stat.ticks[currp->stat.allotedQ[0]] = 0;
                     yield();
                 }
@@ -133,7 +134,7 @@ void trap(struct trapframe *tf) {
             case RUNNABLE:
                 if (tcks >= WAIT_LIMIT) {
                     currp->stat.ticks[queueIdx] = 0;
-                    cprintf("Process %d aged\n", currp->pid);
+                    cprintf("[MLFQ] Process %d aged\n", currp->pid);
                     incPrio(queueIdx, currp->stat.allotedQ[1]);
                     currp->stat.ticks[currp->stat.allotedQ[0]] = 0;
                 }
