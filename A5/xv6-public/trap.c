@@ -117,16 +117,19 @@ void trap(struct trapframe *tf) {
         switch (currp->state) {
             case RUNNING:
                 // do a round robin, my time slice is over
-                if (ticks % (1 << queueIdx) == 0) {
+                if (currp->stat->ticks[queueIdx] % (1 << queueIdx) == 0) {
                     decPrio(queueIdx);
                     cprintf("Proc %d preempted\n", currp->pid);
+                    currp->stat->ticks[currp->allotedQ[0]] = 0;
                     yield();
                 }
                 break;
             case RUNNABLE:
-                if (ticks - currp->prevTime >= WAIT_LIMIT) {
-                    currp->prevTime = ticks;
+                if (currp->stat->ticks[queueIdx] >= WAIT_LIMIT) {
+                    currp->stat->ticks[queueIdx] = 0;
+                    cprintf("Process %d aged\n", currp->pid);
                     incPrio(queueIdx, currp->allotedQ[1]);
+                    currp->stat->ticks[currp->allotedQ[0]] = 0;
                 }
                 break;
             case UNUSED:

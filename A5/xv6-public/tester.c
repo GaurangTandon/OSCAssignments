@@ -14,8 +14,9 @@ int main(void) {
             for (volatile int i = 0; i <= lim; i++) {
                 if (i == halfLim) {
                     set_priority(100 - j / 2);
-                } else
+                } else {
                     a += 3;
+                }
             }
             printf(1, "%d\n", a);
             exit();
@@ -27,5 +28,7 @@ int main(void) {
     }
 
     exit();
+#endif
+#ifdef MLFQ
 #endif
 }

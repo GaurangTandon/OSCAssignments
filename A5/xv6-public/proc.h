@@ -58,9 +58,9 @@ struct proc {
     int rtime;                   // process ka total time
     int priority;                // process priority
 #ifdef MLFQ
+    struct proc_stat *stat;
     int allotedQ[2];  // one indexed number of the queue where this process lies
                       // right now
-    int prevTime;
 #endif
 };
 
@@ -71,16 +71,16 @@ struct proc {
 //   expandable heap
 
 #ifdef MLFQ
+#define PQ_COUNT 5
 // statistics for each process, from assignment
 struct proc_stat {
-    int pid;            // PID of each process
-    int runtime;        // Use suitable unit of time
-    int num_run;        // number of time the process is executed
-    int current_queue;  // current assigned queue
-    int ticks[5];  // number of ticks each process has received at each of the 5
-                   // priority queue
+    int pid;              // PID of each process
+    int runtime;          // Use suitable unit of time
+    int num_run;          // number of time the process is executed
+    int current_queue;    // current assigned queue
+    int ticks[PQ_COUNT];  // number of ticks each process has received at each
+                          // of the 5 priority queue
 };
-#define PQ_COUNT 5
 #define MAX_PROC_COUNT (int)1e4
 // after 10 ticks, process priority is going to increase
 #define WAIT_LIMIT 10
