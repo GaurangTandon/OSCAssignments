@@ -52,14 +52,21 @@ int main(int argc, char* argv[]) {
 #ifdef MLFQ
     struct proc_stat* ps = (struct proc_stat*)malloc(sizeof(struct proc_stat));
 
+    printf(1, "Starting fork process\n");
     int count = 5, lim = 1e7, halfLim = lim / 2;
     for (int j = 0; j < count; j++) {
-        if (fork() == 0) {
+        int pid = fork();
+
+        if (pid < 0)
+            printf(1, "Fork failed!!\n");
+        else if (pid == 0) {
             volatile int a = 0;
             for (volatile int i = 0; i <= lim; i++) {
                 if (i == halfLim) {
                     getpinfo(ps, getpid());
-                    printf(1, "Status of %d: in %d\n", ps->pid, getpid());
+                    printf(1, "Status of proc %d: RT %d NR %d Q %d TQ %d\n",
+                           ps->pid, ps->runtime, ps->num_run, ps->allotedQ[0],
+                           ps->ticks[ps->allotedQ[0]]);
                 } else {
                     a += 3;
                 }
