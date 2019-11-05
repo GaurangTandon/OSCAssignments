@@ -185,21 +185,13 @@ int growproc(int n) {
 }
 
 int timeToPreempt(int prio) {
-    int c = 0;
     acquire(&ptable.lock);
     for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
         if (p->state != RUNNABLE)
             continue;
-        if (p->priority < prio) {
+        if (p->priority <= prio) {
             release(&ptable.lock);
             return 1;
-        }
-        if (p->priority == prio) {
-            c++;
-            if (c == 2) {
-                release(&ptable.lock);
-                return 1;
-            }
         }
     }
     release(&ptable.lock);
@@ -493,7 +485,7 @@ void scheduler(void) {
                 switchuvm(alottedP);
 
                 alottedP->state = RUNNING;
-                cprintf("[PBSCHEDULER] process pid %d on cpu %d (prio %d)\n",
+                cprintf("[PBSCHEDULER] pid %d on cpu %d (prio %d)\n",
                         alottedP->pid, c->apicid, alottedP->priority);
                 swtch(&(c->scheduler), alottedP->context);
 

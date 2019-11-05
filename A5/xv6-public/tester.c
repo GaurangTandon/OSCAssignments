@@ -11,7 +11,7 @@ int main(void) {
             volatile int a = 0;
             for (volatile int i = 0; i <= lim; i++) {
                 if (i == halfLim) {
-                    set_priority(100 - j);
+                    set_priority(100 - j / 2);
                 } else
                     a += 3;
             }
