@@ -75,9 +75,6 @@ void initmeraproc(struct proc *p) {
 
 #ifdef MLFQ
     pushBack(HIGHEST_PRIO_Q, p);
-    for (int i = 0; i < PQ_COUNT; i++) {
-        p->stat.ticks[i] = 0;
-    }
 #endif
     p->ctime = ticks;
     p->rtime = 0;
@@ -399,7 +396,7 @@ int waitx(int *wtime, int *rtime) {
 }
 
 int procIsDead(struct proc *p) {
-    return (!p || p->killed || !p->pid || p->state == ZOMBIE);
+    return (!p || p->killed || !p->pid || p->state != RUNNABLE);
 }
 
 // PAGEBREAK: 42
@@ -443,7 +440,7 @@ void scheduler(void) {
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p && p->state == RUNNABLE) {
                 if (p->stat.allotedQ[0] == NO_Q_ALLOT) {
-                    panic("Should have been alloted in allocproc");
+                    panic("Should have been alloted in allocproc/wakeup1");
                 }
             }
         }
@@ -459,10 +456,6 @@ void scheduler(void) {
                     }
                     popFront(i);
                 } else {
-                    if (p->state == RUNNING) {
-                        panic("aaa");
-                    }
-
                     alottedP = p;
                     break;
                 }
@@ -521,10 +514,19 @@ void scheduler(void) {
             c->proc = alottedP;
             switchuvm(alottedP);
 
+            if (alottedP->state != RUNNABLE) {
+                cprintf("%d\n", alottedP->state);
+                panic("Non runnable process selected for execution\n");
+            }
+
             alottedP->state = RUNNING;
             if (alottedP->pid > 2)
                 cprintf("[SCHEDULER] process pid %d on cpu %d (prio %d)\n",
                         alottedP->pid, c->apicid, alottedP->priority);
+#ifdef MLFQ
+            // removing running process from queue
+            popFront(getQIdx(alottedP));
+#endif
             swtch(&(c->scheduler), alottedP->context);
 
 #ifdef MLFQ
@@ -543,8 +545,8 @@ void scheduler(void) {
                 (procTcks > 0 &&
                  procTcks < (1 << alottedP->stat.allotedQ[0]))) {
                 if (alottedP->pid > 2 && procTcks > 0)
-                    cprintf("HEHE %d %d\n", procTcks,
-                            alottedP->stat.allotedQ[0]);
+                    cprintf("Process preempted in lesser ticks %d %d\n",
+                            procTcks, alottedP->stat.allotedQ[0]);
                 decPrio(alottedP, 1);
             } else {
                 decPrio(alottedP, 0);
@@ -599,7 +601,6 @@ void sched(void) {
 void yield(void) {
     acquire(&ptable.lock);  // DOC: yieldlock
     struct proc *p = myproc();
-    // cprintf("[YIELD] proc %d yielded\n", p->pid);
     p->state = RUNNABLE;
     sched();
     release(&ptable.lock);
@@ -671,8 +672,10 @@ static void wakeup1(void *chan) {
     struct proc *p;
 
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-        if (p->state == SLEEPING && p->chan == chan)
+        if (p->state == SLEEPING && p->chan == chan) {
+            pushBack(HIGHEST_PRIO_Q, p);
             p->state = RUNNABLE;
+        }
 }
 
 // Wake up all processes sleeping on chan.

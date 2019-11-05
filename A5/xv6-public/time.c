@@ -6,17 +6,11 @@ int main(int argc, char *argv[]) {
     int a = fork();
 
     if (a == 0) {
-        int c = 0;
-        for (volatile int i = 0; i < 1e7; i++) {
-            c++;
-            i--;
-            i++;
-        }
-        printf(1, "C = %d\n", c);
+        exec(argv[1], argv + 1);
     } else {
         int *wtime = 0, *rtime = 0;
         waitx(wtime, rtime);
-        printf(1, "w = %d; r = %d\n", *wtime, *rtime);
+        printf(1, "Runtime: %d\n", *wtime);
     }
 
     exit();

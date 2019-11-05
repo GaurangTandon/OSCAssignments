@@ -53,11 +53,6 @@ void trap(struct trapframe *tf) {
 #ifdef MLFQ
                 if (myproc()) {
                     myproc()->stat.ticks[myproc()->stat.allotedQ[0]]++;
-                    if (myproc()->pid > 2) {
-                        cprintf(
-                            "aa -> %d\n",
-                            myproc()->stat.ticks[myproc()->stat.allotedQ[0]]);
-                    }
                 }
 #endif
                 wakeup(&ticks);
