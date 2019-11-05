@@ -1,5 +1,6 @@
 #include "types.h"
 #include "stat.h"
+#include "procstat.h"
 #include "user.h"
 
 // Parent forks two children, waits for them to exit and then finally exits
@@ -30,5 +31,9 @@ int main(void) {
     exit();
 #endif
 #ifdef MLFQ
+    // doesn't work
+    struct proc_stat ps;
+    getpinfo(&ps);
+    printf(1, "%d\n", ps.pid);
 #endif
 }

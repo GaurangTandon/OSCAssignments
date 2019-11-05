@@ -1,3 +1,5 @@
+#include "procstat.h"
+
 // Per-CPU state
 struct cpu {
     uchar apicid;               // Local APIC ID
@@ -39,17 +41,7 @@ enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 #endif
 
 #ifdef MLFQ
-#define PQ_COUNT 5
 #define NO_Q_ALLOT -1
-// statistics for each process, from assignment
-struct proc_stat {
-    int pid;              // PID of each process
-    int runtime;          // Use suitable unit of time
-    int num_run;          // number of time the process is executed
-    int allotedQ[2];      // current assigned queue and position inside it
-    int ticks[PQ_COUNT];  // number of ticks each process has received at each
-                          // of the 5 priority queue
-};
 #define MAX_PROC_COUNT (int)1e4
 // after 10 ticks, process priority is going to increase
 #define WAIT_LIMIT 10

@@ -536,6 +536,9 @@ void scheduler(void) {
             if (alottedP->pid > 2)
                 cprintf("Deprioting %d %d\n", alottedP->stat.allotedQ[0],
                         prioQSize[alottedP->stat.allotedQ[0]]);
+
+            // how to handle the case when process goes to sleep?
+
             decPrio(alottedP->stat.allotedQ[0], 0);
 #endif
             switchkvm();
@@ -817,5 +820,11 @@ void decPrio(int queueIdx, int retain) {
     } else {
         pushBack(queueIdx + 1, currp);
     }
+}
+
+int getpinfo(struct proc_stat *ps) {
+    // lol
+    ps->pid = myproc()->pid;
+    return 0;
 }
 #endif

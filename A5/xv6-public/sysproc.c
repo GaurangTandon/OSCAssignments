@@ -52,13 +52,7 @@ int sys_getpinfo(void) {
     if (argptr(0, (void *)&ps, 4) < 0)
         return -1;
 
-    struct proc *p = myproc();
-
-    ps->pid = p->pid;
-    ps->runtime = p->rtime;
-    cprintf("called getpinfo?\n");
-
-    return 0;
+    return getpinfo(ps);
 }
 #endif
 
