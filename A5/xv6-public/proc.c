@@ -125,10 +125,9 @@ found:
     memset(p->context, 0, sizeof *p->context);
     p->context->eip = (uint)forkret;
 
-    // ASSIGNMENT
-    p->ctime = ticks;
-    p->rtime = 0;
-    p->etime = -1;
+#ifdef PBS
+    p->priority = DEFAULT_PRIORITY;
+#endif
 #ifdef MLFQ
     initmeraproc(p);
 #endif
