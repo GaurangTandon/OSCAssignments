@@ -51,8 +51,9 @@ int main(void) {
 #endif
 #ifdef MLFQ
     // doesn't work
-    // struct proc_stat ps;
-    // getpinfo(&ps);
-    // printf(1, "%d\n", ps.pid);
+    struct proc_stat ps;
+    int pid = 3;
+    getpinfo(&ps, pid);
+    printf(1, "%d\n", ps.pid);
 #endif
 }

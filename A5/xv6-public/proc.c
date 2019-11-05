@@ -852,7 +852,7 @@ void decPrio(struct proc *currp, int retain) {
     }
 }
 
-int getpinfo(struct proc_stat *ps) {
+int getpinfo(struct proc_stat *ps, int pid) {
     // lol
     ps->pid = myproc()->pid;
     return 0;

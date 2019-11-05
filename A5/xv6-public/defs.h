@@ -123,7 +123,7 @@ int waitx(int*, int*);
 void wakeup(void*);
 void yield(void);
 int set_prio(int);
-int getpinfo(struct proc_stat*);
+int getpinfo(struct proc_stat*, int);
 
 // swtch.S
 void swtch(struct context**, struct context*);

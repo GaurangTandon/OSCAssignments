@@ -49,11 +49,12 @@ int sys_getpid(void) {
 #ifdef MLFQ
 int sys_getpinfo(void) {
     struct proc_stat *ps;
+    int pid;
 
-    if (argptr(0, (void *)&ps, 4) < 0)
+    if (argptr(0, (void *)&ps, 4) < 0 || argint(0, &ps) < 0)
         return -1;
 
-    return getpinfo(ps);
+    return getpinfo(ps, pid);
 }
 #endif
 
