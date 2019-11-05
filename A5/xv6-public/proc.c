@@ -69,7 +69,7 @@ int ifMeraProc(struct proc *p) {
     return p && p->pid > 2;
 }
 
-void initmeraproc(struct proc *p) {
+void initProcMyStyle(struct proc *p) {
     if (!p || p->pid == 0)
         return;
 
@@ -129,7 +129,7 @@ found:
 #ifdef PBS
     p->priority = DEFAULT_PRIORITY;
 #endif
-    initmeraproc(p);
+    initProcMyStyle(p);
 
     return p;
 }
@@ -439,7 +439,8 @@ void scheduler(void) {
 #ifdef MLFQ
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p && p->state == RUNNABLE) {
-                if (p->stat.allotedQ[0] == NO_Q_ALLOT) {
+                if (getQIdx(p) == NO_Q_ALLOT) {
+                    cprintf("Prrocess %d\n", p->pid);
                     panic("Should have been alloted in allocproc/wakeup1");
                 }
             }
@@ -450,12 +451,12 @@ void scheduler(void) {
                 struct proc *p = getFront(i);
 
                 if (procIsDead(p)) {
-                    if (p) {
-                        p->stat.allotedQ[0] = NO_Q_ALLOT;
-                        p->stat.allotedQ[1] = NO_Q_ALLOT;
-                    }
+                    // cprintf("Found dead proc %d\n", p->pid);
+                    // do not reset allocatedQ, helpful in wakeup1 later
                     popFront(i);
+                    p = 0;
                 } else {
+                    // cprintf("Found in front of %d proc %d\n", i, p->pid);
                     alottedP = p;
                     break;
                 }
@@ -519,14 +520,15 @@ void scheduler(void) {
                 panic("Non runnable process selected for execution\n");
             }
 
-            alottedP->state = RUNNING;
-            if (alottedP->pid > 2)
-                cprintf("[SCHEDULER] process pid %d on cpu %d (prio %d)\n",
-                        alottedP->pid, c->apicid, alottedP->priority);
 #ifdef MLFQ
             // removing running process from queue
             popFront(getQIdx(alottedP));
 #endif
+
+            alottedP->state = RUNNING;
+            if (alottedP->pid > 2)
+                cprintf("[SCHEDULER] process pid %d on cpu %d (prio %d)\n",
+                        alottedP->pid, c->apicid, alottedP->priority);
             swtch(&(c->scheduler), alottedP->context);
 
 #ifdef MLFQ
@@ -554,8 +556,6 @@ void scheduler(void) {
 #endif
             switchkvm();
 
-            // cprintf("Exited: %d %d %d\n", alottedP->pid,
-            // alottedP->state, alottedP->stat.allotedQ[0]);
             // Process is done running for now. It should have changed its
             // p->state before coming back.
             c->proc = 0;
@@ -673,7 +673,7 @@ static void wakeup1(void *chan) {
 
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
         if (p->state == SLEEPING && p->chan == chan) {
-            pushBack(HIGHEST_PRIO_Q, p);
+            pushBack(getQIdx(p), p);
             p->state = RUNNABLE;
         }
 }
@@ -763,6 +763,7 @@ struct proc *popFront(int qIdx) {
         panic("Empty stack, cannot pop");
     }
 
+    // DO NOT CHANGE allotted q since they help in memory
     struct proc *p = getFront(qIdx);
     prioQStart[qIdx]++;
     if (prioQStart[qIdx] == MAX_PROC_COUNT)
@@ -826,7 +827,6 @@ void decPrio(struct proc *currp, int retain) {
     int queueIdx = getQIdx(currp);
     if (queueIdx < 0)
         panic("Invalid q");
-    popFront(queueIdx);
 
     if (!currp)
         panic("a");

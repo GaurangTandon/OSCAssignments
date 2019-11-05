@@ -113,7 +113,7 @@ void trap(struct trapframe *tf) {
     struct proc* currp = myproc();
 
     if (currp && tf->trapno == T_IRQ0 + IRQ_TIMER) {
-        int queueIdx = currp->stat.allotedQ[0];
+        int queueIdx = getQIdx(currp);
 
         if (queueIdx < 0) {
             cprintf("%d %d\n", queueIdx, currp->pid);
