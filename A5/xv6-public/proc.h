@@ -70,8 +70,6 @@ struct proc {
 //   fixed-size stack
 //   expandable heap
 
-void updateStats();
-
 #ifdef MLFQ
 // statistics for each process, from assignment
 struct proc_stat {
