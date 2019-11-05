@@ -400,7 +400,7 @@ int waitx(int *wtime, int *rtime) {
 }
 
 int procIsDead(struct proc *p) {
-    return (!p || p->killed || !p->pid);
+    return (!p || p->killed || !p->pid || p->state == ZOMBIE);
 }
 
 // PAGEBREAK: 42
@@ -533,16 +533,17 @@ void scheduler(void) {
             // it had not yield
             if (!alottedP)
                 panic("Returning from swtch; alloted process is blank");
-            // cprintf("Deprioting %d %d\n", alottedP->stat.allotedQ[0],
-            //         prioQSize[alottedP->stat.allotedQ[0]]);
+            if (alottedP->pid > 2)
+                cprintf("Deprioting %d %d\n", alottedP->stat.allotedQ[0],
+                        prioQSize[alottedP->stat.allotedQ[0]]);
             decPrio(alottedP->stat.allotedQ[0], 0);
 #endif
             switchkvm();
 
-            // cprintf("Exited: %d %d %d\n", alottedP->pid, alottedP->state,
-            // alottedP->stat.allotedQ[0]);
-            // Processis done running for now.
-            // It should have changed its p->state before coming back.
+            // cprintf("Exited: %d %d %d\n", alottedP->pid,
+            // alottedP->state, alottedP->stat.allotedQ[0]);
+            // Process is done running for now. It should have changed its
+            // p->state before coming back.
             c->proc = 0;
         }
 #ifdef PBS
