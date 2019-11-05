@@ -541,13 +541,13 @@ void scheduler(void) {
             int procTcks = (alottedP->stat.ticks[alottedP->stat.allotedQ[0]]);
             if (alottedP->state == SLEEPING ||
                 (procTcks > 0 &&
-                 procTcks != (1 << alottedP->stat.allotedQ[0]))) {
+                 procTcks < (1 << alottedP->stat.allotedQ[0]))) {
                 if (alottedP->pid > 2 && procTcks > 0)
                     cprintf("HEHE %d %d\n", procTcks,
                             alottedP->stat.allotedQ[0]);
-                decPrio(alottedP->stat.allotedQ[0], 1);
+                decPrio(alottedP, 1);
             } else {
-                decPrio(alottedP->stat.allotedQ[0], 0);
+                decPrio(alottedP, 0);
             }
 #endif
             switchkvm();
@@ -798,10 +798,14 @@ void deleteIdx(int qIdx, int idx) {
     prioQSize[qIdx]--;
 }
 
-void incPrio(int queueIdx, int qPos) {
+int getQIdx(struct proc *currp) {
+    return currp->stat.allotedQ[0];
+}
+
+void incPrio(struct proc *currp, int qPos) {
+    int queueIdx = getQIdx(currp);
     if (queueIdx < 0)
         panic("Invalid qi");
-    struct proc *currp = prioQ[queueIdx][qPos];
     deleteIdx(queueIdx, qPos);
 
     if (!currp)
@@ -815,20 +819,22 @@ void incPrio(int queueIdx, int qPos) {
     }
 }
 
-void decPrio(int queueIdx, int retain) {
+void decPrio(struct proc *currp, int retain) {
+    int queueIdx = getQIdx(currp);
     if (queueIdx < 0)
         panic("Invalid q");
-    struct proc *currp = getFront(queueIdx);
     popFront(queueIdx);
 
     if (!currp)
         panic("a");
-    if (currp->pid > 2)
-        cprintf("[MLFQ] Decremented queue of %d\n", currp->pid);
     if (queueIdx == PQ_COUNT - 1 || retain) {
         pushBack(queueIdx, currp);
+        if (currp->pid > 2)
+            cprintf("[MLFQ] Queue of %d remains same\n", currp->pid);
     } else {
         pushBack(queueIdx + 1, currp);
+        if (currp->pid > 2)
+            cprintf("[MLFQ] Decremented queue of %d\n", currp->pid);
     }
 }
 

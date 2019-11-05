@@ -55,8 +55,8 @@ struct proc *getFront(int qIdx);
 struct proc *popFront(int qIdx);
 void pushBack(int qIdx, struct proc *p);
 void deleteIdx(int qIdx, int idx);
-void decPrio(int queueIdx, int retain);
-void incPrio(int queueIdx, int qPos);
+void decPrio(struct proc *queueIdx, int retain);
+void incPrio(struct proc *queueIdx, int qPos);
 #endif
 
 // Per-process state

@@ -56,7 +56,7 @@ void trap(struct trapframe *tf) {
                     if (myproc()->pid > 2) {
                         cprintf(
                             "aa -> %d\n",
-                            myproc()->stat.ticks[myproc()->stat.allotedQ[0]]++);
+                            myproc()->stat.ticks[myproc()->stat.allotedQ[0]]);
                     }
                 }
 #endif
@@ -130,8 +130,9 @@ void trap(struct trapframe *tf) {
             case RUNNING:
                 // do a round robin, my time slice is over
                 if (tcks && tcks % (1 << queueIdx) == 0) {
-                    cprintf("[MLFQ] Proc %d preempted (ticks: %d)\n",
-                            currp->pid, tcks);
+                    if (currp->pid > 2)
+                        cprintf("[MLFQ] Proc %d preempted (ticks: %d)\n",
+                                currp->pid, tcks);
                     yield();
                 } else if (timeToPreempt(currp->pid, 0)) {
                     cprintf(
@@ -145,7 +146,7 @@ void trap(struct trapframe *tf) {
                 if (tcks >= WAIT_LIMIT) {
                     currp->stat.ticks[queueIdx] = 0;
                     cprintf("[MLFQ] Process %d aged\n", currp->pid);
-                    incPrio(queueIdx, currp->stat.allotedQ[1]);
+                    incPrio(currp, currp->stat.allotedQ[1]);
                 }
                 break;
             case UNUSED:
