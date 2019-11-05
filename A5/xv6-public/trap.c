@@ -51,8 +51,14 @@ void trap(struct trapframe *tf) {
                 }
 
 #ifdef MLFQ
-                if (myproc())
+                if (myproc()) {
                     myproc()->stat.ticks[myproc()->stat.allotedQ[0]]++;
+                    if (myproc()->pid > 2) {
+                        cprintf(
+                            "aa -> %d\n",
+                            myproc()->stat.ticks[myproc()->stat.allotedQ[0]]++);
+                    }
+                }
 #endif
                 wakeup(&ticks);
                 release(&tickslock);
@@ -124,9 +130,14 @@ void trap(struct trapframe *tf) {
             case RUNNING:
                 // do a round robin, my time slice is over
                 if (tcks && tcks % (1 << queueIdx) == 0) {
-                    cprintf("[MLFQ] Proc %d preempted (ticks got: %d)\n",
+                    cprintf("[MLFQ] Proc %d preempted (ticks: %d)\n",
                             currp->pid, tcks);
-                    currp->stat.ticks[currp->stat.allotedQ[0]] = 0;
+                    yield();
+                } else if (timeToPreempt(currp->pid, 0)) {
+                    cprintf(
+                        "[MLFQ] Proc %d preempted (ticks: %d) due to higher "
+                        "prio process incoming\n",
+                        currp->pid, tcks);
                     yield();
                 }
                 break;
@@ -135,7 +146,6 @@ void trap(struct trapframe *tf) {
                     currp->stat.ticks[queueIdx] = 0;
                     cprintf("[MLFQ] Process %d aged\n", currp->pid);
                     incPrio(queueIdx, currp->stat.allotedQ[1]);
-                    currp->stat.ticks[currp->stat.allotedQ[0]] = 0;
                 }
                 break;
             case UNUSED:
@@ -150,7 +160,7 @@ void trap(struct trapframe *tf) {
 #ifdef PBS
     if (myproc() && myproc()->state == RUNNING &&
         tf->trapno == T_IRQ0 + IRQ_TIMER) {
-        if (timeToPreempt(myproc()->priority)) {
+        if (timeToPreempt(myproc()->priority), 1) {
             yield();
         }
     }

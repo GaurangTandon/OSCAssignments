@@ -132,9 +132,7 @@ found:
 #ifdef PBS
     p->priority = DEFAULT_PRIORITY;
 #endif
-#ifdef MLFQ
     initmeraproc(p);
-#endif
 
     return p;
 }
@@ -194,12 +192,13 @@ int growproc(int n) {
     return 0;
 }
 
-int timeToPreempt(int prio) {
+int timeToPreempt(int prio, int checkSamePrio) {
     acquire(&ptable.lock);
+
     for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
         if (p->state != RUNNABLE)
             continue;
-        if (p->priority <= prio) {
+        if ((p->priority < prio) || (p->priority == prio && checkSamePrio)) {
             release(&ptable.lock);
             return 1;
         }
@@ -533,13 +532,23 @@ void scheduler(void) {
             // it had not yield
             if (!alottedP)
                 panic("Returning from swtch; alloted process is blank");
-            if (alottedP->pid > 2)
-                cprintf("Deprioting %d %d\n", alottedP->stat.allotedQ[0],
-                        prioQSize[alottedP->stat.allotedQ[0]]);
+            // if (alottedP->pid > 2)
+            //     cprintf("Deprioting %d %d\n", alottedP->stat.allotedQ[0],
+            //             prioQSize[alottedP->stat.allotedQ[0]]);
 
-            // how to handle the case when process goes to sleep?
-
-            decPrio(alottedP->stat.allotedQ[0], 0);
+            // if process went to sleep or was not able to complete its full
+            // time slice, push it to end of same queue
+            int procTcks = (alottedP->stat.ticks[alottedP->stat.allotedQ[0]]);
+            if (alottedP->state == SLEEPING ||
+                (procTcks > 0 &&
+                 procTcks != (1 << alottedP->stat.allotedQ[0]))) {
+                if (alottedP->pid > 2 && procTcks > 0)
+                    cprintf("HEHE %d %d\n", procTcks,
+                            alottedP->stat.allotedQ[0]);
+                decPrio(alottedP->stat.allotedQ[0], 1);
+            } else {
+                decPrio(alottedP->stat.allotedQ[0], 0);
+            }
 #endif
             switchkvm();
 
@@ -772,6 +781,7 @@ void pushBack(int qIdx, struct proc *p) {
     p->stat.allotedQ[1] = backIndex(qIdx);
     prioQ[qIdx][p->stat.allotedQ[1]] = p;
     ++prioQSize[qIdx];
+    p->stat.ticks[p->stat.allotedQ[0]] = 0;
 }
 
 void deleteIdx(int qIdx, int idx) {
