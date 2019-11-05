@@ -51,7 +51,7 @@ void trap(struct trapframe *tf) {
                 }
 
                 if (myproc())
-                    myproc()->stat->ticks[myproc()->allotedQ[0]]++;
+                    myproc()->stat.ticks[myproc()->stat.allotedQ[0]]++;
 
                 wakeup(&ticks);
                 release(&tickslock);
@@ -111,13 +111,13 @@ void trap(struct trapframe *tf) {
     struct proc* currp = myproc();
 
     if (currp && tf->trapno == T_IRQ0 + IRQ_TIMER) {
-        int queueIdx = currp->allotedQ[0];
+        int queueIdx = currp->stat.allotedQ[0];
 
         if (queueIdx < 0) {
             cprintf("%d %d\n", queueIdx, currp->pid);
             panic("Invalid queue allotment");
         }
-        int tcks = currp->stat->ticks[queueIdx];
+        int tcks = currp->stat.ticks[queueIdx];
 
         switch (currp->state) {
             case RUNNING:
@@ -126,16 +126,16 @@ void trap(struct trapframe *tf) {
                     decPrio(queueIdx);
                     cprintf("Proc %d preempted(ticks got: %d)\n", currp->pid,
                             tcks);
-                    currp->stat->ticks[currp->allotedQ[0]] = 0;
+                    currp->stat.ticks[currp->stat.allotedQ[0]] = 0;
                     yield();
                 }
                 break;
             case RUNNABLE:
                 if (tcks >= WAIT_LIMIT) {
-                    currp->stat->ticks[queueIdx] = 0;
+                    currp->stat.ticks[queueIdx] = 0;
                     cprintf("Process %d aged\n", currp->pid);
-                    incPrio(queueIdx, currp->allotedQ[1]);
-                    currp->stat->ticks[currp->allotedQ[0]] = 0;
+                    incPrio(queueIdx, currp->stat.allotedQ[1]);
+                    currp->stat.ticks[currp->stat.allotedQ[0]] = 0;
                 }
                 break;
             case UNUSED:

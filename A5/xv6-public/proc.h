@@ -38,6 +38,35 @@ enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 #define DEFAULT_PRIORITY 60
 #endif
 
+#ifdef MLFQ
+#define PQ_COUNT 5
+#define NO_Q_ALLOT -1
+// statistics for each process, from assignment
+struct proc_stat {
+    int pid;              // PID of each process
+    int runtime;          // Use suitable unit of time
+    int num_run;          // number of time the process is executed
+    int allotedQ[2];      // current assigned queue and position inside it
+    int ticks[PQ_COUNT];  // number of ticks each process has received at each
+                          // of the 5 priority queue
+};
+#define MAX_PROC_COUNT (int)1e4
+// after 10 ticks, process priority is going to increase
+#define WAIT_LIMIT 10
+#define HIGHEST_PRIO_Q 0
+// this priority queue holds all runnable process
+// it is changed every time scheduler runs
+struct proc *prioQ[PQ_COUNT][MAX_PROC_COUNT];
+int prioQSize[PQ_COUNT];
+int prioQStart[PQ_COUNT];
+struct proc *getFront(int qIdx);
+struct proc *popFront(int qIdx);
+void pushBack(int qIdx, struct proc *p);
+void deleteIdx(int qIdx, int idx);
+void decPrio(int queueIdx);
+void incPrio(int queueIdx, int qPos);
+#endif
+
 // Per-process state
 struct proc {
     uint sz;                     // Size of process memory (bytes)
@@ -58,9 +87,7 @@ struct proc {
     int rtime;                   // process ka total time
     int priority;                // process priority
 #ifdef MLFQ
-    struct proc_stat *stat;
-    int allotedQ[2];  // zero indexed number of the queue where this
-                      // process lies right now
+    struct proc_stat stat;
 #endif
 };
 
@@ -69,35 +96,6 @@ struct proc {
 //   original data and bss
 //   fixed-size stack
 //   expandable heap
-
-#ifdef MLFQ
-#define PQ_COUNT 5
-#define NO_Q_ALLOT -1
-// statistics for each process, from assignment
-struct proc_stat {
-    int pid;              // PID of each process
-    int runtime;          // Use suitable unit of time
-    int num_run;          // number of time the process is executed
-    int current_queue;    // current assigned queue
-    int ticks[PQ_COUNT];  // number of ticks each process has received at each
-                          // of the 5 priority queue
-};
-#define MAX_PROC_COUNT (int)1e4
-// after 10 ticks, process priority is going to increase
-#define WAIT_LIMIT 10
-#define HIGHEST_PRIO_Q 0
-// this priority queue holds all runnable process
-// it is changed every time scheduler runs
-struct proc *prioQ[PQ_COUNT][MAX_PROC_COUNT];
-int prioQSize[PQ_COUNT];
-int prioQStart[PQ_COUNT];
-struct proc *getFront(int qIdx);
-struct proc *popFront(int qIdx);
-void pushBack(int qIdx, struct proc *p);
-void deleteIdx(int qIdx, int idx);
-void decPrio(int queueIdx);
-void incPrio(int queueIdx, int qPos);
-#endif
 
 int procIsDead(struct proc *p);
 int timeToPreempt(int prio);

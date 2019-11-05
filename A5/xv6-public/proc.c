@@ -70,10 +70,13 @@ int ifMeraProc(struct proc *p) {
 }
 
 void initmeraproc(struct proc *p) {
-    p->allotedQ[0] = NO_Q_ALLOT;
-    p->allotedQ[1] = NO_Q_ALLOT;
+    if (!p)
+        return;
+    p->stat.allotedQ[0] = NO_Q_ALLOT;
+    p->stat.allotedQ[1] = NO_Q_ALLOT;
+
     for (int i = 0; i < PQ_COUNT; i++) {
-        p->stat->ticks[i] = 0;
+        p->stat.ticks[i] = 0;
     }
     p->ctime = ticks;
     p->rtime = 0;
@@ -439,7 +442,7 @@ void scheduler(void) {
 #ifdef MLFQ
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state == RUNNABLE) {
-                if (p->allotedQ[0] == NO_Q_ALLOT) {
+                if (p->stat.allotedQ[0] == NO_Q_ALLOT) {
                     // put in highest priority queue
                     pushBack(HIGHEST_PRIO_Q, p);
                 }
@@ -739,9 +742,9 @@ int backIndex(int qIdx) {
 
 void pushBack(int qIdx, struct proc *p) {
     cprintf("[MLFQ] Added process %d to queue %d\n", p->pid, qIdx);
-    p->allotedQ[0] = qIdx;
-    p->allotedQ[1] = backIndex(qIdx);
-    prioQ[qIdx][p->allotedQ[1]] = p;
+    p->stat.allotedQ[0] = qIdx;
+    p->stat.allotedQ[1] = backIndex(qIdx);
+    prioQ[qIdx][p->stat.allotedQ[1]] = p;
     ++prioQSize[qIdx];
 }
 
