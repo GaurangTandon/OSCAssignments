@@ -516,9 +516,9 @@ void scheduler(void) {
             switchuvm(alottedP);
 
             alottedP->state = RUNNING;
-            cprintf("[SCHEDULER] process pid %d on cpu %d (prio %d)\n",
-                    alottedP->name, alottedP->pid, c->apicid,
-                    alottedP->priority);
+            if (alottedP->pid > 2)
+                cprintf("[SCHEDULER] process pid %d on cpu %d (prio %d)\n",
+                        alottedP->pid, c->apicid, alottedP->priority);
             swtch(&(c->scheduler), alottedP->context);
 
             switchkvm();
@@ -527,7 +527,9 @@ void scheduler(void) {
             // It should have changed its p->state before coming back.
             c->proc = 0;
         }
+#ifdef PBS
     end:
+#endif
         release(&ptable.lock);
     }
 }
@@ -727,7 +729,8 @@ struct proc *popFront(int qIdx) {
     }
 
     struct proc *p = getFront(qIdx);
-    cprintf("Removed process %s %d from queue %d\n", p->name, p->pid, qIdx);
+    cprintf("[MLFQ] Removed process %s %d from queue %d\n", p->name, p->pid,
+            qIdx);
     prioQStart[qIdx]++;
     prioQSize[qIdx]--;
     return p;
@@ -739,7 +742,7 @@ int backIndex(int qIdx) {
 }
 
 void pushBack(int qIdx, struct proc *p) {
-    cprintf("Added process %s %d to queue %d\n", p->name, p->pid, qIdx);
+    cprintf("[MLFQ] Added process %s %d to queue %d\n", p->name, p->pid, qIdx);
     p->allotedQ[0] = qIdx + 1;  // one-indexed
     p->allotedQ[1] = backIndex(qIdx);
     prioQ[qIdx][p->allotedQ[1]] = p;
