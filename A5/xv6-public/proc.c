@@ -75,7 +75,11 @@ void initmeraproc(struct proc *p) {
     for (int i = 0; i < PQ_COUNT; i++) {
         p->stat->ticks[i] = 0;
     }
+    p->ctime = ticks;
+    p->rtime = 0;
+    p->etime = -1;
 }
+
 // PAGEBREAK: 32
 // Look in the process table for an UNUSED proc.
 // If found, change state to EMBRYO and initialize
