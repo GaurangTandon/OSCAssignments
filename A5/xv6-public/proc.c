@@ -187,7 +187,7 @@ int growproc(int n) {
 int timeToPreempt(int prio) {
     int c = 0;
     acquire(&ptable.lock);
-    for (struct proc *p = ptable.proc; p <= &ptable.proc[NPROC]; p++) {
+    for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
         if (p->state != RUNNABLE)
             continue;
         if (p->priority < prio) {
@@ -237,7 +237,7 @@ int fork(void) {
     np->etime = -1;
 #ifdef PBS
     if (ifMeraProc(np)) {
-        np->priority = random(ticks) % 101;
+        np->priority = np->pid / 2;
     } else
         np->priority = DEFAULT_PRIORITY;
 #endif
@@ -475,29 +475,36 @@ void scheduler(void) {
         }
 #else
 #ifdef PBS
-        struct proc *minPrioProc = 0;
-
-        int a = 0;
+        int minPrio = 101;
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state == RUNNABLE) {
-                if (ifMeraProc(myproc())) {
-                    a = 1;
-                    cprintf("%d (%d) ", p->pid, p->priority);
-                }
-                if (minPrioProc) {
-                    if (p->priority < minPrioProc->priority)
-                        minPrioProc = p;
-                } else
-                    minPrioProc = p;
+                if (p->priority < minPrio)
+                    minPrio = p->priority;
             }
         }
 
-        if (a)
-            cprintf("\n");
+        for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+            if (p->state == RUNNABLE && p->priority == minPrio) {
+                struct proc *alottedP = p;
+                // Switch to chosen process.  It is the process's job
+                // to release ptable.lock and then reacquire it
+                // before jumping back to us.
+                c->proc = alottedP;
+                switchuvm(alottedP);
 
-        if (minPrioProc) {
-            alottedP = minPrioProc;
+                alottedP->state = RUNNING;
+                cprintf("[PBSCHEDULER] process pid %d on cpu %d (prio %d)\n",
+                        alottedP->pid, c->apicid, alottedP->priority);
+                swtch(&(c->scheduler), alottedP->context);
+
+                switchkvm();
+
+                // Processis done running for now.
+                // It should have changed its p->state before coming back.
+                c->proc = 0;
+            }
         }
+        goto end;
 #else
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state != RUNNABLE)
@@ -517,17 +524,18 @@ void scheduler(void) {
             switchuvm(alottedP);
 
             alottedP->state = RUNNING;
+            cprintf("[SCHEDULER] process pid %d on cpu %d (prio %d)\n",
+                    alottedP->name, alottedP->pid, c->apicid,
+                    alottedP->priority);
             swtch(&(c->scheduler), alottedP->context);
-            cprintf("[SCHEDULER] process %s pid %d on cpu %d\n", alottedP->name,
-                    alottedP->pid, c->apicid);
 
             switchkvm();
 
-            // Process is done running for now.
+            // Processis done running for now.
             // It should have changed its p->state before coming back.
             c->proc = 0;
         }
-
+    end:
         release(&ptable.lock);
     }
 }
@@ -698,18 +706,6 @@ void procdump(void) {
         }
         cprintf("\n");
     }
-}
-
-void updateStats() {
-    acquire(&ptable.lock);
-
-    for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-        if (p->state == RUNNING) {
-            p->rtime++;
-        }
-    }
-
-    release(&ptable.lock);
 }
 
 int set_prio(int newPriority) {
