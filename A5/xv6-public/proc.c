@@ -526,14 +526,21 @@ void scheduler(void) {
 #endif
 
             alottedP->state = RUNNING;
-            if (alottedP->pid > 2)
-                cprintf("[SCHEDULER] process pid %d on cpu %d (prio %d)\n",
-                        alottedP->pid, c->apicid, alottedP->priority);
+            if (alottedP->pid > 2) {
+#ifdef FCFS
+                cprintf("[SCHEDULER] process %d, cpu %d\n", alottedP->pid,
+                        c->apicid);
+#endif
+#ifdef MLFQ
+                cprintf("[SCHEDULER] process %d, cpu %d, queue %d\n",
+                        alottedP->pid, c->apicid, getQIdx(alottedP));
+#endif
+            }
             swtch(&(c->scheduler), alottedP->context);
 
 #ifdef MLFQ
-            // technically it should be pushing at the back of the same queue if
-            // it had not yield
+            // technically it should be pushing at the back of the same
+            // queue if it had not yield
             if (!alottedP)
                 panic("Returning from swtch; alloted process is blank");
             // if (alottedP->pid > 2)
@@ -547,7 +554,7 @@ void scheduler(void) {
                 (procTcks > 0 &&
                  procTcks < (1 << alottedP->stat.allotedQ[0]))) {
                 if (alottedP->pid > 2 && procTcks > 0)
-                    cprintf("Process preempted in lesser ticks %d %d\n",
+                    cprintf("Process preempted in lesser ticks %d, queue %d\n",
                             procTcks, alottedP->stat.allotedQ[0]);
                 decPrio(alottedP, 1);
             } else {
@@ -590,7 +597,8 @@ void sched(void) {
     struct cpu *c = mycpu();
     if (DEBUG)
         cprintf(
-            "[SCHED] Switching from context of proc %d (%s) to cpu scheduler "
+            "[SCHED] Switching from context of proc %d (%s) to cpu "
+            "scheduler "
             "%d\n",
             p->pid, p->name, c->apicid);
     swtch(&p->context, c->scheduler);
@@ -830,14 +838,17 @@ void decPrio(struct proc *currp, int retain) {
 
     if (!currp)
         panic("a");
+
     if (queueIdx == PQ_COUNT - 1 || retain) {
         pushBack(queueIdx, currp);
         if (currp->pid > 2)
-            cprintf("[MLFQ] Queue of %d remains same\n", currp->pid);
+            cprintf("[MLFQ] Queue of %d remains same as %d\n", currp->pid,
+                    queueIdx);
     } else {
         pushBack(queueIdx + 1, currp);
         if (currp->pid > 2)
-            cprintf("[MLFQ] Decremented queue of %d\n", currp->pid);
+            cprintf("[MLFQ] Decremented queue of %d to %d\n", currp->pid,
+                    queueIdx + 1);
     }
 }
 
