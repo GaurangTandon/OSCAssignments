@@ -69,6 +69,13 @@ int ifMeraProc(struct proc *p) {
     return p && p->pid > 2;
 }
 
+void initmeraproc(struct proc *p) {
+    p->allotedQ[0] = NO_Q_ALLOT;
+    p->allotedQ[1] = NO_Q_ALLOT;
+    for (int i = 0; i < PQ_COUNT; i++) {
+        p->stat->ticks[i] = 0;
+    }
+}
 // PAGEBREAK: 32
 // Look in the process table for an UNUSED proc.
 // If found, change state to EMBRYO and initialize
@@ -118,12 +125,8 @@ found:
     p->ctime = ticks;
     p->rtime = 0;
     p->etime = -1;
-#ifdef PBS
-    if (ifMeraProc(p)) {
-        p->priority = ticks % 100;
-    } else {
-        p->priority = DEFAULT_PRIORITY;
-    }
+#ifdef MLFQ
+    initmeraproc(p);
 #endif
 
     return p;
@@ -224,9 +227,7 @@ int fork(void) {
 
     // Clear %eax so that fork returns 0 in the child.
     np->tf->eax = 0;
-    np->ctime = ticks;
-    np->rtime = 0;
-    np->etime = -1;
+
 #ifdef PBS
     if (ifMeraProc(np)) {
         np->priority = np->pid / 2;
@@ -433,28 +434,21 @@ void scheduler(void) {
         }
 #else
 #ifdef MLFQ
-        int a = 0;
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p->state == RUNNABLE) {
-                if (!p->allotedQ[0]) {
+                if (p->allotedQ[0] == NO_Q_ALLOT) {
                     // put in highest priority queue
                     pushBack(HIGHEST_PRIO_Q, p);
-                    cprintf(" (%s %d)", p->name, p->pid);
-                    a = 1;
                 }
             }
         }
-
-        if (a)
-            cprintf("\n");
 
         for (int i = 0; i < PQ_COUNT; i++) {
             while (prioQSize[i]) {
                 struct proc *p = getFront(i);
 
                 if (procIsDead(p)) {
-                    p->allotedQ[0] = 0;
-                    p->allotedQ[1] = 0;
+                    initmeraproc(p);
                     popFront(i);
                 } else {
                     alottedP = p;
@@ -729,8 +723,7 @@ struct proc *popFront(int qIdx) {
     }
 
     struct proc *p = getFront(qIdx);
-    cprintf("[MLFQ] Removed process %s %d from queue %d\n", p->name, p->pid,
-            qIdx);
+    cprintf("[MLFQ] Removed process %d from queue %d\n", p->pid, qIdx);
     prioQStart[qIdx]++;
     prioQSize[qIdx]--;
     return p;
@@ -742,8 +735,8 @@ int backIndex(int qIdx) {
 }
 
 void pushBack(int qIdx, struct proc *p) {
-    cprintf("[MLFQ] Added process %s %d to queue %d\n", p->name, p->pid, qIdx);
-    p->allotedQ[0] = qIdx + 1;  // one-indexed
+    cprintf("[MLFQ] Added process %d to queue %d\n", p->pid, qIdx);
+    p->allotedQ[0] = qIdx;
     p->allotedQ[1] = backIndex(qIdx);
     prioQ[qIdx][p->allotedQ[1]] = p;
     ++prioQSize[qIdx];

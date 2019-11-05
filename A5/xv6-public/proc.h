@@ -59,8 +59,8 @@ struct proc {
     int priority;                // process priority
 #ifdef MLFQ
     struct proc_stat *stat;
-    int allotedQ[2];  // one indexed number of the queue where this process lies
-                      // right now
+    int allotedQ[2];  // zero indexed number of the queue where this
+                      // process lies right now
 #endif
 };
 
@@ -72,6 +72,7 @@ struct proc {
 
 #ifdef MLFQ
 #define PQ_COUNT 5
+#define NO_Q_ALLOT -1
 // statistics for each process, from assignment
 struct proc_stat {
     int pid;              // PID of each process

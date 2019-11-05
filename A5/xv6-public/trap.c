@@ -49,6 +49,10 @@ void trap(struct trapframe *tf) {
                 if (myproc() && myproc()->state == RUNNING) {
                     myproc()->rtime++;
                 }
+
+                if (myproc())
+                    myproc()->stat->ticks[myproc()->allotedQ[0]]++;
+
                 wakeup(&ticks);
                 release(&tickslock);
             }
@@ -107,25 +111,27 @@ void trap(struct trapframe *tf) {
     struct proc* currp = myproc();
 
     if (currp && tf->trapno == T_IRQ0 + IRQ_TIMER) {
-        int queueIdx = currp->allotedQ[0] - 1;
+        int queueIdx = currp->allotedQ[0];
 
         if (queueIdx < 0) {
             cprintf("%d %d\n", queueIdx, currp->pid);
             panic("Invalid queue allotment");
         }
+        int tcks = currp->stat->ticks[queueIdx];
 
         switch (currp->state) {
             case RUNNING:
                 // do a round robin, my time slice is over
-                if (currp->stat->ticks[queueIdx] % (1 << queueIdx) == 0) {
+                if (tcks && tcks % (1 << queueIdx) == 0) {
                     decPrio(queueIdx);
-                    cprintf("Proc %d preempted\n", currp->pid);
+                    cprintf("Proc %d preempted(ticks got: %d)\n", currp->pid,
+                            tcks);
                     currp->stat->ticks[currp->allotedQ[0]] = 0;
                     yield();
                 }
                 break;
             case RUNNABLE:
-                if (currp->stat->ticks[queueIdx] >= WAIT_LIMIT) {
+                if (tcks >= WAIT_LIMIT) {
                     currp->stat->ticks[queueIdx] = 0;
                     cprintf("Process %d aged\n", currp->pid);
                     incPrio(queueIdx, currp->allotedQ[1]);
