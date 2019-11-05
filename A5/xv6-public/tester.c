@@ -5,6 +5,8 @@
 // Parent forks two children, waits for them to exit and then finally exits
 int main(void) {
 #ifdef PBS
+    // forks ten processes with priorities initially of the value pid/2,
+    // but after that halfway through it resets the priorities to 1000-j/2
     int count = 10, lim = 1e7, halfLim = lim / 2;
     for (int j = 0; j < count; j++) {
         if (fork() == 0) {
