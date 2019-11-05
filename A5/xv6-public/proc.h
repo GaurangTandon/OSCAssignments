@@ -58,6 +58,7 @@ void deleteIdx(int qIdx, int idx);
 void decPrio(struct proc *queueIdx, int retain);
 void incPrio(struct proc *queueIdx, int qPos);
 int getQIdx(struct proc *currp);
+int getpinfo(struct proc_stat *ps, int pid);
 #endif
 
 // Per-process state

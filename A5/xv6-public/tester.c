@@ -1,7 +1,7 @@
 #include "types.h"
 #include "stat.h"
-#include "procstat.h"
 #include "user.h"
+#include "procstat.h"
 
 // Parent forks two children, waits for them to exit and then finally exits
 int main(void) {
