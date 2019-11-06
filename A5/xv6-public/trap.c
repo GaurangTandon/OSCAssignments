@@ -41,7 +41,10 @@ void updateStatsAndAging() {
             struct proc *p = prioQ[i][j];
             int qIdx = getQIdx(p);
 
-            if (!procIsDead(p)) {
+            if (!p || p->killed || p->pid == 0)
+                continue;
+
+            if (p->state == RUNNABLE || p->state == RUNNING) {
                 int tcks = (++p->stat.ticks[qIdx]);
                 p->stat.actualTicks[qIdx]++;
 

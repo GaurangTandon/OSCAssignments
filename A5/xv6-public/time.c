@@ -8,9 +8,10 @@ int main(int argc, char *argv[]) {
     if (a == 0) {
         exec(argv[1], argv + 1);
     } else {
-        int *wtime = 0, *rtime = 0;
+        int *wtime = (int *)malloc(sizeof(int)),
+            *rtime = (int *)malloc(sizeof(int));
         waitx(wtime, rtime);
-        printf(1, "Runtime: %d\n", *wtime);
+        printf(1, "Runtime: %d, Wtime: %d\n", *rtime, *wtime);
     }
 
     exit();
