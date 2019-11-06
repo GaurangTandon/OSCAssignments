@@ -480,24 +480,40 @@ void scheduler(void) {
         }
 
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-            if (p->state == RUNNABLE && p->priority == minPrio) {
-                struct proc *alottedP = p;
-                // Switch to chosen process.  It is the process's job
-                // to release ptable.lock and then reacquire it
-                // before jumping back to us.
-                c->proc = alottedP;
-                switchuvm(alottedP);
+            if (p->state == RUNNABLE) {
+                if (p->priority == minPrio) {
+                    struct proc *alottedP = p;
+                    // Switch to chosen process.  It is the process's job
+                    // to release ptable.lock and then reacquire it
+                    // before jumping back to us.
+                    c->proc = alottedP;
+                    switchuvm(alottedP);
 
-                alottedP->state = RUNNING;
-                cprintf("[PBSCHEDULER] pid %d on cpu %d (prio %d)\n",
-                        alottedP->pid, c->apicid, alottedP->priority);
-                swtch(&(c->scheduler), alottedP->context);
+                    alottedP->state = RUNNING;
+                    cprintf("[PBSCHEDULER] pid %d on cpu %d (prio %d)\n",
+                            alottedP->pid, c->apicid, alottedP->priority);
+                    swtch(&(c->scheduler), alottedP->context);
 
-                switchkvm();
+                    switchkvm();
+                    // If I got yielded because of higher priority process
+                    // coming into my way
+                    int minPrio2 = 101;
+                    for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC];
+                         p++) {
+                        if (p->state == RUNNABLE) {
+                            if (p->priority < minPrio2)
+                                minPrio2 = p->priority;
+                        }
+                    }
 
-                // Processis done running for now.
-                // It should have changed its p->state before coming back.
-                c->proc = 0;
+                    if (minPrio2 < minPrio) {
+                        break;
+                    }
+
+                    // Processis done running for now.
+                    // It should have changed its p->state before coming back.
+                    c->proc = 0;
+                }
             }
         }
         goto end;
