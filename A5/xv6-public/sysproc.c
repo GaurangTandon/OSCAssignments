@@ -12,6 +12,8 @@ int sys_fork(void) {
 }
 
 int sys_exit(void) {
+    if (!myproc())
+        panic("Exitinng dead process");
     cprintf("exit %d\n", myproc()->pid);
 #ifdef FCFS
     cprintf("ctime %d\n", myproc()->ctime);

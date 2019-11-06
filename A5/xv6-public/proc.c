@@ -939,23 +939,30 @@ int getpinfo(struct proc_stat *ps, int pid) {
         panic("Pid is not set");
     }
 
-    if (!myproc()) {
-        panic("myproc is dead");
+    struct proc *p = 0;
+    acquire(&ptable.lock);
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+        if (p->pid == pid)
+            break;
+    release(&ptable.lock);
+
+    if (!p || p->pid != pid) {
+        return -1;
     }
 
     if (!sizeof(myproc()->stat)) {
         panic("proc_stat srtuct is null");
     }
 
-    ps->pid = myproc()->pid;
+    ps->pid = p->pid;
     // works
     // cprintf("%d %d\n", sizeof(ps->ticks), sizeof(ps->allotedQ));
-    ps->runtime = myproc()->rtime;
+    ps->runtime = p->rtime;
     for (int i = 0; i < 2; i++) {
-        ps->allotedQ[i] = myproc()->stat.allotedQ[i];
+        ps->allotedQ[i] = p->stat.allotedQ[i];
     }
-    ps->num_run = myproc()->stat.num_run;
+    ps->num_run = p->stat.num_run;
     for (int i = 0; i < PQ_COUNT; i++)
-        ps->ticks[i] = myproc()->stat.actualTicks[i];
+        ps->ticks[i] = p->stat.actualTicks[i];
     return 0;
 }
