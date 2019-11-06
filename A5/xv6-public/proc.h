@@ -40,7 +40,6 @@ enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 #define DEFAULT_PRIORITY 60
 #endif
 
-#ifdef MLFQ
 #define NO_Q_ALLOT -1
 #define MAX_PROC_COUNT (int)1e4
 // after 10 ticks, process priority is going to increase
@@ -59,7 +58,6 @@ void decPrio(struct proc *queueIdx, int retain);
 void incPrio(struct proc *queueIdx, int qPos);
 int getQIdx(struct proc *currp);
 int getpinfo(struct proc_stat *ps, int pid);
-#endif
 
 // Per-process state
 struct proc {

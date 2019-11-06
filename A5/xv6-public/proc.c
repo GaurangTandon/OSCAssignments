@@ -442,6 +442,10 @@ void scheduler(void) {
                 if (getQIdx(p) == NO_Q_ALLOT) {
                     cprintf("Prrocess %d\n", p->pid);
                     panic("Should have been alloted in allocproc/wakeup1");
+                } else {
+                    if (prioQSize[getQIdx(p)] == 0) {
+                        pushBack(getQIdx(p), p);
+                    }
                 }
             }
         }
@@ -533,9 +537,9 @@ void scheduler(void) {
                         c->apicid);
 #endif
 #ifdef MLFQ
-                // if (DEBUG)
-                cprintf("[SCHEDULER] process %d, cpu %d, queue %d\n",
-                        alottedP->pid, c->apicid, getQIdx(alottedP));
+                if (DEBUG)
+                    cprintf("[SCHEDULER] process %d, cpu %d, queue %d\n",
+                            alottedP->pid, c->apicid, getQIdx(alottedP));
 #endif
             }
             swtch(&(c->scheduler), alottedP->context);
@@ -801,6 +805,9 @@ int backIndex(int qIdx) {
 void pushBack(int qIdx, struct proc *p) {
     if (!p) {
         panic("Cannot push back empty proc");
+    }
+    if (p->pid > 2) {
+        // cprintf("Putting process %d to queue %d\n", p->pid, getQIdx(p));
     }
     p->stat.allotedQ[0] = qIdx;
     p->stat.allotedQ[1] = backIndex(qIdx);
