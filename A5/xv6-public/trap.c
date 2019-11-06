@@ -159,7 +159,7 @@ void trap(struct trapframe *tf) {
 #ifdef PBS
     if (myproc() && myproc()->state == RUNNING &&
         tf->trapno == T_IRQ0 + IRQ_TIMER) {
-        if (timeToPreempt(myproc()->priority), 1) {
+        if (timeToPreempt(myproc()->priority, 1)) {
             yield();
         }
     }

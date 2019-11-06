@@ -767,14 +767,19 @@ void procdump(void) {
             for (i = 0; i < 10 && pc[i] != 0; i++)
                 cprintf(" %p", pc[i]);
         }
+
+#ifdef MLFQ
         cprintf(" - queue %d", getQIdx(p));
+#endif
         cprintf("\n");
     }
 
+#ifdef MLFQ
     cprintf("Queue status\n");
     for (int i = 0; i < PQ_COUNT; i++) {
         cprintf("Queue %d (%d): %d\n", i, prioQStart[i], prioQSize[i]);
     }
+#endif
 }
 
 int set_prio(int newPriority) {
