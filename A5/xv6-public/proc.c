@@ -262,6 +262,9 @@ int fork(void) {
     np->state = RUNNABLE;
 
     release(&ptable.lock);
+#ifdef DEFAULT
+    cprintf("Runnable fork of pid %d created\n", pid);
+#endif
 
     return pid;
 }
@@ -421,6 +424,34 @@ void scheduler(void) {
     struct cpu *c = mycpu();
     c->proc = 0;
 
+#ifdef DEFAULT
+    for (;;) {
+        // Enable interrupts on this processor.
+        sti();
+        // Loop over process table looking for process to run.
+        acquire(&ptable.lock);
+
+        for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+            if (p->state != RUNNABLE)
+                continue;
+            // Switch to chosen process.  It is the process's job
+            // to release ptable.lock and then reacquire it
+            // before jumping back to us.
+            c->proc = p;
+            switchuvm(p);
+            p->state = RUNNING;
+
+            swtch(&(c->scheduler), p->context);
+            switchkvm();
+
+            // Process is done running for now.
+            // It should have changed its p->state before coming back.
+            c->proc = 0;
+        }
+        release(&ptable.lock);
+    }
+#endif
+
     for (;;) {
         struct proc *alottedP = 0;
 
@@ -445,7 +476,7 @@ void scheduler(void) {
         if (minctimeProc) {
             alottedP = minctimeProc;
         }
-#else
+#endif
 #ifdef MLFQ
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
             if (p && p->state == RUNNABLE) {
@@ -479,7 +510,7 @@ void scheduler(void) {
             if (alottedP)
                 break;
         }
-#else
+#endif
 #ifdef PBS
         int minPrio = 101;
         for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
@@ -527,16 +558,6 @@ void scheduler(void) {
             }
         }
         goto end;
-#else
-        for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-            if (p->state != RUNNABLE)
-                continue;
-
-            alottedP = p;
-            break;
-        }
-#endif
-#endif
 #endif
         if (alottedP) {
             // Switch to chosen process.  It is the process's job
@@ -585,7 +606,7 @@ void scheduler(void) {
                 procTcks = alottedP->stat.ticks[queueIdx];
             if ((alottedP->state == SLEEPING) ||
                 (procTcks > 0 && (procTcks < (1 << queueIdx)))) {
-                if (alottedP->pid > 2 && procTcks > 0) {
+                if (alottedP->pid > 2 && alottedP->state != SLEEPING) {
                     // if (DEBUG)
                     cprintf("Process preempted in lesser ticks %d, queue %d\n",
                             procTcks, queueIdx);

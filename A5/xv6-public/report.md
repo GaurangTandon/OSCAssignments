@@ -1,0 +1,7 @@
+# REPORT
+
+## FCFS
+
+## PBS
+
+## MLFQ
