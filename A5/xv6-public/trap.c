@@ -39,15 +39,16 @@ void updateStatsAndAging() {
         int lim = backIndex(i);
         for (int j = prioQStart[i]; j != lim; j++, j %= MAX_PROC_COUNT) {
             struct proc *p = prioQ[i][j];
+            int qIdx = getQIdx(p);
 
             if (!procIsDead(p)) {
-                int tcks = (++p->stat.ticks[getQIdx(p)]);
-                p->stat.actualTicks[getQIdx(p)]++;
+                int tcks = (++p->stat.ticks[qIdx]);
+                p->stat.actualTicks[qIdx]++;
 
                 if (p->state == RUNNABLE && tcks >= WAIT_LIMIT) {
-                    p->stat.ticks[getQIdx(p)] = 0;
+                    p->stat.ticks[qIdx] = 0;
                     cprintf("[MLFQ] Process %d aged\n", p->pid);
-                    incPrio(p, p->stat.allotedQ[1]);
+                    incPrio(p);
                 }
             }
         }

@@ -874,6 +874,7 @@ void deleteIdx(int qIdx, int idx) {
     int bi = backIndex(qIdx);
     for (int i = idx; i != bi; i++, i %= MAX_PROC_COUNT) {
         prioQ[qIdx][i] = prioQ[qIdx][(i + 1) % MAX_PROC_COUNT];
+        prioQ[qIdx][i]->stat.allotedQ[1] = i;
     }
     prioQSize[qIdx]--;
 }
@@ -882,10 +883,16 @@ int getQIdx(struct proc *currp) {
     return currp->stat.allotedQ[0];
 }
 
-void incPrio(struct proc *currp, int qPos) {
-    int queueIdx = getQIdx(currp);
-    if (queueIdx < 0)
+int getQPos(struct proc *currp) {
+    return currp->stat.allotedQ[1];
+}
+
+void incPrio(struct proc *currp) {
+    int queueIdx = getQIdx(currp), qPos = getQPos(currp);
+    if (queueIdx < 0 || qPos < 0) {
+        cprintf("%d %d\n", queueIdx, qPos);
         panic("Invalid qi");
+    }
     deleteIdx(queueIdx, qPos);
 
     if (!currp)
