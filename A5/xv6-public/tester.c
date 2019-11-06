@@ -53,35 +53,58 @@ int main(int argc, char* argv[]) {
     struct proc_stat* ps = (struct proc_stat*)malloc(sizeof(struct proc_stat));
 
     printf(1, "Starting MLFQ testing - fork process\n");
-    const int count = 10, lim = 1e8;
+    const int count = 10, lim = 1e8, parts = 10;
+    int** queue = (int**)malloc(sizeof(int*) * count);
+    for (int i = 0; i < count; i++)
+        queue[i] = (int*)malloc(sizeof(int) * parts);
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j < parts; j++)
+            queue[i][j] = -1;
+    }
 
     for (int j = 0; j < count; j++) {
-        int pid = fork();
+        int pid = fork(), actualpid = getpid();
+        int qq = 0;
+
         if (pid < 0)
             printf(1, "Fork failed!!\n");
         else if (pid == 0) {
             volatile int a = 0;
 
             for (volatile int i = 0; i <= lim; i++) {
-                if (i % (lim / 10) == 0) {
-                    getpinfo(ps, getpid());
+                if (i % (lim / parts) == 0) {
+                    getpinfo(ps, actualpid);
+                    int qu = ps->allotedQ[0];
+
                     printf(1, "Status %d of proc %d: RT %d NR %d Q %d TQ %d\n",
-                           i / (lim / 10), ps->pid, ps->runtime, ps->num_run,
-                           ps->allotedQ[0], ps->ticks[ps->allotedQ[0]]);
+                           i / (lim / parts), ps->pid, ps->runtime, ps->num_run,
+                           qu, ps->ticks[qu]);
+
+                    printf(1, "Setting %d %d of queue as %d\n", j, qq, qu);
+                    queue[j][qq] = qu;
+                    qq++;
                 } else {
                     a += 3;
                 }
             }
-            getpinfo(ps, getpid());
+            getpinfo(ps, actualpid);
             printf(1, "Status of proc %d: RT %d NR %d Q %d TQ %d\n", ps->pid,
                    ps->runtime, ps->num_run, ps->allotedQ[0],
                    ps->ticks[ps->allotedQ[0]]);
+
             exit();
         }
     }
 
     for (int i = 0; i < count; i++) {
         wait();
+    }
+    for (int j = 0; j < count; j++) {
+        printf(1, "[");
+        for (int i = 0; i < parts; i++) {
+            printf(1, "%d, ", queue[j][i]);
+        }
+        printf(1, "]\n");
     }
 
     exit();
