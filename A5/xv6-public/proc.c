@@ -879,10 +879,26 @@ int getpinfo(struct proc_stat *ps, int pid) {
     if (!ps) {
         panic("Pointer is empty :/");
     }
+
+    if (!pid) {
+        panic("Pid is not set");
+    }
+
+    if (!myproc()) {
+        panic("myproc is dead");
+    }
+
+    if (!sizeof(myproc()->stat)) {
+        panic("proc_stat srtuct is null");
+    }
+
     ps->pid = myproc()->pid;
+    // works
+    // cprintf("%d %d\n", sizeof(ps->ticks), sizeof(ps->allotedQ));
     ps->runtime = myproc()->rtime;
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 2; i++) {
         ps->allotedQ[i] = myproc()->stat.allotedQ[1];
+    }
     ps->num_run = myproc()->stat.num_run;
     for (int i = 0; i < PQ_COUNT; i++)
         ps->ticks[i] = myproc()->stat.ticks[i];

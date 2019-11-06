@@ -51,29 +51,29 @@ int main(int argc, char* argv[]) {
 #endif
 #ifdef MLFQ
     struct proc_stat* ps = (struct proc_stat*)malloc(sizeof(struct proc_stat));
-    // ps->ticks = (int*)malloc(sizeof(int) * PQ_COUNT);
-    // ps->allotedQ = (int*)malloc(sizeof(int) * 2);
 
     printf(1, "Starting MLFQ testing - fork process\n");
-    int count = 10, lim = 1e7, halfLim = lim / 2;
+    const int count = 10, lim = 1e7;
+    int pids[count];
+
     for (int j = 0; j < count; j++) {
         int pid = fork();
-
         if (pid < 0)
             printf(1, "Fork failed!!\n");
         else if (pid == 0) {
             volatile int a = 0;
+
             for (volatile int i = 0; i <= lim; i++) {
-                if (i == halfLim) {
-                    // getpinfo(ps, getpid());
-                    printf(1, "Status of proc %d: RT %d NR %d Q %d TQ %d\n",
-                           ps->pid, ps->runtime, ps->num_run, ps->allotedQ[0],
-                           ps->ticks[ps->allotedQ[0]]);
+                if (i % (lim / 10) == 0) {
+                    getpinfo(ps, getpid());
+                    printf(1, "Status %d of proc %d: RT %d NR %d Q %d TQ %d\n",
+                           i / (lim / 10), ps->pid, ps->runtime, ps->num_run,
+                           ps->allotedQ[0], ps->ticks[ps->allotedQ[0]]);
                 } else {
                     a += 3;
                 }
             }
-            // getpinfo(ps, getpid());
+            getpinfo(ps, getpid());
             printf(1, "Status of proc %d: RT %d NR %d Q %d TQ %d\n", ps->pid,
                    ps->runtime, ps->num_run, ps->allotedQ[0],
                    ps->ticks[ps->allotedQ[0]]);

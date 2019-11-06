@@ -14,7 +14,8 @@ int main(int argc, char *argv[]) {
         }
         printf(1, "C = %d\n", c);
     } else {
-        int *wtime = 0, *rtime = 0;
+        int *wtime = (int *)malloc(sizeof(int)),
+            *rtime = (int *)malloc(sizeof(int));
         waitx(wtime, rtime);
         printf(1, "w = %d; r = %d\n", *wtime, *rtime);
     }

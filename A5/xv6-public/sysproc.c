@@ -49,7 +49,7 @@ int sys_getpinfo(void) {
     struct proc_stat *ps;
     int pid;
 
-    if (argptr(0, (void *)&ps, 4) < 0 || argint(1, &pid) < 0)
+    if (argptr(0, (void *)&ps, sizeof(ps)) < 0 || argint(1, &pid) < 0)
         return -1;
 
     return getpinfo(ps, pid);
