@@ -54,7 +54,6 @@ int main(int argc, char* argv[]) {
 
     printf(1, "Starting MLFQ testing - fork process\n");
     const int count = 10, lim = 1e7;
-    int pids[count];
 
     for (int j = 0; j < count; j++) {
         int pid = fork();

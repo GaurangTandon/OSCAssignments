@@ -52,7 +52,7 @@ void trap(struct trapframe *tf) {
 
 #ifdef MLFQ
                 if (myproc()) {
-                    myproc()->stat.ticks[myproc()->stat.allotedQ[0]]++;
+                    myproc()->stat.ticks[getQIdx(myproc())]++;
                 }
 #endif
                 wakeup(&ticks);
@@ -143,8 +143,7 @@ void trap(struct trapframe *tf) {
             case RUNNABLE:
                 if (tcks >= WAIT_LIMIT) {
                     currp->stat.ticks[queueIdx] = 0;
-                    if (DEBUG)
-                        cprintf("[MLFQ] Process %d aged\n", currp->pid);
+                    cprintf("[MLFQ] Process %d aged\n", currp->pid);
                     incPrio(currp, currp->stat.allotedQ[1]);
                 }
                 break;

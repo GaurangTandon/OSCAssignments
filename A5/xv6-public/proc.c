@@ -825,7 +825,7 @@ void deleteIdx(int qIdx, int idx) {
     prioQ[qIdx][idx] = 0;
     int bi = backIndex(qIdx);
     for (int i = idx; i != bi; i++, i %= MAX_PROC_COUNT) {
-        prioQ[qIdx][i] = prioQ[qIdx][i + 1];
+        prioQ[qIdx][i] = prioQ[qIdx][(i + 1) % MAX_PROC_COUNT];
     }
     prioQSize[qIdx]--;
 }
@@ -897,7 +897,7 @@ int getpinfo(struct proc_stat *ps, int pid) {
     // cprintf("%d %d\n", sizeof(ps->ticks), sizeof(ps->allotedQ));
     ps->runtime = myproc()->rtime;
     for (int i = 0; i < 2; i++) {
-        ps->allotedQ[i] = myproc()->stat.allotedQ[1];
+        ps->allotedQ[i] = myproc()->stat.allotedQ[i];
     }
     ps->num_run = myproc()->stat.num_run;
     for (int i = 0; i < PQ_COUNT; i++)
