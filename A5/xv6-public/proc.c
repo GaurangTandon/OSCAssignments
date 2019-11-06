@@ -840,9 +840,10 @@ void pushBack(int qIdx, struct proc *p) {
 
     for (int i = prioQStart[qIdx]; i != backIndex(qIdx);
          i++, i %= MAX_PROC_COUNT) {
-        if (prioQ[qIdx][i]->pid == p->pid) {
-            cprintf("Process %d already present in queue %d, exiting\n", p->pid,
-                    qIdx);
+        if (prioQ[qIdx][i] && prioQ[qIdx][i]->pid == p->pid) {
+            // cprintf("Process %d already present in queue %d, exiting\n",
+            // p->pid,
+            //         qIdx);
             return;
         }
     }
