@@ -195,10 +195,20 @@ int timeToPreempt(int prio, int checkSamePrio) {
     for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
         if (p->state != RUNNABLE)
             continue;
+#ifdef MLFQ
+        int q = getQIdx(p);
+        if (q == NO_Q_ALLOT)
+            continue;
+        if ((q < prio) || (q == prio && checkSamePrio)) {
+            release(&ptable.lock);
+            return 1;
+        }
+#else
         if ((p->priority < prio) || (p->priority == prio && checkSamePrio)) {
             release(&ptable.lock);
             return 1;
         }
+#endif
     }
     release(&ptable.lock);
     return 0;
@@ -553,9 +563,9 @@ void scheduler(void) {
                         c->apicid);
 #endif
 #ifdef MLFQ
-                if (DEBUG)
-                    cprintf("[SCHEDULER] process %d, cpu %d, queue %d\n",
-                            alottedP->pid, c->apicid, getQIdx(alottedP));
+                // if (DEBUG)
+                cprintf("[SCHEDULER] process %d, cpu %d, queue %d\n",
+                        alottedP->pid, c->apicid, getQIdx(alottedP));
 #endif
             }
             swtch(&(c->scheduler), alottedP->context);
@@ -573,13 +583,12 @@ void scheduler(void) {
             // time slice, push it to end of same queue
             int queueIdx = getQIdx(alottedP),
                 procTcks = alottedP->stat.ticks[queueIdx];
-            if (alottedP->state == SLEEPING ||
+            if ((alottedP->state == SLEEPING) ||
                 (procTcks > 0 && (procTcks < (1 << queueIdx)))) {
                 if (alottedP->pid > 2 && procTcks > 0) {
-                    if (DEBUG)
-                        cprintf(
-                            "Process preempted in lesser ticks %d, queue %d\n",
-                            procTcks, alottedP->stat.allotedQ[0]);
+                    // if (DEBUG)
+                    cprintf("Process preempted in lesser ticks %d, queue %d\n",
+                            procTcks, queueIdx);
                 }
                 decPrio(alottedP, 1);
             } else {

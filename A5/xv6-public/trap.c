@@ -28,6 +28,33 @@ void idtinit(void) {
     lidt(idt, sizeof(idt));
 }
 
+void updateStatsAndAging() {
+    if (cpuid() != 0)
+        panic("Must be called from cpu0 only");
+
+    ticks++;
+
+#ifdef MLFQ
+    for (int i = 0; i < PQ_COUNT; i++) {
+        int lim = backIndex(i);
+        for (int j = prioQStart[i]; j != lim; j++, j %= MAX_PROC_COUNT) {
+            struct proc *p = prioQ[i][j];
+
+            if (!procIsDead(p)) {
+                int tcks = (++p->stat.ticks[getQIdx(p)]);
+                p->stat.actualTicks[getQIdx(p)]++;
+
+                if (p->state == RUNNABLE && tcks >= WAIT_LIMIT) {
+                    p->stat.ticks[getQIdx(p)] = 0;
+                    cprintf("[MLFQ] Process %d aged\n", p->pid);
+                    incPrio(p, p->stat.allotedQ[1]);
+                }
+            }
+        }
+    }
+#endif
+}
+
 // PAGEBREAK: 41
 // anywhere before dereferencing myproc(), check if it is not null
 void trap(struct trapframe *tf) {
@@ -43,22 +70,14 @@ void trap(struct trapframe *tf) {
 
     switch (tf->trapno) {
         case T_IRQ0 + IRQ_TIMER:
+            acquire(&tickslock);
             if (cpuid() == 0) {
-                acquire(&tickslock);
-                ticks++;
-                if (myproc() && myproc()->state == RUNNING) {
-                    myproc()->rtime++;
-                }
-
-#ifdef MLFQ
-                if (myproc()) {
-                    myproc()->stat.ticks[getQIdx(myproc())]++;
-                    myproc()->stat.actualTicks[getQIdx(myproc())]++;
-                }
-#endif
+                updateStatsAndAging();
                 wakeup(&ticks);
-                release(&tickslock);
             }
+            if (myproc() && myproc()->state == RUNNING)
+                myproc()->rtime++;
+            release(&tickslock);
             lapiceoi();
             break;
         case T_IRQ0 + IRQ_IDE:
@@ -120,39 +139,25 @@ void trap(struct trapframe *tf) {
             cprintf("%d %d\n", queueIdx, currp->pid);
             panic("Invalid queue allotment");
         }
+
         int tcks = currp->stat.ticks[queueIdx];
 
-        switch (currp->state) {
-            case RUNNING:
-                // do a round robin, my time slice is over
-                if (tcks && tcks >= (1 << queueIdx)) {
-                    if (DEBUG && currp->pid > 2)
-                        cprintf(
-                            "[MLFQ] Proc %d preempted (ticks: %d, queue: %d)\n",
+        if (currp->state == RUNNING) {
+            // do a round robin, my time slice is over
+            if (tcks && tcks >= (1 << queueIdx)) {
+                if (DEBUG && currp->pid > 2)
+                    cprintf("[MLFQ] Proc %d preempted (ticks: %d, queue: %d)\n",
                             currp->pid, tcks, getQIdx(currp));
-                    yield();
-                } else if (timeToPreempt(currp->pid, 0)) {
-                    if (DEBUG)
-                        cprintf(
-                            "[MLFQ] Proc %d preempted (ticks: %d) due to "
-                            "higher "
-                            "prio process incoming\n",
-                            currp->pid, tcks);
-                    yield();
-                }
-                break;
-            case RUNNABLE:
-                if (tcks >= WAIT_LIMIT) {
-                    currp->stat.ticks[queueIdx] = 0;
-                    cprintf("[MLFQ] Process %d aged\n", currp->pid);
-                    incPrio(currp, currp->stat.allotedQ[1]);
-                }
-                break;
-            case UNUSED:
-            case EMBRYO:
-            case SLEEPING:
-            case ZOMBIE:
-                break;
+                yield();
+            } else if (timeToPreempt(queueIdx, 0)) {
+                // if (DEBUG)
+                cprintf(
+                    "[MLFQ] Proc %d preempted (ticks: %d) due to "
+                    "higher "
+                    "prio process incoming\n",
+                    currp->pid, tcks);
+                yield();
+            }
         }
     }
 
