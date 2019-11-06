@@ -51,9 +51,11 @@ int main(int argc, char* argv[]) {
 #endif
 #ifdef MLFQ
     struct proc_stat* ps = (struct proc_stat*)malloc(sizeof(struct proc_stat));
+    // ps->ticks = (int*)malloc(sizeof(int) * PQ_COUNT);
+    // ps->allotedQ = (int*)malloc(sizeof(int) * 2);
 
-    printf(1, "Starting fork process\n");
-    int count = 5, lim = 1e7, halfLim = lim / 2;
+    printf(1, "Starting MLFQ testing - fork process\n");
+    int count = 10, lim = 1e7, halfLim = lim / 2;
     for (int j = 0; j < count; j++) {
         int pid = fork();
 
@@ -63,7 +65,7 @@ int main(int argc, char* argv[]) {
             volatile int a = 0;
             for (volatile int i = 0; i <= lim; i++) {
                 if (i == halfLim) {
-                    getpinfo(ps, getpid());
+                    // getpinfo(ps, getpid());
                     printf(1, "Status of proc %d: RT %d NR %d Q %d TQ %d\n",
                            ps->pid, ps->runtime, ps->num_run, ps->allotedQ[0],
                            ps->ticks[ps->allotedQ[0]]);
@@ -71,6 +73,10 @@ int main(int argc, char* argv[]) {
                     a += 3;
                 }
             }
+            // getpinfo(ps, getpid());
+            printf(1, "Status of proc %d: RT %d NR %d Q %d TQ %d\n", ps->pid,
+                   ps->runtime, ps->num_run, ps->allotedQ[0],
+                   ps->ticks[ps->allotedQ[0]]);
             exit();
         }
     }

@@ -533,9 +533,9 @@ void scheduler(void) {
                         c->apicid);
 #endif
 #ifdef MLFQ
-                if (DEBUG)
-                    cprintf("[SCHEDULER] process %d, cpu %d, queue %d\n",
-                            alottedP->pid, c->apicid, getQIdx(alottedP));
+                // if (DEBUG)
+                cprintf("[SCHEDULER] process %d, cpu %d, queue %d\n",
+                        alottedP->pid, c->apicid, getQIdx(alottedP));
 #endif
             }
             swtch(&(c->scheduler), alottedP->context);
@@ -686,7 +686,9 @@ static void wakeup1(void *chan) {
 
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
         if (p->state == SLEEPING && p->chan == chan) {
+#ifdef MLFQ
             pushBack(getQIdx(p), p);
+#endif
             p->state = RUNNABLE;
         }
 }
@@ -745,7 +747,13 @@ void procdump(void) {
             for (i = 0; i < 10 && pc[i] != 0; i++)
                 cprintf(" %p", pc[i]);
         }
+        cprintf(" - queue %d", getQIdx(p));
         cprintf("\n");
+    }
+
+    cprintf("Queue status\n");
+    for (int i = 0; i < PQ_COUNT; i++) {
+        cprintf("Queue %d (%d): %d\n", i, prioQStart[i], prioQSize[i]);
     }
 }
 
@@ -827,12 +835,14 @@ void incPrio(struct proc *currp, int qPos) {
 
     if (!currp)
         panic("b");
-    if (DEBUG && currp->pid > 2)
-        cprintf("[MLFQ] Incremented queue of %d\n", currp->pid);
     if (queueIdx == HIGHEST_PRIO_Q) {
         pushBack(queueIdx, currp);
+        if (DEBUG && currp->pid > 2)
+            cprintf("[MLFQ] Queue of %d remains same\n", currp->pid);
     } else {
         pushBack(queueIdx - 1, currp);
+        if (DEBUG && currp->pid > 2)
+            cprintf("[MLFQ] Decremented queue of %d\n", currp->pid);
     }
 }
 
@@ -859,6 +869,9 @@ void decPrio(struct proc *currp, int retain) {
 #endif
 
 int getpinfo(struct proc_stat *ps, int pid) {
+    if (!ps) {
+        panic("Pointer is empty :/");
+    }
     ps->pid = myproc()->pid;
     ps->runtime = myproc()->rtime;
     for (int i = 0; i < 2; i++)
