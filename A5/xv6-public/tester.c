@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
     struct proc_stat* ps = (struct proc_stat*)malloc(sizeof(struct proc_stat));
 
     printf(1, "Starting MLFQ testing - fork process\n");
-    const int count = 10, lim = 1e7;
+    const int count = 10, lim = 1e8;
 
     for (int j = 0; j < count; j++) {
         int pid = fork();

@@ -53,6 +53,7 @@ void trap(struct trapframe *tf) {
 #ifdef MLFQ
                 if (myproc()) {
                     myproc()->stat.ticks[getQIdx(myproc())]++;
+                    myproc()->stat.actualTicks[getQIdx(myproc())]++;
                 }
 #endif
                 wakeup(&ticks);

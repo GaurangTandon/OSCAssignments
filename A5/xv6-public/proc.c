@@ -571,10 +571,10 @@ void scheduler(void) {
 
             // if process went to sleep or was not able to complete its full
             // time slice, push it to end of same queue
-            int procTcks = (alottedP->stat.ticks[alottedP->stat.allotedQ[0]]);
+            int queueIdx = getQIdx(alottedP),
+                procTcks = alottedP->stat.ticks[queueIdx];
             if (alottedP->state == SLEEPING ||
-                (procTcks > 0 &&
-                 procTcks < (1 << alottedP->stat.allotedQ[0]))) {
+                (procTcks > 0 && (procTcks < (1 << queueIdx)))) {
                 if (alottedP->pid > 2 && procTcks > 0) {
                     if (DEBUG)
                         cprintf(
@@ -777,7 +777,13 @@ void procdump(void) {
 #ifdef MLFQ
     cprintf("Queue status\n");
     for (int i = 0; i < PQ_COUNT; i++) {
-        cprintf("Queue %d (%d): %d\n", i, prioQStart[i], prioQSize[i]);
+        cprintf("Queue %d (%d): ", i, prioQStart[i]);
+        for (int j = prioQStart[i]; j != backIndex(i);
+             j++, j %= MAX_PROC_COUNT) {
+            cprintf("%d ", prioQ[i][j]->pid);
+        }
+
+        cprintf("\n");
     }
 #endif
 }
@@ -827,9 +833,20 @@ void pushBack(int qIdx, struct proc *p) {
     if (!p) {
         panic("Cannot push back empty proc");
     }
+
     if (p->pid > 2) {
         // cprintf("Putting process %d to queue %d\n", p->pid, getQIdx(p));
     }
+
+    for (int i = prioQStart[qIdx]; i != backIndex(qIdx);
+         i++, i %= MAX_PROC_COUNT) {
+        if (prioQ[qIdx][i]->pid == p->pid) {
+            cprintf("Process %d already present in queue %d, exiting\n", p->pid,
+                    qIdx);
+            return;
+        }
+    }
+
     p->stat.allotedQ[0] = qIdx;
     p->stat.allotedQ[1] = backIndex(qIdx);
     prioQ[qIdx][p->stat.allotedQ[1]] = p;
@@ -922,6 +939,6 @@ int getpinfo(struct proc_stat *ps, int pid) {
     }
     ps->num_run = myproc()->stat.num_run;
     for (int i = 0; i < PQ_COUNT; i++)
-        ps->ticks[i] = myproc()->stat.ticks[i];
+        ps->ticks[i] = myproc()->stat.actualTicks[i];
     return 0;
 }
