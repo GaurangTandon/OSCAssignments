@@ -27,7 +27,8 @@ int main(int argc, char* argv[]) {
 #ifdef PBS
     // forks ten processes with priorities initially of the value pid/2,
     // but after that halfway through it resets the priorities to 1000-j/2
-    int count = 10, lim = 1e7, halfLim = lim / 2;
+    int count = 10, lim = 1e8, halfLim = lim / 2;
+
     for (int j = 0; j < count; j++) {
         if (fork() == 0) {
             volatile int a = 0;
@@ -53,7 +54,7 @@ int main(int argc, char* argv[]) {
     struct proc_stat* ps = (struct proc_stat*)malloc(sizeof(struct proc_stat));
 
     printf(1, "Starting MLFQ testing - fork process\n");
-    const int count = 5, lim = 1e8, parts = 20;
+    const int count = 10, lim = 1e8, parts = 50;
 
     for (int j = 0; j < count; j++) {
         int pid = fork(), actualpid = getpid();
@@ -69,12 +70,6 @@ int main(int argc, char* argv[]) {
                 if (i % (lim / parts) == 0) {
                     getpinfo(ps, actualpid);
                     int qu = ps->allotedQ[0];
-
-                    // if (!PLOT)
-                    // printf(1,
-                    //        "Status %d of proc %d: RT %d NR %d Q %d TQ %d\n",
-                    //        i / (lim / parts), ps->pid, ps->runtime,
-                    //        ps->num_run, qu, ps->ticks[qu]);
 
                     queue[qq] = qu;
                     qq++;

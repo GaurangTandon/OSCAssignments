@@ -13,7 +13,7 @@ struct {
 } ptable;
 
 static struct proc *initproc;
-int WAIT_LIMIT[5] = {50, 50, 30, 20, 10};
+int WAIT_LIMIT[5] = {50, 70, 80, 100, 100};
 
 int nextpid = 1;
 extern void forkret(void);
@@ -76,6 +76,7 @@ void initProcMyStyle(struct proc *p) {
 
 #ifdef MLFQ
     pushBack(HIGHEST_PRIO_Q, p);
+    currp->latestQTime = ticks;
 #endif
     p->ctime = ticks;
     p->rtime = 0;
@@ -608,29 +609,11 @@ void scheduler(void) {
             int queueIdx = getQIdx(alottedP), procTcks = getTicks(alottedP);
 
             if ((alottedP->state == SLEEPING) ||
-                (procTcks > 0 && (procTcks < (1 << queueIdx)))) {
-                if (alottedP->pid > 2 && alottedP->state != SLEEPING) {
-                    // if (DEBUG)
-                    if (!PLOT)
-                        cprintf(
-                            "Process %d preempted in lesser ticks %d, queue "
-                            "%d\n",
-                            alottedP->pid, procTcks, queueIdx);
-                }
+                (alottedP->state == RUNNABLE && procTcks > 0 &&
+                 (procTcks < (1 << queueIdx)))) {
                 decPrio(alottedP, 1);
-            } else {
-                if (!PLOT) {
-                    if (alottedP->state == RUNNABLE) {
-                        cprintf(
-                            "Process %d completed time slice in queue %d, "
-                            "ticks %d",
-                            alottedP->pid, queueIdx, procTcks);
-                    }
-                    if (alottedP->state == SLEEPING) {
-                        cprintf(" but it was sleeping?");
-                    }
-                    cprintf("\n");
-                }
+            } else if (alottedP->state == RUNNABLE &&
+                       procTcks == (1 << queueIdx)) {
                 decPrio(alottedP, 0);
             }
 #endif
@@ -867,8 +850,10 @@ void updateStatsAndAging() {
 
             if (p->state == RUNNABLE && tcks >= WAIT_LIMIT[qIdx]) {
                 if (!PLOT)
-                    cprintf("[MLFQ] Process %d aged (ticks %d, queue %d)\n",
-                            p->pid, tcks, qIdx);
+                    cprintf(
+                        "%d: Process %d aged (ticks %d, queue %d, limit "
+                        "%d)\n",
+                        ticks, p->pid, tcks, qIdx, WAIT_LIMIT[qIdx]);
                 incPrio(p);
             }
         }
@@ -910,7 +895,6 @@ void pushBack(int qIdx, struct proc *p) {
         panic("Cannot push back empty proc");
     }
 
-    p->latestQTime = ticks;
     for (int i = prioQStart[qIdx]; i != backIndex(qIdx);
          i++, i %= MAX_PROC_COUNT) {
         if (prioQ[qIdx][i] && prioQ[qIdx][i]->pid == p->pid) {
@@ -979,6 +963,7 @@ void decPrio(struct proc *currp, int retain) {
     if (!currp)
         panic("a");
 
+    currp->latestQTime = ticks;
     if (queueIdx == PQ_COUNT - 1 || retain) {
         pushBack(queueIdx, currp);
         if (DEBUG && currp->pid > 2)

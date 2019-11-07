@@ -119,19 +119,20 @@ void trap(struct trapframe *tf) {
             // do a round robin, my time slice is over
             if (tcks && tcks >= (1 << queueIdx)) {
                 if (!PLOT && currp->pid > 2)
-                    cprintf("Proc %d preempted (ticks: %d, queue: %d)\n",
-                            currp->pid, tcks, getQIdx(currp));
+                    cprintf(
+                        "%d: Proc %d preempted on completing time slice "
+                        "(ticks: %d, queue: %d)\n",
+                        ticks, currp->pid, tcks, getQIdx(currp));
                 yield();
             } else {
-                // if (DEBUG)
                 int x = timeToPreempt(queueIdx, 0);
                 if (x) {
                     if (!PLOT)
                         cprintf(
-                            "Proc %d preempted (ticks: %d) due to "
+                            "%d: Proc %d preempted (ticks: %d) due to "
                             "higher "
                             "prio process %d incoming\n",
-                            currp->pid, tcks, x);
+                            ticks, currp->pid, tcks, x);
                     yield();
                 }
             }
