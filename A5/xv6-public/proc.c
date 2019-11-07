@@ -13,6 +13,7 @@ struct {
 } ptable;
 
 static struct proc *initproc;
+int WAIT_LIMIT[5] = {50, 50, 30, 20, 10};
 
 int nextpid = 1;
 extern void forkret(void);
@@ -201,7 +202,7 @@ int timeToPreempt(int prio, int checkSamePrio) {
             continue;
         if ((q < prio) || (q == prio && checkSamePrio)) {
             release(&ptable.lock);
-            return 1;
+            return p->pid;
         }
 #else
         if ((p->priority < prio) || (p->priority == prio && checkSamePrio)) {
@@ -578,18 +579,21 @@ void scheduler(void) {
 #endif
 
             alottedP->state = RUNNING;
-            if (alottedP->pid > 2) {
-#ifdef FCFS
-                cprintf("[SCHEDULER] process %d, cpu %d\n", alottedP->pid,
-                        c->apicid);
-#endif
-#ifdef MLFQ
-                // if (DEBUG)
-                if (!PLOT)
-                    cprintf("[SCHEDULER] process %d, cpu %d, queue %d\n",
-                            alottedP->pid, c->apicid, getQIdx(alottedP));
-#endif
-            }
+            //             if (alottedP->pid > 2) {
+            // #ifdef FCFS
+            //                 cprintf("[SCHEDULER] process %d, cpu %d\n",
+            //                 alottedP->pid,
+            //                         c->apicid);
+            // #endif
+            // #ifdef MLFQ
+            //                 // if (DEBUG)
+            //                 // if (!PLOT)
+            //                 // cprintf("[SCHEDULER] process %d, cpu %d, queue
+            //                 %d\n",
+            //                 //         alottedP->pid, c->apicid,
+            //                 getQIdx(alottedP));
+            // #endif
+            //             }
             swtch(&(c->scheduler), alottedP->context);
 
 #ifdef MLFQ
@@ -597,9 +601,6 @@ void scheduler(void) {
             // queue if it had not yield
             if (!alottedP)
                 panic("Returning from swtch; alloted process is blank");
-            // if (alottedP->pid > 2)
-            //     cprintf("Deprioting %d %d\n", alottedP->stat.allotedQ[0],
-            //             prioQSize[alottedP->stat.allotedQ[0]]);
 
             // if process went to sleep or was not able to complete its full
             // time slice, push it to end of same queue
@@ -611,11 +612,24 @@ void scheduler(void) {
                     // if (DEBUG)
                     if (!PLOT)
                         cprintf(
-                            "Process preempted in lesser ticks %d, queue %d\n",
-                            procTcks, queueIdx);
+                            "Process %d preempted in lesser ticks %d, queue "
+                            "%d\n",
+                            alottedP->pid, procTcks, queueIdx);
                 }
                 decPrio(alottedP, 1);
             } else {
+                if (!PLOT) {
+                    if (alottedP->state == RUNNABLE) {
+                        cprintf(
+                            "Process %d completed time slice in queue %d, "
+                            "ticks %d",
+                            alottedP->pid, queueIdx, procTcks);
+                    }
+                    if (alottedP->state == SLEEPING) {
+                        cprintf(" but it was sleeping?");
+                    }
+                    cprintf("\n");
+                }
                 decPrio(alottedP, 0);
             }
 #endif
@@ -833,6 +847,37 @@ int set_prio(int newPriority) {
 }
 
 #ifdef MLFQ
+void updateStatsAndAging() {
+    if (cpuid() != 0)
+        panic("Must be called from cpu0 only");
+
+    ticks++;
+
+#ifdef MLFQ
+
+    acquire(&ptable.lock);
+    for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if (!p || p->killed || p->pid == 0)
+            continue;
+
+        if (p->state == RUNNABLE || p->state == RUNNING) {
+            int qIdx = getQIdx(p);
+            ++p->stat.ticks[qIdx];
+            int tcks = p->stat.ticks[qIdx];
+            p->stat.actualTicks[qIdx]++;
+
+            if (p->state == RUNNABLE && tcks >= WAIT_LIMIT[qIdx]) {
+                if (!PLOT)
+                    cprintf("[MLFQ] Process %d aged (ticks %d, queue %d)\n",
+                            p->pid, tcks, qIdx);
+                p->stat.ticks[qIdx] = 0;
+                incPrio(p);
+            }
+        }
+    }
+    release(&ptable.lock);
+#endif
+}
 struct proc *getFront(int qIdx) {
     if (!prioQSize[qIdx]) {
         cprintf("queue %d\n", qIdx);
@@ -868,7 +913,9 @@ void pushBack(int qIdx, struct proc *p) {
     }
 
     if (p->pid > 2) {
-        // cprintf("Putting process %d to queue %d\n", p->pid, getQIdx(p));
+        // cprintf("Putting process %d to queue %d (ticks got %d)\n", p->pid,
+        // qIdx,
+        //         p->stat.ticks[getQIdx(p)]);
     }
 
     for (int i = prioQStart[qIdx]; i != backIndex(qIdx);

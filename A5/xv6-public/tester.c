@@ -70,11 +70,11 @@ int main(int argc, char* argv[]) {
                     getpinfo(ps, actualpid);
                     int qu = ps->allotedQ[0];
 
-                    if (!PLOT)
-                        printf(1,
-                               "Status %d of proc %d: RT %d NR %d Q %d TQ %d\n",
-                               i / (lim / parts), ps->pid, ps->runtime,
-                               ps->num_run, qu, ps->ticks[qu]);
+                    // if (!PLOT)
+                    // printf(1,
+                    //        "Status %d of proc %d: RT %d NR %d Q %d TQ %d\n",
+                    //        i / (lim / parts), ps->pid, ps->runtime,
+                    //        ps->num_run, qu, ps->ticks[qu]);
 
                     queue[qq] = qu;
                     qq++;

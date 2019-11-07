@@ -1,5 +1,5 @@
 #define DEBUG 0
-#define PLOT 1
+#define PLOT 0
 
 typedef unsigned int uint;
 typedef unsigned short ushort;

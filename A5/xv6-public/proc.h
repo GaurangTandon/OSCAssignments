@@ -90,3 +90,4 @@ int procIsDead(struct proc *p);
 int timeToPreempt(int prio, int checkSamePrio);
 int ifMeraProc(struct proc *p);
 int backIndex(int qIdx);
+void updateStatsAndAging();
