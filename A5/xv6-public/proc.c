@@ -576,6 +576,7 @@ void scheduler(void) {
             // removing running process from queue
             popFront(getQIdx(alottedP));
             alottedP->stat.num_run++;
+            alottedP->latestQTime = ticks;
 #endif
 
             alottedP->state = RUNNING;
@@ -854,7 +855,6 @@ void updateStatsAndAging() {
     ticks++;
 
 #ifdef MLFQ
-
     acquire(&ptable.lock);
     for (struct proc *p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
         if (!p || p->killed || p->pid == 0)
@@ -863,14 +863,12 @@ void updateStatsAndAging() {
         if (p->state == RUNNABLE || p->state == RUNNING) {
             int qIdx = getQIdx(p);
             int tcks = getTicks(p) + 1;
-            p->stat.ticks[qIdx] = tcks;
             p->stat.actualTicks[qIdx]++;
 
             if (p->state == RUNNABLE && tcks >= WAIT_LIMIT[qIdx]) {
                 if (!PLOT)
                     cprintf("[MLFQ] Process %d aged (ticks %d, queue %d)\n",
                             p->pid, tcks, qIdx);
-                p->stat.ticks[qIdx] = 0;
                 incPrio(p);
             }
         }
@@ -912,14 +910,7 @@ void pushBack(int qIdx, struct proc *p) {
         panic("Cannot push back empty proc");
     }
 
-    if (p->pid > 2) {
-        // cprintf("Putting process %d to queue %d (ticks got %d)\n", p->pid,
-        // qIdx,
-        //         p->stat.ticks[getQIdx(p)]);
-    }
-
-    p->stat.ticks[qIdx] = 0;
-
+    p->latestQTime = ticks;
     for (int i = prioQStart[qIdx]; i != backIndex(qIdx);
          i++, i %= MAX_PROC_COUNT) {
         if (prioQ[qIdx][i] && prioQ[qIdx][i]->pid == p->pid) {
@@ -940,16 +931,16 @@ void deleteIdx(int qIdx, int idx) {
     }
 
     prioQ[qIdx][idx] = 0;
+    prioQSize[qIdx]--;
     int bi = backIndex(qIdx);
     for (int i = idx; i != bi; i++, i %= MAX_PROC_COUNT) {
         prioQ[qIdx][i] = prioQ[qIdx][(i + 1) % MAX_PROC_COUNT];
         prioQ[qIdx][i]->stat.allotedQ[1] = i;
     }
-    prioQSize[qIdx]--;
 }
 
 int getTicks(struct proc *currp) {
-    return currp->stat.ticks[getQIdx(currp)];
+    return ticks - currp->latestQTime;
 }
 int getQIdx(struct proc *currp) {
     return currp->stat.allotedQ[0];

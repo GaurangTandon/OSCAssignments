@@ -79,6 +79,7 @@ struct proc {
     int rtime;                   // process ka total time
     int priority;                // process priority
     struct proc_stat stat;
+    int latestQTime;
 };
 
 // Process memory is laid out contiguously, low addresses first:
