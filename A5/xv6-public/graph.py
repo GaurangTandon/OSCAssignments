@@ -13,11 +13,12 @@ for i in range(proccount):
 tckstart=s[0][0]
 pointer = 0
 hits=[]
+start = 3
 
 while pointer < len(s):
-    if s[pointer][1] <= 3:
-        pointer+=1
-        continue
+    # if s[pointer][1] <= 3:
+    #     pointer+=1
+    #     continue
 
     while tckstart<s[pointer][0]:
         for q in queue:
@@ -33,14 +34,15 @@ while pointer < len(s):
 
     tckstart+=1
 
-    for p in range(4,4+proccount):
+    for p in range(start,start+proccount):
         if changes.get(p):
-            queue[p-4].append(changes[p])
+            queue[p-start].append(changes[p])
         else:
-            queue[p-4].append(queue[p-4][-1])
+            queue[p-start].append(queue[p-start][-1])
     hits.append(tckstart)
 print(hits)
 plt.yticks([0,1,2,3,4])
+
 for x in queue:
     plt.plot(x, linestyle='-', marker='o')
 plt.show()
