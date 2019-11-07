@@ -32,9 +32,11 @@ int main(int argc, char* argv[]) {
     for (int j = 0; j < count; j++) {
         if (fork() == 0) {
             volatile int a = 0;
+            int pid = getpid();
             for (volatile int i = 0; i <= lim; i++) {
-                printf(1, "Completed %d by %d of pid %d\n", i / (lim / 10), 10,
-                       pid);
+                if (i % (lim / 10) == 0)
+                    printf(1, "Completed %d by %d of pid %d\n", i / (lim / 10),
+                           10, pid);
                 if (i == halfLim) {
                     set_priority(100 - j / 2);
                 } else {
@@ -53,42 +55,7 @@ int main(int argc, char* argv[]) {
     exit();
 #endif
 #ifdef MLFQ
-    struct proc_stat* ps = (struct proc_stat*)malloc(sizeof(struct proc_stat));
-
-    if (!PLOT && DEBUG)
-        printf(1, "Starting MLFQ testing - fork process\n");
-    const int count = 10, lim = 1e8, parts = 80;
-
-    for (int j = 0; j < count; j++) {
-        int pid = fork(), actualpid = getpid();
-
-        if (pid < 0)
-            printf(1, "Fork failed!!\n");
-        else if (pid == 0) {
-            volatile int a = 0;
-
-            for (volatile int i = 0; i <= lim; i++) {
-                if (i % (lim / parts) == 0) {
-                    getpinfo(ps, actualpid);
-                } else {
-                    a += 3;
-                }
-            }
-
-            getpinfo(ps, actualpid);
-            if (!PLOT && DEBUG)
-                printf(1, "Status of proc %d: RT %d NR %d Q %d TQ %d\n",
-                       ps->pid, ps->runtime, ps->num_run, ps->allotedQ[0],
-                       ps->ticks[ps->allotedQ[0]]);
-
-            exit();
-        }
-    }
-
-    for (int i = 0; i < count; i++) {
-        wait();
-    }
-
+    printf(1, "use tester2 instead\n");
     exit();
 #endif
 #ifdef DEFAULT

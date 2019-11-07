@@ -857,7 +857,7 @@ void updateStatsAndAging() {
             p->stat.actualTicks[qIdx]++;
 
             if (p->state == RUNNABLE && tcks >= WAIT_LIMIT[qIdx]) {
-                if (!PLOT && DEBUG)
+                if (!PLOT)
                     cprintf(
                         "%d: Process %d aged (ticks %d, queue %d, limit "
                         "%d)\n",

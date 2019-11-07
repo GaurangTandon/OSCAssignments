@@ -28,9 +28,9 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // for (int i = 0; i < count; i++) {
-    //     wait();
-    // }
+    for (int i = 0; i < count; i++) {
+        wait();
+    }
 
     exit();
 }

@@ -1,5 +1,7 @@
 # REPORT
 
+Name Gaurang Tandon
+Roll 2018101091
 The sample program was run on three different scheduling algorithms and this is the result obtained for each scheduling. We ran using `time tester2` and the wtime output is the amount of the time the children took to execute.
 
 ## DEFAULT
