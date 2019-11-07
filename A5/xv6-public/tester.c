@@ -54,25 +54,25 @@ int main(int argc, char* argv[]) {
     struct proc_stat* ps = (struct proc_stat*)malloc(sizeof(struct proc_stat));
 
     printf(1, "Starting MLFQ testing - fork process\n");
-    const int count = 10, lim = 1e8, parts = 50;
+    const int count = 10, lim = 1e8, parts = 80;
 
     for (int j = 0; j < count; j++) {
         int pid = fork(), actualpid = getpid();
-        int qq = 0;
+        // int qq = 0;
 
         if (pid < 0)
             printf(1, "Fork failed!!\n");
         else if (pid == 0) {
             volatile int a = 0;
-            int queue[parts];
+            // int queue[parts];
 
             for (volatile int i = 0; i <= lim; i++) {
                 if (i % (lim / parts) == 0) {
                     getpinfo(ps, actualpid);
-                    int qu = ps->allotedQ[0];
+                    // int qu = ps->allotedQ[0];
 
-                    queue[qq] = qu;
-                    qq++;
+                    // queue[qq] = qu;
+                    // qq++;
                 } else {
                     a += 3;
                 }
@@ -83,13 +83,6 @@ int main(int argc, char* argv[]) {
                        ps->pid, ps->runtime, ps->num_run, ps->allotedQ[0],
                        ps->ticks[ps->allotedQ[0]]);
 
-            if (PLOT) {
-                printf(1, "[");
-                for (int i = 0; i < parts; i++) {
-                    printf(1, "%d, ", queue[i]);
-                }
-                printf(1, "],\n");
-            }
             exit();
         }
     }

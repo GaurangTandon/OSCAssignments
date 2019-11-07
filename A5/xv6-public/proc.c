@@ -76,7 +76,9 @@ void initProcMyStyle(struct proc *p) {
 
 #ifdef MLFQ
     pushBack(HIGHEST_PRIO_Q, p);
-    currp->latestQTime = ticks;
+    p->latestQTime = ticks;
+    if (p->pid == PRIO_TRACK)
+        cprintf("%d, ", HIGHEST_PRIO_Q);
 #endif
     p->ctime = ticks;
     p->rtime = 0;
@@ -944,15 +946,19 @@ void incPrio(struct proc *currp) {
 
     if (!currp)
         panic("b");
+    int dest = queueIdx;
     if (queueIdx == HIGHEST_PRIO_Q) {
         pushBack(queueIdx, currp);
         if (DEBUG && currp->pid > 2)
             cprintf("[MLFQ] Queue of %d remains same\n", currp->pid);
     } else {
+        dest--;
         pushBack(queueIdx - 1, currp);
         if (DEBUG && currp->pid > 2)
             cprintf("[MLFQ] Decremented queue of %d\n", currp->pid);
     }
+    if (PRIO_TRACK == currp->pid)
+        cprintf("%d, ", dest);
 }
 
 void decPrio(struct proc *currp, int retain) {
@@ -964,17 +970,22 @@ void decPrio(struct proc *currp, int retain) {
         panic("a");
 
     currp->latestQTime = ticks;
+    int dest = queueIdx;
+
     if (queueIdx == PQ_COUNT - 1 || retain) {
         pushBack(queueIdx, currp);
-        if (DEBUG && currp->pid > 2)
-            cprintf("[MLFQ] Queue of %d remains same as %d\n", currp->pid,
-                    queueIdx);
+        if (!PLOT && currp->pid > 2)
+            cprintf("Queue of %d remains same as %d\n", currp->pid, queueIdx);
     } else {
         pushBack(queueIdx + 1, currp);
-        if (DEBUG && currp->pid > 2)
-            cprintf("[MLFQ] Decremented queue of %d to %d\n", currp->pid,
+        dest++;
+
+        if (!PLOT && currp->pid > 2)
+            cprintf("Decremented queue of %d to %d\n", currp->pid,
                     queueIdx + 1);
     }
+    if (PRIO_TRACK == currp->pid)
+        cprintf("%d, ", dest);
 }
 #endif
 
