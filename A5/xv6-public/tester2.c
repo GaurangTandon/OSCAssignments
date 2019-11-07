@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
         if (fork() == 0) {
             volatile int a = 0;
             int pid = getpid();
-            int lim2 = lim * (j + 1);
+            int lim2 = lim * (10 - j + 1);
 
             for (volatile int i = 0; i <= lim2; i++) {
                 if (i % (lim / 10) == 0) {

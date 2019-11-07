@@ -266,9 +266,6 @@ int fork(void) {
     np->state = RUNNABLE;
 
     release(&ptable.lock);
-#ifdef DEFAULT
-    cprintf("Runnable fork of pid %d created\n", pid);
-#endif
 
     return pid;
 }

@@ -2,17 +2,29 @@
 
 The sample program was run on three different scheduling algorithms and this is the result obtained for each scheduling. We ran using `time tester2` and the wtime output is the amount of the time the children took to execute.
 
+## DEFAULT
+
+Ticks taken to complete: 2371
+
+Mostly because round robin is fast I guess.
+
 ## FCFS
 
-Ticks taken to complete: 
+Ticks taken to complete: 2399.
+
+Even though the longest process was run first, the run time is surprisingly fast.
 
 ## PBS
 
-Ticks taken to complete: 
+Ticks taken to complete: 2724.
+
+The priorities were changed using pid/2, still the PBS method is slower probably because the round robin thing for same priority people cost it a lot of context switches.
 
 ## MLFQ
 
-Ticks taken to complete: 
+Ticks taken to complete: 2346
+
+Feedback helps I guess. All processes strive for completion and do not wait more than a set amount of time.
 
 ## MLFQ scheduling observations
 
