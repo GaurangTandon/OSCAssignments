@@ -33,6 +33,8 @@ int main(int argc, char* argv[]) {
         if (fork() == 0) {
             volatile int a = 0;
             for (volatile int i = 0; i <= lim; i++) {
+                printf(1, "Completed %d by %d of pid %d\n", i / (lim / 10), 10,
+                       pid);
                 if (i == halfLim) {
                     set_priority(100 - j / 2);
                 } else {

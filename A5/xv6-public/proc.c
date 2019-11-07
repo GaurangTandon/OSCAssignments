@@ -476,6 +476,8 @@ void scheduler(void) {
 
         if (minctimeProc) {
             alottedP = minctimeProc;
+            cprintf("Proc %s pid %d scheduled to run\n", alottedP->name,
+                    alottedP->pid);
         }
 #endif
 #ifdef MLFQ
@@ -527,6 +529,7 @@ void scheduler(void) {
             if (p->state == RUNNABLE) {
                 if (p->priority == minPrio) {
                     struct proc *alottedP = p;
+
                     // Switch to chosen process.  It is the process's job
                     // to release ptable.lock and then reacquire it
                     // before jumping back to us.
@@ -534,8 +537,8 @@ void scheduler(void) {
                     switchuvm(alottedP);
 
                     alottedP->state = RUNNING;
-                    cprintf("[PBSCHEDULER] pid %d on cpu %d (prio %d)\n",
-                            alottedP->pid, c->apicid, alottedP->priority);
+                    // cprintf("[PBSCHEDULER] pid %d on cpu %d (prio %d)\n",
+                    //         alottedP->pid, c->apicid, alottedP->priority);
                     swtch(&(c->scheduler), alottedP->context);
 
                     switchkvm();

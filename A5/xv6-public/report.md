@@ -29,3 +29,7 @@ Feedback helps I guess. All processes strive for completion and do not wait more
 ## MLFQ scheduling observations
 
 On adjusting the wait times per each queue, it is observed that processes mostly toggle between the last three queues. When its wait time in the last queue exceeds the wait limit, it ages and chanages queue and executes with high priority.
+
+## How could this be exploited by a process?
+
+It will give up IO just before its time slice is over so that it can retain the same priority queue over and over again. Thus it's priority will never decrement.

@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
             int lim2 = lim * (10 - j + 1);
 
             for (volatile int i = 0; i <= lim2; i++) {
-                if (i % (lim / 10) == 0) {
+                if (i % (lim2 / 10) == 0) {
                     if (DEBUG)
                         printf(1, "Completed %d by %d of pid %d\n",
                                i / (lim / 10), 10, pid);
@@ -28,9 +28,9 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    for (int i = 0; i < count; i++) {
-        wait();
-    }
+    // for (int i = 0; i < count; i++) {
+    //     wait();
+    // }
 
     exit();
 }
