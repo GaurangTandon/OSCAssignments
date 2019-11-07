@@ -45,7 +45,11 @@ void trap(struct trapframe *tf) {
         case T_IRQ0 + IRQ_TIMER:
             acquire(&tickslock);
             if (cpuid() == 0) {
+#ifdef MLFQ
                 updateStatsAndAging();
+#else
+                ticks++;
+#endif
                 wakeup(&ticks);
             }
             if (myproc() && myproc()->state == RUNNING)
