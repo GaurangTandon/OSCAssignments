@@ -43,7 +43,6 @@ enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 #define NO_Q_ALLOT -1
 #define MAX_PROC_COUNT (int)1e4
 // after 10 ticks, process priority is going to increase
-#define WAIT_LIMIT 10
 #define HIGHEST_PRIO_Q 0
 // this priority queue holds all runnable process
 // it is changed every time scheduler runs

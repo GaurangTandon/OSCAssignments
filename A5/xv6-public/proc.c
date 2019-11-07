@@ -536,6 +536,10 @@ void scheduler(void) {
                     swtch(&(c->scheduler), alottedP->context);
 
                     switchkvm();
+                    // Processis done running for now.
+                    // It should have changed its p->state before coming back.
+                    c->proc = 0;
+
                     // If I got yielded because of higher priority process
                     // coming into my way
                     int minPrio2 = 101;
@@ -550,10 +554,6 @@ void scheduler(void) {
                     if (minPrio2 < minPrio) {
                         break;
                     }
-
-                    // Processis done running for now.
-                    // It should have changed its p->state before coming back.
-                    c->proc = 0;
                 }
             }
         }
@@ -585,8 +585,9 @@ void scheduler(void) {
 #endif
 #ifdef MLFQ
                 // if (DEBUG)
-                cprintf("[SCHEDULER] process %d, cpu %d, queue %d\n",
-                        alottedP->pid, c->apicid, getQIdx(alottedP));
+                if (!PLOT)
+                    cprintf("[SCHEDULER] process %d, cpu %d, queue %d\n",
+                            alottedP->pid, c->apicid, getQIdx(alottedP));
 #endif
             }
             swtch(&(c->scheduler), alottedP->context);
@@ -608,7 +609,9 @@ void scheduler(void) {
                 (procTcks > 0 && (procTcks < (1 << queueIdx)))) {
                 if (alottedP->pid > 2 && alottedP->state != SLEEPING) {
                     // if (DEBUG)
-                    cprintf("Process preempted in lesser ticks %d, queue %d\n",
+                    if (!PLOT)
+                        cprintf(
+                            "Process preempted in lesser ticks %d, queue %d\n",
                             procTcks, queueIdx);
                 }
                 decPrio(alottedP, 1);

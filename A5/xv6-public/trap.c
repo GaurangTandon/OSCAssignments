@@ -14,6 +14,7 @@ extern uint vectors[];  // in vectors.S: array of 256 entry pointers
 struct spinlock tickslock;
 uint ticks;
 
+int WAIT_LIMIT[5] = {50, 50, 30, 20, 10};
 void tvinit(void) {
     int i;
 
@@ -48,9 +49,10 @@ void updateStatsAndAging() {
                 int tcks = (++p->stat.ticks[qIdx]);
                 p->stat.actualTicks[qIdx]++;
 
-                if (p->state == RUNNABLE && tcks >= WAIT_LIMIT) {
+                if (p->state == RUNNABLE && tcks >= WAIT_LIMIT[qIdx]) {
                     p->stat.ticks[qIdx] = 0;
-                    cprintf("[MLFQ] Process %d aged\n", p->pid);
+                    if (!PLOT)
+                        cprintf("[MLFQ] Process %d aged\n", p->pid);
                     incPrio(p);
                 }
             }
@@ -155,11 +157,12 @@ void trap(struct trapframe *tf) {
                 yield();
             } else if (timeToPreempt(queueIdx, 0)) {
                 // if (DEBUG)
-                cprintf(
-                    "[MLFQ] Proc %d preempted (ticks: %d) due to "
-                    "higher "
-                    "prio process incoming\n",
-                    currp->pid, tcks);
+                if (!PLOT)
+                    cprintf(
+                        "[MLFQ] Proc %d preempted (ticks: %d) due to "
+                        "higher "
+                        "prio process incoming\n",
+                        currp->pid, tcks);
                 yield();
             }
         }

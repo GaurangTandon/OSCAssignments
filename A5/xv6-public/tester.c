@@ -53,14 +53,7 @@ int main(int argc, char* argv[]) {
     struct proc_stat* ps = (struct proc_stat*)malloc(sizeof(struct proc_stat));
 
     printf(1, "Starting MLFQ testing - fork process\n");
-    const int count = 10, lim = 1e8, parts = 10;
-    int** queue = (int**)malloc(sizeof(int*) * count);
-    for (int i = 0; i < count; i++)
-        queue[i] = (int*)malloc(sizeof(int) * parts);
-    for (int i = 0; i < count; i++) {
-        for (int j = 0; j < parts; j++)
-            queue[i][j] = -1;
-    }
+    const int count = 5, lim = 1e8, parts = 20;
 
     for (int j = 0; j < count; j++) {
         int pid = fork(), actualpid = getpid();
@@ -70,41 +63,44 @@ int main(int argc, char* argv[]) {
             printf(1, "Fork failed!!\n");
         else if (pid == 0) {
             volatile int a = 0;
+            int queue[parts];
 
             for (volatile int i = 0; i <= lim; i++) {
                 if (i % (lim / parts) == 0) {
                     getpinfo(ps, actualpid);
                     int qu = ps->allotedQ[0];
 
-                    printf(1, "Status %d of proc %d: RT %d NR %d Q %d TQ %d\n",
-                           i / (lim / parts), ps->pid, ps->runtime, ps->num_run,
-                           qu, ps->ticks[qu]);
+                    if (!PLOT)
+                        printf(1,
+                               "Status %d of proc %d: RT %d NR %d Q %d TQ %d\n",
+                               i / (lim / parts), ps->pid, ps->runtime,
+                               ps->num_run, qu, ps->ticks[qu]);
 
-                    printf(1, "Setting %d %d of queue as %d\n", j, qq, qu);
-                    queue[j][qq] = qu;
+                    queue[qq] = qu;
                     qq++;
                 } else {
                     a += 3;
                 }
             }
             getpinfo(ps, actualpid);
-            printf(1, "Status of proc %d: RT %d NR %d Q %d TQ %d\n", ps->pid,
-                   ps->runtime, ps->num_run, ps->allotedQ[0],
-                   ps->ticks[ps->allotedQ[0]]);
+            if (!PLOT)
+                printf(1, "Status of proc %d: RT %d NR %d Q %d TQ %d\n",
+                       ps->pid, ps->runtime, ps->num_run, ps->allotedQ[0],
+                       ps->ticks[ps->allotedQ[0]]);
 
+            if (PLOT) {
+                printf(1, "[");
+                for (int i = 0; i < parts; i++) {
+                    printf(1, "%d, ", queue[i]);
+                }
+                printf(1, "]\n");
+            }
             exit();
         }
     }
 
     for (int i = 0; i < count; i++) {
         wait();
-    }
-    for (int j = 0; j < count; j++) {
-        printf(1, "[");
-        for (int i = 0; i < parts; i++) {
-            printf(1, "%d, ", queue[j][i]);
-        }
-        printf(1, "]\n");
     }
 
     exit();
