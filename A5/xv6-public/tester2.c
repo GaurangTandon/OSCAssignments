@@ -4,23 +4,26 @@
 #include "procstat.h"
 
 int main(int argc, char* argv[]) {
-    int count = 10, lim = 1e9;
+    int count = 10, lim = 5e7;
 
     for (int j = 0; j < count; j++) {
         if (fork() == 0) {
             volatile int a = 0;
             int pid = getpid();
+            int lim2 = lim * (j + 1);
 
-            for (volatile int i = 0; i <= lim; i++) {
+            for (volatile int i = 0; i <= lim2; i++) {
                 if (i % (lim / 10) == 0) {
-                    printf(1, "Completed %d by %d of pid %d\n", i / (lim / 10),
-                           10, pid);
+                    if (DEBUG)
+                        printf(1, "Completed %d by %d of pid %d\n",
+                               i / (lim / 10), 10, pid);
                 }
 
                 a += 3;
             }
 
-            printf(1, "%d\n", a);
+            if (DEBUG)
+                printf(1, "%d\n", a);
             exit();
         }
     }
