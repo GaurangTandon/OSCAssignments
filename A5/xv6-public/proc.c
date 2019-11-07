@@ -13,7 +13,7 @@ struct {
 } ptable;
 
 static struct proc *initproc;
-int WAIT_LIMIT[5] = {50, 70, 80, 70, 80};
+int WAIT_LIMIT[5] = {100, 95, 90, 85, 80};
 
 int nextpid = 1;
 extern void forkret(void);
@@ -855,7 +855,7 @@ void updateStatsAndAging() {
             p->stat.actualTicks[qIdx]++;
 
             if (p->state == RUNNABLE && tcks >= WAIT_LIMIT[qIdx]) {
-                if (!PLOT)
+                if (!PLOT && DEBUG)
                     cprintf(
                         "%d: Process %d aged (ticks %d, queue %d, limit "
                         "%d)\n",
@@ -978,13 +978,13 @@ void decPrio(struct proc *currp, int retain) {
 
     if (queueIdx == PQ_COUNT - 1 || retain) {
         pushBack(queueIdx, currp);
-        if (!PLOT && currp->pid > 2)
+        if (DEBUG && !PLOT && currp->pid > 2)
             cprintf("Queue of %d remains same as %d\n", currp->pid, queueIdx);
     } else {
         pushBack(queueIdx + 1, currp);
         dest++;
 
-        if (!PLOT && currp->pid > 2)
+        if (DEBUG && !PLOT && currp->pid > 2)
             cprintf("Decremented queue of %d to %d\n", currp->pid,
                     queueIdx + 1);
     }
