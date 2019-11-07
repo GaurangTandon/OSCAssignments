@@ -16,10 +16,6 @@ hits=[]
 start = 3
 
 while pointer < len(s):
-    # if s[pointer][1] <= 3:
-    #     pointer+=1
-    #     continue
-
     while tckstart<s[pointer][0]:
         for q in queue:
             q.append(q[-1])
@@ -43,6 +39,11 @@ while pointer < len(s):
 print(hits)
 plt.yticks([0,1,2,3,4])
 
+c=start
+plt.xlabel("Ticks")
+plt.ylabel("Queue number")
 for x in queue:
-    plt.plot(x, linestyle='-', marker='o')
+    plt.plot(x, linestyle='-', marker='o', label=str(c))
+    c+=1
+plt.legend()
 plt.show()

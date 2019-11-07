@@ -13,7 +13,7 @@ struct {
 } ptable;
 
 static struct proc *initproc;
-int WAIT_LIMIT[5] = {100, 95, 90, 85, 80};
+int WAIT_LIMIT[5] = {84, 83, 82, 81, 80};
 
 int nextpid = 1;
 extern void forkret(void);
@@ -77,7 +77,7 @@ void initProcMyStyle(struct proc *p) {
 #ifdef MLFQ
     pushBack(HIGHEST_PRIO_Q, p);
     p->latestQTime = ticks;
-    if (PLOT && p->pid > 2)
+    if (PLOT)
         cprintf("%d %d %d\n", ticks, p->pid, HIGHEST_PRIO_Q);
 #endif
     p->ctime = ticks;
@@ -489,7 +489,7 @@ void scheduler(void) {
                     panic("Should have been alloted in allocproc/wakeup1");
                 } else {
                     if (prioQSize[getQIdx(p)] == 0) {
-                        if (PLOT && p->pid > 2)
+                        if (PLOT)
                             cprintf("%d %d %d\n", ticks, p->pid, getQIdx(p));
                         pushBack(getQIdx(p), p);
                     }
@@ -742,8 +742,10 @@ static void wakeup1(void *chan) {
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
         if (p->state == SLEEPING && p->chan == chan) {
 #ifdef MLFQ
-            if (PLOT && p->pid > 2)
-                cprintf("%d %d %d\n", ticks, p->pid, getQIdx(p));
+            // if (PLOT) {
+            //     // cprintf("abcd");
+            //     // cprintf("%d %d %d\n", ticks, p->pid, getQIdx(p));
+            // }
             pushBack(getQIdx(p), p);
 #endif
             p->state = RUNNABLE;
@@ -961,7 +963,7 @@ void incPrio(struct proc *currp) {
         if (DEBUG && currp->pid > 2)
             cprintf("[MLFQ] Decremented queue of %d\n", currp->pid);
     }
-    if (PLOT && currp->pid > 2)
+    if (PLOT)
         cprintf("%d %d %d\n", ticks, currp->pid, dest);
 }
 
@@ -988,7 +990,7 @@ void decPrio(struct proc *currp, int retain) {
             cprintf("Decremented queue of %d to %d\n", currp->pid,
                     queueIdx + 1);
     }
-    if (PLOT && currp->pid > 2)
+    if (PLOT)
         cprintf("%d %d %d\n", ticks, currp->pid, dest);
 }
 #endif
