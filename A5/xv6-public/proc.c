@@ -854,7 +854,8 @@ void updateStatsAndAging() {
         if (p->state == RUNNABLE || p->state == RUNNING) {
             int qIdx = getQIdx(p);
             int tcks = getTicks(p) + 1;
-            p->stat.actualTicks[qIdx]++;
+            if (p->state == RUNNING)
+                p->stat.actualTicks[qIdx]++;
 
             if (p->state == RUNNABLE && tcks >= WAIT_LIMIT[qIdx]) {
                 if (!PLOT)
@@ -1005,13 +1006,16 @@ int getpinfo(struct proc_stat *ps, int pid) {
     }
 
     struct proc *p = 0;
+    int f = 0;
     acquire(&ptable.lock);
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-        if (p->pid == pid)
+        if (p->pid == pid) {
+            f = 1;
             break;
+        }
     release(&ptable.lock);
 
-    if (!p || p->pid != pid) {
+    if (!p || p->pid != pid || !f) {
         return -1;
     }
 
@@ -1019,7 +1023,7 @@ int getpinfo(struct proc_stat *ps, int pid) {
         panic("proc_stat srtuct is null");
     }
 
-    ps->pid = p->pid;
+    ps->pid = pid;
     ps->runtime = p->rtime;
     for (int i = 0; i < 2; i++) {
         ps->allotedQ[i] = p->stat.allotedQ[i];
