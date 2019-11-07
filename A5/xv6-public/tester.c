@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
                 for (int i = 0; i < parts; i++) {
                     printf(1, "%d, ", queue[i]);
                 }
-                printf(1, "]\n");
+                printf(1, "],\n");
             }
             exit();
         }

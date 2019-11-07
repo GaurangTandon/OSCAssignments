@@ -113,7 +113,7 @@ void trap(struct trapframe *tf) {
             panic("Invalid queue allotment");
         }
 
-        int tcks = currp->stat.ticks[queueIdx];
+        int tcks = getTicks(currp);
 
         if (currp->state == RUNNING) {
             // do a round robin, my time slice is over

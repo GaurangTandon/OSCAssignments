@@ -604,8 +604,8 @@ void scheduler(void) {
 
             // if process went to sleep or was not able to complete its full
             // time slice, push it to end of same queue
-            int queueIdx = getQIdx(alottedP),
-                procTcks = alottedP->stat.ticks[queueIdx];
+            int queueIdx = getQIdx(alottedP), procTcks = getTicks(alottedP);
+
             if ((alottedP->state == SLEEPING) ||
                 (procTcks > 0 && (procTcks < (1 << queueIdx)))) {
                 if (alottedP->pid > 2 && alottedP->state != SLEEPING) {
@@ -862,8 +862,8 @@ void updateStatsAndAging() {
 
         if (p->state == RUNNABLE || p->state == RUNNING) {
             int qIdx = getQIdx(p);
-            ++p->stat.ticks[qIdx];
-            int tcks = p->stat.ticks[qIdx];
+            int tcks = getTicks(p) + 1;
+            p->stat.ticks[qIdx] = tcks;
             p->stat.actualTicks[qIdx]++;
 
             if (p->state == RUNNABLE && tcks >= WAIT_LIMIT[qIdx]) {
@@ -918,12 +918,11 @@ void pushBack(int qIdx, struct proc *p) {
         //         p->stat.ticks[getQIdx(p)]);
     }
 
+    p->stat.ticks[qIdx] = 0;
+
     for (int i = prioQStart[qIdx]; i != backIndex(qIdx);
          i++, i %= MAX_PROC_COUNT) {
         if (prioQ[qIdx][i] && prioQ[qIdx][i]->pid == p->pid) {
-            // cprintf("Process %d already present in queue %d, exiting\n",
-            // p->pid,
-            //         qIdx);
             return;
         }
     }
@@ -932,7 +931,6 @@ void pushBack(int qIdx, struct proc *p) {
     p->stat.allotedQ[1] = backIndex(qIdx);
     prioQ[qIdx][p->stat.allotedQ[1]] = p;
     ++prioQSize[qIdx];
-    p->stat.ticks[p->stat.allotedQ[0]] = 0;
 }
 
 void deleteIdx(int qIdx, int idx) {
@@ -950,6 +948,9 @@ void deleteIdx(int qIdx, int idx) {
     prioQSize[qIdx]--;
 }
 
+int getTicks(struct proc *currp) {
+    return currp->stat.ticks[getQIdx(currp)];
+}
 int getQIdx(struct proc *currp) {
     return currp->stat.allotedQ[0];
 }
@@ -1026,8 +1027,6 @@ int getpinfo(struct proc_stat *ps, int pid) {
     }
 
     ps->pid = p->pid;
-    // works
-    // cprintf("%d %d\n", sizeof(ps->ticks), sizeof(ps->allotedQ));
     ps->runtime = p->rtime;
     for (int i = 0; i < 2; i++) {
         ps->allotedQ[i] = p->stat.allotedQ[i];
