@@ -130,8 +130,7 @@ void trap(struct trapframe *tf) {
                     if (!PLOT)
                         cprintf(
                             "%d: Proc %d preempted (ticks: %d) due to "
-                            "higher "
-                            "prio process %d incoming\n",
+                            "higher prio process %d incoming\n",
                             ticks, currp->pid, tcks, x);
                     yield();
                 }

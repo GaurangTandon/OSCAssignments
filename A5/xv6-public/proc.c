@@ -13,7 +13,7 @@ struct {
 } ptable;
 
 static struct proc *initproc;
-int WAIT_LIMIT[5] = {50, 70, 80, 100, 100};
+int WAIT_LIMIT[5] = {50, 70, 80, 70, 80};
 
 int nextpid = 1;
 extern void forkret(void);
@@ -77,8 +77,8 @@ void initProcMyStyle(struct proc *p) {
 #ifdef MLFQ
     pushBack(HIGHEST_PRIO_Q, p);
     p->latestQTime = ticks;
-    if (p->pid == PRIO_TRACK)
-        cprintf("%d, ", HIGHEST_PRIO_Q);
+    if (PLOT && p->pid > 2)
+        cprintf("%d %d %d\n", ticks, p->pid, HIGHEST_PRIO_Q);
 #endif
     p->ctime = ticks;
     p->rtime = 0;
@@ -489,6 +489,8 @@ void scheduler(void) {
                     panic("Should have been alloted in allocproc/wakeup1");
                 } else {
                     if (prioQSize[getQIdx(p)] == 0) {
+                        if (PLOT && p->pid > 2)
+                            cprintf("%d %d %d\n", ticks, p->pid, getQIdx(p));
                         pushBack(getQIdx(p), p);
                     }
                 }
@@ -740,6 +742,8 @@ static void wakeup1(void *chan) {
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
         if (p->state == SLEEPING && p->chan == chan) {
 #ifdef MLFQ
+            if (PLOT && p->pid > 2)
+                cprintf("%d %d %d\n", ticks, p->pid, getQIdx(p));
             pushBack(getQIdx(p), p);
 #endif
             p->state = RUNNABLE;
@@ -957,8 +961,8 @@ void incPrio(struct proc *currp) {
         if (DEBUG && currp->pid > 2)
             cprintf("[MLFQ] Decremented queue of %d\n", currp->pid);
     }
-    if (PRIO_TRACK == currp->pid)
-        cprintf("%d, ", dest);
+    if (PLOT && currp->pid > 2)
+        cprintf("%d %d %d\n", ticks, currp->pid, dest);
 }
 
 void decPrio(struct proc *currp, int retain) {
@@ -984,8 +988,8 @@ void decPrio(struct proc *currp, int retain) {
             cprintf("Decremented queue of %d to %d\n", currp->pid,
                     queueIdx + 1);
     }
-    if (PRIO_TRACK == currp->pid)
-        cprintf("%d, ", dest);
+    if (PLOT && currp->pid > 2)
+        cprintf("%d %d %d\n", ticks, currp->pid, dest);
 }
 #endif
 

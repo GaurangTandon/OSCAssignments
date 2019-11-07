@@ -53,7 +53,8 @@ int main(int argc, char* argv[]) {
 #ifdef MLFQ
     struct proc_stat* ps = (struct proc_stat*)malloc(sizeof(struct proc_stat));
 
-    printf(1, "Starting MLFQ testing - fork process\n");
+    if (!PLOT)
+        printf(1, "Starting MLFQ testing - fork process\n");
     const int count = 10, lim = 1e8, parts = 80;
 
     for (int j = 0; j < count; j++) {
@@ -69,10 +70,6 @@ int main(int argc, char* argv[]) {
             for (volatile int i = 0; i <= lim; i++) {
                 if (i % (lim / parts) == 0) {
                     getpinfo(ps, actualpid);
-                    // int qu = ps->allotedQ[0];
-
-                    // queue[qq] = qu;
-                    // qq++;
                 } else {
                     a += 3;
                 }
