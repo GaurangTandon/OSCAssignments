@@ -187,6 +187,10 @@ void runSorts() {
     quicksort(arr, 0, n - 1);
 
     long double endTime = gettime(&ts);
+    for (int i = 0; i < n; i++) {
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
     long double t1 = endTime - startTime;
     printf("time = %Lf\n", t1);
 
@@ -203,6 +207,10 @@ void runSorts() {
     pthread_join(tid, NULL);
 
     endTime = gettime(&ts);
+    for (int i = 0; i < n; i++) {
+        printf("%d ", a.arr[i]);
+    }
+    printf("\n");
     long double t2 = endTime - startTime;
     printf("time = %Lf\n", t2);
 
@@ -213,6 +221,10 @@ void runSorts() {
     normal_quicksort(crr, 0, n - 1);
 
     endTime = gettime(&ts);
+    for (int i = 0; i < n; i++) {
+        printf("%d ", crr[i]);
+    }
+    printf("\n");
     long double t3 = endTime - startTime;
     printf("time = %Lf\n", t3);
 
